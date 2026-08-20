@@ -117,6 +117,9 @@ function TurnErrorItem({ node, t }: {
   node: TurnErrorNode
   t: ChatViewSlotProps['t']
 }) {
+  const credentialFailure = node.code === 'AUTH'
+    || node.code === 'MISSING_CREDENTIAL'
+    || node.code === 'INVALID_CREDENTIAL'
   return (
     <div className={css.turnErrorRow} role="status">
       <StateDot state="error" className={css.turnErrorDot} />
@@ -124,6 +127,19 @@ function TurnErrorItem({ node, t }: {
         <span className={css.turnErrorTitle}>{t('message.turnError')}</span>
         <span className={css.turnErrorMessage}>{node.message}</span>
       </div>
+      {credentialFailure && (
+        <button
+          type="button"
+          className={css.turnErrorAction}
+          onClick={() => {
+            window.dispatchEvent(new CustomEvent('dsh-desktop-open-settings', {
+              detail: { section: 'models' },
+            }))
+          }}
+        >
+          {t('message.credential.openSettings')}
+        </button>
+      )}
       {node.code !== undefined && <code className={css.turnErrorCode}>{node.code}</code>}
     </div>
   )

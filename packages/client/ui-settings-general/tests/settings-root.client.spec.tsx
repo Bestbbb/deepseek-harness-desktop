@@ -95,6 +95,17 @@ describe('SettingsRoot trigger', () => {
     const { renderSlot } = mount({ wide: false })
     expect(renderSlot).toHaveBeenCalledWith('settings.trigger', { wide: false })
   })
+
+  it('opens the requested section from the native desktop Settings menu event', () => {
+    mount()
+    act(() => {
+      window.dispatchEvent(new CustomEvent('dsh-desktop-open-settings', {
+        detail: { section: 'models' },
+      }))
+    })
+    expect(screen.getByRole('dialog', { name: 'Settings Title' })).toBeTruthy()
+    expect(screen.getByTestId('section-models')).toBeTruthy()
+  })
 })
 
 describe('SettingsPanel chrome seats', () => {

@@ -409,10 +409,12 @@ export interface ConnectionConfig {
   trustedHosts?: string[]
   /** Maximum buffered JSON body for every `/api` request. */
   maxRequestBodyBytes?: number
+  /** Optional per-launch bearer token required by every HTTP and WebSocket RPC request. */
+  authToken?: string
 }
 ```
 
-Source: [`packages/client/connection/src/index.ts:50`](../packages/client/connection/src/index.ts)
+Source: [`packages/client/connection/src/index.ts:51`](../packages/client/connection/src/index.ts)
 
 <a id="deepseek-aidsh-client-hmr"></a>
 
@@ -568,6 +570,24 @@ export interface Config {
 ```
 
 Source: [`packages/credentials/credentials-local/src/index.ts:55`](../packages/credentials/credentials-local/src/index.ts)
+
+<a id="deepseek-aidsh-desktop-native"></a>
+
+## `@deepseek-ai/dsh-desktop-native`
+
+```ts config-catalog
+/** Private native-bridge connection parameters injected by the desktop supervisor. */
+export interface Config {
+  /** Loopback HTTP origin of the per-launch native bridge. */
+  endpoint: string
+  /** Per-launch bearer token known only to the native host and Harness child. */
+  token: string
+  /** Maximum time allowed for one native operation. */
+  timeoutMs?: number
+}
+```
+
+Source: [`packages/desktop/desktop-native/src/index.ts:13`](../packages/desktop/desktop-native/src/index.ts)
 
 <a id="deepseek-aidsh-e2b"></a>
 
@@ -3267,6 +3287,7 @@ Abstract service classes — a deployment loads a concrete implementation packag
 - `@deepseek-ai/dsh-compaction` — abstract `CompactionEngine` ([`packages/compaction/compaction/src/index.ts`](../packages/compaction/compaction/src/index.ts))
 - `@deepseek-ai/dsh-credentials` — abstract `CredentialProvider` ([`packages/credentials/credentials/src/index.ts`](../packages/credentials/credentials/src/index.ts))
 - `@deepseek-ai/dsh-file-reference` — abstract `FileReferenceService` ([`packages/context/file-reference/src/index.ts`](../packages/context/file-reference/src/index.ts))
+- `@deepseek-ai/dsh-desktop` — abstract `DesktopHost` ([`packages/desktop/desktop/src/index.ts`](../packages/desktop/desktop/src/index.ts))
 - `@deepseek-ai/dsh-fs` — abstract `FileSystem` ([`packages/fs/fs/src/index.ts`](../packages/fs/fs/src/index.ts))
 - `@deepseek-ai/dsh-host-directory-picker` — abstract `DirectoryPicker` ([`packages/host/directory-picker/src/index.ts`](../packages/host/directory-picker/src/index.ts))
 - `@deepseek-ai/dsh-jobs` — abstract `JobRegistry` ([`packages/jobs/jobs/src/index.ts`](../packages/jobs/jobs/src/index.ts))

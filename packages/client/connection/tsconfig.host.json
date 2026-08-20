@@ -8,6 +8,8 @@
   "files": [
     "src/api-path.ts",
     "src/api-request-trust.ts",
+    "src/desktop-auth.ts",
+    "src/desktop-auth-host.ts",
     "src/http-bridge.ts",
     "src/index.ts",
     "src/invariant.ts",

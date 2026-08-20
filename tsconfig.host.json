@@ -176,6 +176,8 @@
     { "path": "./packages/goal/goal-round-driver" },
     { "path": "./packages/goal/command-goal" },
     { "path": "./packages/feedback/command-feedback" },
+    { "path": "./packages/desktop/desktop" },
+    { "path": "./packages/desktop/desktop-native" },
     { "path": "./packages/schedule/schedule" },
     { "path": "./packages/context/time-context" },
     { "path": "./packages/context/file-reference" },

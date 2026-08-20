@@ -7,6 +7,7 @@
   },
   "files": [
     "src/api-path.ts",
+    "src/desktop-auth.ts",
     "src/client/api.ts",
     "src/client/connection.ts",
     "src/client/fixture.ts",

@@ -249,6 +249,20 @@
   font: var(--dsw-font-markdown-code-block-small);
 }
 
+.turnErrorAction {
+  border: 0;
+  border-radius: 6px;
+  padding: 1px 7px;
+  background: transparent;
+  color: var(--dsw-alias-label-link);
+  font: inherit;
+  cursor: pointer;
+}
+
+.turnErrorAction:hover {
+  background: var(--dsw-alias-surface-hover);
+}
+
 .maxTokensTitle {
   margin-right: 6px;
   color: var(--dsw-alias-state-warn-primary);

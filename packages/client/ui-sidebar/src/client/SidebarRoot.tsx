@@ -57,6 +57,12 @@ export function SidebarRoot({
   }, [collapsed])
   const wide = !collapsed || !settled
 
+  useEffect(() => {
+    const onDesktopNewSession = (): void => { startSession() }
+    window.addEventListener('dsh-desktop-new-session', onDesktopNewSession)
+    return () => { window.removeEventListener('dsh-desktop-new-session', onDesktopNewSession) }
+  }, [startSession])
+
   // Freeze the content at its expanded width while it fades out (collapsed
   // && wide): the sliding column then clips it instead of reflowing it. The
   // rail layout (.collapsed styles) only applies once the fade settles.

@@ -580,14 +580,20 @@ describe('ChatView', () => {
     expect(within(cancelledDisclosure).getByRole('status').textContent).toContain('重试已取消')
   })
 
-  it('renders terminal turn failures inline with their durable message and optional code', () => {
+  it('renders terminal turn failures and routes credential recovery into model settings', () => {
+    const openSettings = vi.fn()
+    window.addEventListener('dsh-desktop-open-settings', openSettings)
     const h = makeHarness({ nodes: [user(1, 'try'), turnError(2, 'AUTH'), turnError(3)] })
     const view = render(<h.ChatView {...h.props} />)
     const statuses = view.getAllByRole('status')
     expect(statuses.map(status => status.textContent)).toEqual([
-      '本轮运行失败API key is invalidAUTH',
+      '本轮运行失败API key is invalid配置 API KeyAUTH',
       '本轮运行失败plugin exploded',
     ])
+    fireEvent.click(view.getByRole('button', { name: '配置 API Key' }))
+    expect(openSettings).toHaveBeenCalledOnce()
+    expect((openSettings.mock.calls[0]?.[0] as CustomEvent).detail).toEqual({ section: 'models' })
+    window.removeEventListener('dsh-desktop-open-settings', openSettings)
   })
 
   it('renders the max-tokens notice with localized guidance, distinct from turn errors', () => {

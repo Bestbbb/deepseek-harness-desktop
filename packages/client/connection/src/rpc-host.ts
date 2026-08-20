@@ -12,6 +12,7 @@ import {
   type ServerResponse as RpcServerResponse,
 } from '@deepseek-ai/dsh-host-apiproxy/api'
 import { bridge, type FetchHandler } from './http-bridge.ts'
+import { isDesktopAuthenticatedRequest } from './desktop-auth-host.ts'
 import { isTrustedApiRequest } from './api-request-trust.ts'
 import { API_PATH } from './api-path.ts'
 import type {
@@ -48,7 +49,11 @@ export class HostConnectionService extends Service implements HostConnectionHand
    * @param ctx - owning Connection plugin context.
    * @param trustedHosts - deployment authorities accepted by trusted-host channels.
    */
-  constructor(ctx: Context, private readonly trustedHosts: readonly string[]) {
+  constructor(
+    ctx: Context,
+    private readonly trustedHosts: readonly string[],
+    private readonly authToken: string | undefined,
+  ) {
     super(ctx, 'connection')
   }
 
@@ -74,6 +79,9 @@ export class HostConnectionService extends Service implements HostConnectionHand
   ): FetchHandler {
     return {
       fetch: (request) => {
+        if (!isDesktopAuthenticatedRequest(request, this.authToken)) {
+          return Promise.resolve(new Response('forbidden', { status: 403 }))
+        }
         const endpoint = endpointFromPath(channel, new URL(request.url).pathname)
         const interceptor = this.interceptors.get(channel)
         if (endpoint === undefined || interceptor === undefined || !interceptor.matches(endpoint)) {
@@ -100,7 +108,8 @@ export class HostConnectionService extends Service implements HostConnectionHand
       kind: 'prefix',
       path: channel,
       handler: async (req, res) => {
-        if (!isTrustedApiRequest(req, trustedHosts)) {
+        if (!isDesktopAuthenticatedRequest(req, this.authToken)
+          || !isTrustedApiRequest(req, trustedHosts)) {
           res.writeHead(403)
           res.end('forbidden')
           return

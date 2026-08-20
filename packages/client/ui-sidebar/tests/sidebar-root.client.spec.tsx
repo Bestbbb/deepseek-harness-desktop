@@ -108,6 +108,12 @@ describe('SidebarRoot shell', () => {
     expect(container.querySelector('svg')).not.toBeNull()
   })
 
+  it('routes the native desktop New Session menu event through the shared action', () => {
+    const b = mountShell()
+    window.dispatchEvent(new CustomEvent('dsh-desktop-new-session'))
+    expect(b.startSession).toHaveBeenCalledOnce()
+  })
+
   it('hands the region its wide flag and clamps expandSidebar to the collapsed state', () => {
     const b = mountShell()
     expect(b.regionOwner().wide).toBe(true)
