@@ -1,8 +1,8 @@
-# DeepSeek Harness Desktop
+# Harness Desktop
 
 [English](README.md) | 中文
 
-这是 DeepSeek Harness 面向 macOS 和 Windows 的 Tauri 2 桌面载体。Rust 负责应用生命周期和操作系统原生集成；现有 TypeScript Harness 运行时与 React Web profile 仍是产品核心。因此它不需要 Chromium/Electron，也不需要把 Agent 系统重写成第二套实现。
+这是 DeepSeek Harness 面向 macOS 和 Windows 的 Tauri 2 桌面载体。Rust 负责应用生命周期和操作系统原生集成；现有 TypeScript Harness 运行时与 React Web profile 仍是产品核心。因此它不需要捆绑 Chromium/Electron，也不需要把 Agent 系统重写成第二套实现。
 
 ## 架构
 

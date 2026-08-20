@@ -48,6 +48,14 @@ const repositoryUrl = 'git+https://github.com/deepseek-harness/deepseek-harness.
  * their trusted publishing against the repository that runs the workflow.
  */
 const publishedRepositoryUrl = 'git+https://github.com/deepseek-ai/deepseek-harness.git'
+/** Source home for the community desktop-only release members. */
+const desktopRepositoryUrl = 'git+https://github.com/Bestbbb/deepseek-harness-desktop.git'
+const desktopReleasePackages = new Set([
+  '@deepseek-ai/dsh-desktop-app',
+  '@deepseek-ai/dsh-desktop-runtime',
+  '@deepseek-ai/dsh-desktop',
+  '@deepseek-ai/dsh-desktop-native',
+])
 /** Private packages that participate in workspace checks but not releases. */
 const experimentalPackageDirectory = /^packages\/experimental\/[^/]+$/
 /** npm namespace reserved for private experimental packages. */
@@ -301,10 +309,13 @@ function checkWorkspace({ dir, manifest }: WorkspaceManifest): string[] {
     if (manifest.publishConfig?.access !== 'public') {
       errors.push(`${label}: release member must set publishConfig.access to "public"`)
     }
+    const expectedRepositoryUrl = manifest.name !== undefined && desktopReleasePackages.has(manifest.name)
+      ? desktopRepositoryUrl
+      : publishedRepositoryUrl
     if (manifest.repository?.type !== 'git'
-      || manifest.repository.url !== publishedRepositoryUrl
+      || manifest.repository.url !== expectedRepositoryUrl
       || manifest.repository.directory !== dir) {
-      errors.push(`${label}: release member repository must use ${publishedRepositoryUrl} with directory ${dir}`)
+      errors.push(`${label}: release member repository must use ${expectedRepositoryUrl} with directory ${dir}`)
     }
   } else if (!experimentalPackageDirectory.test(dir) && manifest.private !== true) {
     errors.push(`${label}: package.json must set "private": true`)

@@ -117,7 +117,7 @@ export function SettingsRoot(props: SettingsRootComponentProps) {
 
   useEffect(() => {
     const onDesktopOpenSettings = (event: Event): void => {
-      const section = (event as CustomEvent<{ section?: unknown }>).detail?.section
+      const section = (event as CustomEvent<{ section?: unknown } | undefined>).detail?.section
       setActiveId(typeof section === 'string' ? section : undefined)
       setOpen(true)
     }

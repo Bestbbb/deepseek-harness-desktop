@@ -33,11 +33,19 @@ describe('desktop native bridge provider', () => {
     await expect(host.status()).resolves.toEqual({ available: true })
     await host.notify({ title: 'Finished', body: 'The task completed.' })
     const status = fetch.mock.calls[0]
-    expect(String(status?.[0])).toBe('http://127.0.0.1:43123/v1/status')
+    const statusUrl = status?.[0]
+    const statusHref = typeof statusUrl === 'string'
+      ? statusUrl
+      : statusUrl instanceof URL
+        ? statusUrl.href
+        : statusUrl?.url
+    expect(statusHref).toBe('http://127.0.0.1:43123/v1/status')
     expect(status?.[1]?.headers).toMatchObject({ 'x-dsh-desktop-bridge-token': 'bridge-secret' })
     const notification = fetch.mock.calls[1]
-    expect(notification?.[1]?.body).toBe('{"title":"Finished","body":"The task completed."}')
-    expect(String(notification?.[1]?.body)).not.toContain('bridge-secret')
+    const notificationBody = notification?.[1]?.body
+    if (typeof notificationBody !== 'string') throw new TypeError('expected the notification body to be a string')
+    expect(notificationBody).toBe('{"title":"Finished","body":"The task completed."}')
+    expect(notificationBody).not.toContain('bridge-secret')
   })
 
   it('turns a bridge HTTP rejection into a stable operation failure', async () => {

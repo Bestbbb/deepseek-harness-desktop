@@ -460,9 +460,6 @@ importers:
       '@deepseek-ai/dsh-client-runtime':
         specifier: workspace:^
         version: link:../../packages/client/runtime
-      '@deepseek-ai/dsh-client-schema-form':
-        specifier: workspace:^
-        version: link:../../packages/client/schema-form
       '@deepseek-ai/dsh-client-ui-agent-preset':
         specifier: workspace:^
         version: link:../../packages/client/ui-agent-preset
@@ -562,9 +559,6 @@ importers:
       '@deepseek-ai/dsh-client-web':
         specifier: workspace:^
         version: link:../../packages/client/web
-      '@deepseek-ai/dsh-client-web-react':
-        specifier: workspace:^
-        version: link:../../packages/client/web-react
       '@deepseek-ai/dsh-cmdline':
         specifier: workspace:^
         version: link:../../packages/boot/cmdline
@@ -613,6 +607,9 @@ importers:
       '@deepseek-ai/dsh-desktop-native':
         specifier: workspace:^
         version: link:../../packages/desktop/desktop-native
+      '@deepseek-ai/dsh-file-reference':
+        specifier: workspace:^
+        version: link:../../packages/context/file-reference
       '@deepseek-ai/dsh-fs':
         specifier: workspace:^
         version: link:../../packages/fs/fs

@@ -190,6 +190,15 @@ const SERVICE_ROLES: ServiceRole[] = [
     note: 'Configuration carries references to secrets; providers own the values. Consumers resolve per operation, so a rotated credential reaches the very next request; the web gateway exposes value-free views and write-only storage.',
   },
   {
+    key: 'desktop',
+    pkg: 'desktop',
+    title: 'Native desktop host seam',
+    mode: 'seam',
+    implementations: ['desktop-native'],
+    consumers: [],
+    note: 'A desktop-only provider forwards a narrow allowlist of native operations to the Tauri owner over an authenticated per-launch loopback bridge; browser and headless compositions do not mount the seam.',
+  },
+  {
     key: 'sessionTelemetry',
     pkg: 'session-telemetry',
     title: 'Session telemetry seam',

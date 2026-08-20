@@ -44,10 +44,10 @@ jobs:
         include:
           - target: macos-arm64
             runner: macos-15
-            artifact: deepseek-harness-desktop-macos-arm64
+            artifact: harness-desktop-macos-arm64
           - target: windows-x64
             runner: windows-2025
-            artifact: deepseek-harness-desktop-windows-x64
+            artifact: harness-desktop-windows-x64
     steps:
       - uses: actions/checkout@v6
 

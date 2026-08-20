@@ -3288,8 +3288,8 @@ export interface Config {
 - `@deepseek-ai/dsh-code-runtime` — 抽象 `CodeRuntime`（[`packages/code-runtime/code-runtime/src/index.ts`](../packages/code-runtime/code-runtime/src/index.ts)）
 - `@deepseek-ai/dsh-compaction` — 抽象 `CompactionEngine`（[`packages/compaction/compaction/src/index.ts`](../packages/compaction/compaction/src/index.ts)）
 - `@deepseek-ai/dsh-credentials` — 抽象 `Credentials`（[`packages/credentials/credentials/src/index.ts`](../packages/credentials/credentials/src/index.ts)）
-- `@deepseek-ai/dsh-file-reference` — 抽象 `FileReferenceService`（[`packages/context/file-reference/src/index.ts`](../packages/context/file-reference/src/index.ts)）
 - `@deepseek-ai/dsh-desktop` — 抽象 `DesktopHost`（[`packages/desktop/desktop/src/index.ts`](../packages/desktop/desktop/src/index.ts)）
+- `@deepseek-ai/dsh-file-reference` — 抽象 `FileReferenceService`（[`packages/context/file-reference/src/index.ts`](../packages/context/file-reference/src/index.ts)）
 - `@deepseek-ai/dsh-fs` — 抽象 `FileSystem`（[`packages/fs/fs/src/index.ts`](../packages/fs/fs/src/index.ts)）
 - `@deepseek-ai/dsh-host-directory-picker` — 抽象 `DirectoryPicker`（[`packages/host/directory-picker/src/index.ts`](../packages/host/directory-picker/src/index.ts)）
 - `@deepseek-ai/dsh-jobs` — 抽象 `JobRegistry`（[`packages/jobs/jobs/src/index.ts`](../packages/jobs/jobs/src/index.ts)）

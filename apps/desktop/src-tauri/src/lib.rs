@@ -1,4 +1,4 @@
-//! DeepSeek Harness desktop application host.
+//! Harness Desktop application host for DeepSeek Harness.
 
 mod bridge;
 mod diagnostics;
@@ -61,7 +61,7 @@ pub fn run() {
         .setup(setup);
     let app = builder
         .build(tauri::generate_context!())
-        .expect("could not build DeepSeek Harness desktop");
+        .expect("could not build Harness Desktop");
     let signal_app = app.handle().clone();
     ctrlc::set_handler(move || signal_app.exit(0))
         .expect("could not install desktop termination handler");
@@ -80,7 +80,7 @@ fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         serde_json::to_string(&auth_token)?,
     );
     let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::App("index.html".into()))
-        .title("DeepSeek Harness")
+        .title("Harness Desktop")
         .inner_size(1180.0, 780.0)
         .min_inner_size(820.0, 600.0)
         .visible(true)
@@ -199,8 +199,8 @@ fn install_menu(app: &AppHandle) -> tauri::Result<()> {
         .build(app)?;
     let export_diagnostics_item =
         MenuItemBuilder::with_id("export-diagnostics", "Export Diagnostics…").build(app)?;
-    let show = MenuItemBuilder::with_id("show", "Show DeepSeek Harness").build(app)?;
-    let app_menu = SubmenuBuilder::new(app, "DeepSeek Harness")
+    let show = MenuItemBuilder::with_id("show", "Show Harness Desktop").build(app)?;
+    let app_menu = SubmenuBuilder::new(app, "Harness Desktop")
         .item(&show)
         .separator()
         .item(&settings)
@@ -249,7 +249,7 @@ fn install_menu(app: &AppHandle) -> tauri::Result<()> {
 }
 
 fn install_tray(app: &AppHandle) -> tauri::Result<()> {
-    let show = MenuItemBuilder::with_id("tray-show", "Show DeepSeek Harness").build(app)?;
+    let show = MenuItemBuilder::with_id("tray-show", "Show Harness Desktop").build(app)?;
     let quit = MenuItemBuilder::with_id("tray-quit", "Quit").build(app)?;
     let menu = MenuBuilder::new(app)
         .item(&show)
@@ -300,7 +300,7 @@ fn export_diagnostics(app: &AppHandle) {
     let handle = app.clone();
     app.dialog()
         .file()
-        .set_title("Export DeepSeek Harness Diagnostics")
+        .set_title("Export Harness Desktop Diagnostics")
         .set_file_name("DeepSeek-Harness-diagnostics.txt")
         .add_filter("Text", &["txt"])
         .save_file(move |destination| {
@@ -322,7 +322,7 @@ fn export_diagnostics(app: &AppHandle) {
                 ),
                 Err(_) => (
                     "Diagnostics export failed",
-                    "DeepSeek Harness could not write the diagnostic file.",
+                    "Harness Desktop could not write the diagnostic file.",
                 ),
             };
             let _ = handle

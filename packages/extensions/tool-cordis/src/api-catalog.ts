@@ -605,6 +605,37 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'desktop',
+    summary: 'Native desktop capability.',
+    description: 'Native desktop capability. Implementations cross the process boundary into the owning desktop shell and reject when that shell cannot complete the operation.',
+    methods: [
+      {
+        signature: 'abstract status(): Promise<DesktopStatus>',
+        description: 'Check that the native desktop host is reachable.',
+        parameters: [],
+        returns: 'Available status after a complete bridge round trip.',
+      },
+      {
+        signature: 'abstract show(): Promise<void>',
+        description: 'Show and focus the primary application window.',
+        parameters: [],
+        returns: 'After the native host completes the operation.',
+      },
+      {
+        signature: 'abstract notify(notification: DesktopNotification): Promise<void>',
+        description: 'Display an operating-system notification.',
+        parameters: [{ name: 'notification', description: 'user-visible title and body.' }],
+        returns: 'After the native host accepts the notification.',
+      },
+      {
+        signature: 'abstract setAutostart(enabled: boolean): Promise<void>',
+        description: 'Enable or disable launch at user login.',
+        parameters: [{ name: 'enabled', description: 'desired autostart state.' }],
+        returns: 'After the operating system records the state.',
+      },
+    ],
+  },
+  {
     key: 'directoryPicker',
     summary: 'Abstract directory-picking service.',
     description: 'Abstract directory-picking service. Subclass, implement `capability()`, and load the subclass as a plugin — it registers as `ctx.directoryPicker` (one implementation per context; loading a second throws, cordis\' standard duplicate-service behavior). The capability object must be stable for the service lifetime: consumers may capture it across calls.',
@@ -3035,6 +3066,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'CredentialRef',
     declaration: 'export type CredentialRef = Branded<\'CredentialRef\'>;',
+  },
+  {
+    name: 'DesktopNotification',
+    declaration: 'export interface DesktopNotification {\n    readonly title: string;\n    readonly body: string;\n}',
+  },
+  {
+    name: 'DesktopStatus',
+    declaration: 'export interface DesktopStatus {\n    readonly available: true;\n}',
   },
   {
     name: 'DiffCallView',
