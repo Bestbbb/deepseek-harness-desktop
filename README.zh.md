@@ -58,7 +58,7 @@ Harness Desktop 不维护单独的提供方抽象，而是直接使用上游 Har
 实际部署有两种方式：
 
 1. **直接 BYOK** — 在 **设置 → 模型** 中配置目录提供方，并把 API key 存在本地。
-2. **网关模式** — 添加企业内部网关、OpenRouter 或可选 VeloBase 部署等 OpenAI-compatible 端点；路由、预算、审计、计费与组织策略可以继续留在网关层。
+2. **网关模式** — 添加企业内部网关或 OpenRouter 等 OpenAI-compatible 端点；路由、预算、审计、计费与组织策略可以继续留在网关层。
 
 提供方支持取决于具体模型与认证方式。Bedrock、Vertex、Azure 与仅 OAuth 的路由需要各自的原生凭据或设置，不能只填通用 API key。自定义端点与视觉能力声明见上游[提供方指南](docs/user/guide/providers.md)。
 

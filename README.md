@@ -58,7 +58,7 @@ Harness Desktop does not maintain a separate provider abstraction. It uses the u
 There are two practical deployment modes:
 
 1. **Direct BYOK** — configure a catalog provider and store its API key locally through **Settings → Models**.
-2. **Gateway mode** — add an OpenAI-compatible endpoint such as an internal gateway, OpenRouter, or an optional VeloBase deployment. Routing, budgets, audit, billing, and organization policy can stay in that gateway.
+2. **Gateway mode** — add an OpenAI-compatible endpoint such as an internal gateway or OpenRouter. Routing, budgets, audit, billing, and organization policy can stay in that gateway.
 
 Provider support is model- and authentication-dependent. Bedrock, Vertex, Azure, and OAuth-only routes require their native credentials or setup rather than a generic API key. For custom endpoints and vision declarations, see the upstream [provider guide](docs/user/guide/providers.md).
 
