@@ -20,6 +20,19 @@ function expectPortableCommunityChecks(validation: Record<string, unknown>): voi
   expect(portable.run).toContain('pnpm run check:node-compat')
 }
 
+function expectPortableCommunityChecks(validation: Record<string, unknown>): void {
+  if (!Array.isArray(validation.steps)) throw new TypeError('Community validation job must define steps')
+  const steps: unknown[] = validation.steps
+  const portable: unknown = steps.find(step => isRecord(step) && step.name === 'Run portable keyless checks')
+  if (!isRecord(portable) || typeof portable.run !== 'string') {
+    throw new TypeError('Community validation job must define portable keyless checks')
+  }
+  expect(portable.run).toContain('pnpm run check:ci:static')
+  expect(portable.run).toContain('pnpm run check:ci:artifacts')
+  expect(portable.run).toContain('pnpm run check:ci:lint:contracts-ready')
+  expect(portable.run).toContain('pnpm run check:node-compat')
+}
+
 describe('CI workflow', () => {
   it('isolates every pnpm action setup destination per runner', () => {
     const files = ['.github/workflows/ci.yml', '.github/workflows/ci-master.yml']
