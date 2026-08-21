@@ -6,7 +6,7 @@
 
 Harness Desktop 是一个基于 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 与 Tauri 2 的非官方社区发行版。它在本地运行完整的 Harness Agent 运行时，增加原生桌面生命周期，同时保留现有 TypeScript 与 React 产品核心，而不是维护第二套 Agent 实现。
 
-> **重要：** 本项目与 DeepSeek 无从属关系，也未获得其官方背书。当前版本跟随上游 `dsh-v0.1.0-rc.8` 开发者预览版，未来可能出现破坏兼容性的变更。
+> **重要：** 本项目与 DeepSeek 无从属关系，也未获得其官方背书。当前版本跟随上游 `dsh-v0.1.1-rc.1` 开发者预览版，未来可能出现破坏兼容性的变更。
 
 ## 为什么做这个项目
 
@@ -29,6 +29,8 @@ Electron 可以快速完成桌面封装，但也会额外捆绑一套 Chromium�
 - 无需编写新适配器即可接入 OpenAI-compatible、自建端点和企业网关
 - 当所选提供方和模型声明图片能力时支持多模态图片输入
 - 本地会话、工具、MCP、subagent、工作流、skill 与权限控制
+- Profile bundle、可安装的 Cordis 插件，以及上游只读插件清单界面
+- 可选的官方 Codex 与 Claude Code 子代理 bundle；二者分别调用本机已安装且已登录的产品 CLI，默认不会捆绑进桌面安装包
 - 独立桌面数据目录，不影响已有 `dsh` CLI profile
 - macOS 与 Windows 原生打包，以及目标平台 CI
 
@@ -49,7 +51,7 @@ flowchart LR
 
 每次启动都会生成两枚互相独立的 256-bit 随机 token：一枚保护 WebView 到 Harness 的 HTTP 与 WebSocket 流量，另一枚保护受限的 Harness 到原生 bridge。supervisor 拥有完整子进程树，并在应用退出时终止所有后代进程。
 
-详细边界请参阅[桌面架构与发布说明](apps/desktop/README.md)。
+详细边界请参阅[桌面架构与发布说明](apps/desktop/README.zh.md)。
 
 ## 模型提供方
 
@@ -60,7 +62,9 @@ Harness Desktop 不维护单独的提供方抽象，而是直接使用上游 Har
 1. **直接 BYOK** — 在 **设置 → 模型** 中配置目录提供方，并把 API key 存在本地。
 2. **网关模式** — 添加企业内部网关或 OpenRouter 等 OpenAI-compatible 端点；路由、预算、审计、计费与组织策略可以继续留在网关层。
 
-提供方支持取决于具体模型与认证方式。Bedrock、Vertex、Azure 与仅 OAuth 的路由需要各自的原生凭据或设置，不能只填通用 API key。自定义端点与视觉能力声明见上游[提供方指南](docs/user/guide/providers.md)。
+提供方支持取决于具体模型与认证方式。Bedrock、Vertex、Azure 与仅 OAuth 的路由需要各自的原生凭据或设置，不能只填通用 API key。自定义端点与视觉能力声明见上游[提供方指南](docs/user/guide/providers.zh.md)。
+
+<a id="run"></a>
 
 ## 运行
 
@@ -70,6 +74,8 @@ Harness Desktop 不维护单独的提供方抽象，而是直接使用上游 Har
 - pnpm 11.7
 - Rust stable
 - macOS 或 Windows 对应的 [Tauri 2 平台依赖](https://v2.tauri.app/start/prerequisites/)
+
+<a id="run-from-source"></a>
 
 ### 从源码运行
 
@@ -123,7 +129,7 @@ macOS 构建产出 `.app` 和 `.dmg`；Windows 构建产出当前用户级 NSIS 
 
 桌面层刻意保持狭窄，使上游 Harness 改进可以持续迁移而无需重写。通用 Harness 问题应提交到[上游仓库](https://github.com/deepseek-ai/deepseek-harness)；桌面打包、原生生命周期与桌面 UX 问题则应提交到本仓库。
 
-开发约定见 [CONTRIBUTING.md](CONTRIBUTING.md)、[AGENTS.md](AGENTS.md) 与[开发指南](docs/development.md)。
+开发约定见 [CONTRIBUTING.md](CONTRIBUTING.zh.md)、[AGENTS.md](AGENTS.md) 与[开发指南](docs/development.zh.md)。
 
 ## 许可证
 

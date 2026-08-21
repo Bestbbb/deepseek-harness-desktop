@@ -2,7 +2,7 @@
 
 [English](desktop.md) | 中文
 
-桌面子系统是 Harness Host 与拥有其进程的原生应用之间一项可选的[能力 seam](../../.agents/notes/implemented/architecture/2026-06-13-capability-seams.md)。Service Definition（[dsh-desktop](../../packages/desktop/desktop)）只公开 `ctx.desktop`；经过认证的回环 Service Provider（[dsh-desktop-native](../../packages/desktop/desktop-native)）把这份窄接口转发给 Tauri 宿主。浏览器与 headless 组合不会加载这两个包。
+桌面子系统是 Harness Host 与拥有其进程的原生应用之间一项可选的[能力 seam](../../.agents/notes/implemented/architecture/2026-06-13-capability-seams.zh.md)。Service Definition（[dsh-desktop](../../packages/desktop/desktop)）只公开 `ctx.desktop`；经过认证的回环 Service Provider（[dsh-desktop-native](../../packages/desktop/desktop-native)）把这份窄接口转发给 Tauri 宿主。浏览器与 headless 组合不会加载这两个包。
 
 ## 边界
 
@@ -16,7 +16,7 @@
 
 ## Cordis API
 
-Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnpm run verify-cordis-catalog` in doc-sync; regenerate with `pnpm run gen-cordis-catalog`) — this section is byte-identical in both language sides of the page. Signature blocks use a `ts cordis-catalog` fence and keep the original source JSDoc; dispatch modes are defined in the [primer](../cordis-primer.md#dispatch-modes), and the framework-inherited `ctx` API lives in [cordis-api/inherited.md](../cordis-api/inherited.md).
+Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnpm run verify-cordis-catalog` in doc-sync; regenerate with `pnpm run gen-cordis-catalog`) — the language sides differ only in locale-specific paired document paths. Signature blocks use a `ts cordis-catalog` fence and keep the original source JSDoc; dispatch modes are defined in the [primer](../cordis-primer.zh.md#dispatch-modes), and the framework-inherited `ctx` API lives in [cordis-api/inherited.md](../cordis-api/inherited.md).
 
 <a id="ctxdesktop--desktophost-abstract-seam"></a>
 
@@ -52,5 +52,5 @@ abstract notify(notification: DesktopNotification): Promise<void>
 abstract setAutostart(enabled: boolean): Promise<void>
 ```
 
-Source: [`packages/desktop/desktop/src/index.ts:33`](../../packages/desktop/desktop/src/index.ts)
+Source: [`packages/desktop/desktop/src/index.ts`](../../packages/desktop/desktop/src/index.ts)
 <!-- END GENERATED cordis-surface -->

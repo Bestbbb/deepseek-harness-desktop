@@ -2,7 +2,7 @@ name: CI
 
 # The upstream repository uses private larger-runner and self-hosted pools that
 # are not available to an independent community distribution. Keep one
-# comprehensive, keyless aggregate on GitHub-hosted Linux; the separate Desktop
+# portable, keyless gates on GitHub-hosted Linux; the separate Desktop
 # workflow owns target-native macOS and Windows packaging.
 on:
   push:

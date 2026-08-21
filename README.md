@@ -6,7 +6,7 @@ English | [中文](README.zh.md)
 
 Harness Desktop is an unofficial community distribution built on [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) and Tauri 2. It runs the full Harness agent runtime locally, adds a native desktop lifecycle, and keeps the existing TypeScript and React product core instead of shipping a second agent implementation.
 
-> **Important:** This project is not affiliated with or endorsed by DeepSeek. It currently tracks the upstream `dsh-v0.1.0-rc.8` developer preview, where compatibility-breaking changes are expected.
+> **Important:** This project is not affiliated with or endorsed by DeepSeek. It currently tracks the upstream `dsh-v0.1.1-rc.1` developer preview, where compatibility-breaking changes are expected.
 
 ## Why this exists
 
@@ -29,6 +29,8 @@ This is not a full Rust rewrite and it is not a GPUI-native interface. It is a l
 - Custom OpenAI-compatible providers, self-hosted endpoints, and company gateways without writing a new adapter
 - Multimodal image input when the selected provider/model declares image capability
 - Local sessions, tools, MCP, subagents, workflows, skills, and permission controls
+- Profile bundles, installable Cordis plugins, and the upstream read-only plugin inventory
+- Optional official Codex and Claude Code subagent bundles; each uses the corresponding locally installed and authenticated product CLI and is not bundled by default
 - Isolated desktop data directory, separate from an existing `dsh` CLI profile
 - Native macOS and Windows packaging, with target-native CI
 

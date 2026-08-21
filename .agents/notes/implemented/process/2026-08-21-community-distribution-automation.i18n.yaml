@@ -3,4 +3,4 @@
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-08-21-community-distribution-automation.md
 2026-08-21-community-distribution-automation.md: e5c333458ebbe9805c5a54085fc1d9bf639e834e
-2026-08-21-community-distribution-automation.zh.md: 97a9277c981a6ef03d907bbaa2e06e99a9179467
+2026-08-21-community-distribution-automation.zh.md: 9eeba096d0ba7cf5ce5dadb8de10da8d36cbd760

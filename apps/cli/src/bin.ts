@@ -24,7 +24,8 @@ function readVersion(): string {
   return typeof manifest.version === 'string' ? manifest.version : '0.0.0'
 }
 
-const invocation = parseDshArgs(process.argv.slice(2), readVersion())
+const version = readVersion()
+const invocation = parseDshArgs(process.argv.slice(2), version)
 
 switch (invocation.mode) {
   case 'profile': {
@@ -39,7 +40,7 @@ switch (invocation.mode) {
   }
   case 'plugin': {
     const { runPlugin } = await import('./plugin.ts')
-    process.exit(runPlugin(invocation.profile, invocation.args))
+    process.exit(runPlugin(invocation.profile, invocation.args, version))
     break
   }
   case 'dump-config': {

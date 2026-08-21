@@ -1,7 +1,8 @@
 /**
  * `dsh plugin --profile <name> <args...>` — profile plugin management as a
- * thin pnpm forwarder: initialize the profile on first use, run
- * `pnpm <args...>` in the profile directory, then reconcile the
+ * thin pnpm forwarder: initialize the profile on first use, align bare
+ * first-party `add` specs to this CLI release, run `pnpm <args...>` in the
+ * profile directory, then reconcile the
  * `dsh.profile.bundles` layer list against the installed state (a dependency
  * resolving to a package that declares `dsh.bundle` joins the layer stack; a
  * removed or bundle-less dependency leaves it). Reconciling by installed
@@ -26,6 +27,26 @@ import {
 import { INSTALL_ANCHOR } from './profile-boot.ts'
 
 const NAME = 'dsh'
+const BARE_FIRST_PARTY_PACKAGE = /^@deepseek-ai\/dsh-[a-z0-9][a-z0-9-]*$/
+
+/**
+ * Keep a versionless first-party plugin on the same release as its Host.
+ * npm's stable `latest` tag can intentionally lag the prerelease `next` tag;
+ * resolving a bare rc plugin through `latest` can therefore install an older,
+ * ABI-incompatible dependency graph. An explicit version, tag, alias, URL, or
+ * filesystem spec remains fully user-owned, as do all third-party packages.
+ * @param args - forwarded pnpm arguments.
+ * @param version - the running dsh CLI version.
+ * @returns arguments with bare first-party add specs pinned to `version`.
+ */
+export function alignFirstPartyAddSpecs(args: readonly string[], version: string): string[] {
+  if (args[0] !== 'add') return [...args]
+  return args.map((argument, index) => (
+    index > 0 && BARE_FIRST_PARTY_PACKAGE.test(argument)
+      ? `${argument}@${version}`
+      : argument
+  ))
+}
 
 /**
  * Whether a resolved dependency exports a profile patch, i.e. is a bundle.
@@ -115,9 +136,10 @@ function anchorPathSpec(argument: string, cwd: string): string {
  * Run one `dsh plugin` invocation: init if needed, forward to pnpm, reconcile.
  * @param profile - the profile name.
  * @param args - pnpm arguments with relative path specs anchored to the invoking directory.
+ * @param version - the running dsh CLI version used to align bare first-party add specs.
  * @returns the pnpm exit code.
  */
-export function runPlugin(profile: string, args: readonly string[]): number {
+export function runPlugin(profile: string, args: readonly string[], version: string): number {
   const dir = resolveProfileDir(profile)
   if (!existsSync(join(dir, 'package.json'))) {
     initProfile(dir, PROFILE_TEMPLATES[profile] ?? DEFAULT_PROFILE_BUNDLES)
@@ -126,8 +148,16 @@ export function runPlugin(profile: string, args: readonly string[]): number {
   const before = readProfileManifest(NAME, dir)
   // Windows resolves pnpm through its .cmd shim, which spawn() refuses
   // without a shell since the CVE-2024-27980 hardening.
-  const result = spawnSync('pnpm', args.map(argument => anchorPathSpec(argument, process.cwd())), {
+  // A profile is deliberately a one-package workspace root. pnpm 11 rejects
+  // dependency mutations there unless the root check is explicitly waived;
+  // dsh owns this workspace, so waive it for the managed child without
+  // changing forwarded argv (non-mutating verbs such as `root` do not accept
+  // pnpm's `--workspace-root` switch uniformly).
+  const forwardedArgs = alignFirstPartyAddSpecs(args, version)
+    .map(argument => anchorPathSpec(argument, process.cwd()))
+  const result = spawnSync('pnpm', forwardedArgs, {
     cwd: dir,
+    env: { ...process.env, npm_config_ignore_workspace_root_check: 'true' },
     stdio: 'inherit',
     shell: process.platform === 'win32',
   })
