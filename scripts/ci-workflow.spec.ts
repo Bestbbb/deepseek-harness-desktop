@@ -37,7 +37,14 @@ describe('CI workflow', () => {
         'runs-on': 'ubuntu-latest',
         'timeout-minutes': 60,
       })
-      expect(validation.steps.some(step => isRecord(step) && step.run === 'pnpm run check:ci')).toBe(true)
+      const portable = validation.steps.find(step => isRecord(step) && step.name === 'Run portable keyless checks')
+      if (!isRecord(portable) || typeof portable.run !== 'string') {
+        throw new TypeError('Community validation job must define portable keyless checks')
+      }
+      expect(portable.run).toContain('pnpm run check:ci:static')
+      expect(portable.run).toContain('pnpm run check:ci:artifacts')
+      expect(portable.run).toContain('pnpm run check:ci:lint:contracts-ready')
+      expect(portable.run).toContain('pnpm run check:node-compat')
       return
     }
     if (!isRecord(workflow.jobs)
@@ -209,7 +216,14 @@ describe('CI workflow', () => {
     if (isRecord(workflow.jobs) && isRecord(workflow.jobs.validation)) {
       const validation = workflow.jobs.validation
       if (!Array.isArray(validation.steps)) throw new TypeError('Community validation job must define steps')
-      expect(validation.steps.some(step => isRecord(step) && step.run === 'pnpm run check:ci')).toBe(true)
+      const portable = validation.steps.find(step => isRecord(step) && step.name === 'Run portable keyless checks')
+      if (!isRecord(portable) || typeof portable.run !== 'string') {
+        throw new TypeError('Community validation job must define portable keyless checks')
+      }
+      expect(portable.run).toContain('pnpm run check:ci:static')
+      expect(portable.run).toContain('pnpm run check:ci:artifacts')
+      expect(portable.run).toContain('pnpm run check:ci:lint:contracts-ready')
+      expect(portable.run).toContain('pnpm run check:node-compat')
       return
     }
     const pythonRuntime = workflowJob(workflow, 'python-runtime')

@@ -12,7 +12,7 @@ Status: implemented
 
 Issue policy 与 Issue lifecycle 工作流文件保留为只能手动运行的说明文件，以便同步上游时理解差异，但不订阅 Issue、评审或 PR 事件。在本仓库定义自己的策略和项目自动化之前，社区协作使用 GitHub 的普通 Issue 与 PR 功能。
 
-主 CI 工作流以标准 GitHub-hosted `ubuntu-latest` runner 上的一组完整无密钥门禁，替换上游的企业 runner 矩阵。它在 PR、`main` push 和明确手动派发时运行，针对规格更小的公共 runner 限制门禁与测试并发，并执行 `pnpm run check:ci`。独立的 Desktop 工作流负责 macOS 和 Windows 目标平台原生测试与打包。
+主 CI 工作流以标准 GitHub-hosted `ubuntu-latest` runner 上的一组可移植无密钥门禁，替换上游的企业 runner 矩阵。它在 PR、`main` push 和明确手动派发时运行，针对规格更小的公共 runner 限制门禁与测试并发，并执行上游 `check:ci:static`、`check:ci:artifacts`、`check:ci:lint:contracts-ready` 与 `check:node-compat` 门禁。企业聚合中的完整覆盖率、快照与持久 PowerShell 清单仍由上游私有 runner 负责；独立的 Desktop 工作流负责 macOS 和 Windows 目标平台原生测试与打包。
 
 独立的[真实 API e2e 工作流](../testing/2026-06-19-real-api-e2e-ci.md)只能手动运行。普通 push 和 PR 运行无密钥检查；维护者配置 `DEEPSEEK_API_KEY_EXTERNAL` 后，可以明确触发真实测试套件。它仍通过 preflight 拒绝缺少密钥的运行，因此主动请求的真实 API 测试不会产生虚假的绿色结果。
 
