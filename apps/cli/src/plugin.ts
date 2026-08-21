@@ -126,8 +126,14 @@ export function runPlugin(profile: string, args: readonly string[]): number {
   const before = readProfileManifest(NAME, dir)
   // Windows resolves pnpm through its .cmd shim, which spawn() refuses
   // without a shell since the CVE-2024-27980 hardening.
+  // A profile is deliberately a one-package workspace root. pnpm 11 rejects
+  // dependency mutations there unless the root check is explicitly waived;
+  // dsh owns this workspace, so waive it for the managed child without
+  // changing forwarded argv (non-mutating verbs such as `root` do not accept
+  // pnpm's `--workspace-root` switch uniformly).
   const result = spawnSync('pnpm', args.map(argument => anchorPathSpec(argument, process.cwd())), {
     cwd: dir,
+    env: { ...process.env, npm_config_ignore_workspace_root_check: 'true' },
     stdio: 'inherit',
     shell: process.platform === 'win32',
   })

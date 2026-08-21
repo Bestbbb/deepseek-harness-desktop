@@ -16,6 +16,8 @@ Harness Desktop 最初基于 `dsh-v0.1.0-rc.8`，而上游 `dsh-v0.1.1-rc.1` 已
 
 Codex 与 Claude Code 仍是彼此独立的可选上游 Profile Bundle：`@deepseek-ai/dsh-subagent-codex` 和 `@deepseek-ai/dsh-subagent-claude-code`。它们不会进入默认桌面生产闭包。安装其中一个并重启 Profile 后，其休眠 Host provider 才会可用；复制的 Agent Preset 还必须单独启用对应的 `subagent_codex` 或 `subagent_claude_code` 工具。每个 provider 使用自己固定版本的产品运行时和用户对应的产品登录态；Harness Desktop 不收集这些产品凭据，也不会在工具调用前启动 provider。
 
+插件转发器会在自己管理的子进程范围内，明确豁免 pnpm 的 workspace root 变更保护。Profile 本来就是只有一个 package 的 workspace；如果没有这项局部设置，pnpm 11 会拒绝在根目录执行 `add` 与 `remove`，其中也包括安装可选子代理 Bundle。这个环境覆盖不会改变转发参数，因此非变更类命令仍保持原有语义，用户也不需要自行添加 pnpm 的 `-w` 参数。
+
 本次及后续上游合并都继续保留[社区自动化策略](2026-08-21-community-distribution-automation.zh.md)这层有意覆盖：标准公共 runner 替代上游私有 runner，依赖上游组织的 Issue Project 变更保持为手动 stub，带凭据的真实提供方 E2E 仍然只能手动运行。
 
 ## 考虑过的替代方案
@@ -30,4 +32,5 @@ Codex 与 Claude Code 仍是彼此独立的可选上游 Profile Bundle：`@deeps
 - 桌面应用无需第二套实现即可获得 rc.1 的上游提供方、多模态、授权、Profile、插件和子代理框架。
 - Tauri 与经过认证的本地主机边界继续和普通 Web、headless Profile 隔离。
 - Codex 与 Claude Code 在显式安装 Profile Bundle、重启 Profile、启用 Agent Preset 并完成对应产品认证后可以作为子代理；仅完成同步不会静默授予任何一个工具。
+- 无论从独立 CLI，还是由 pnpm 启动的测试或开发进程执行，Profile 插件安装在 pnpm 11 下都保持可用。
 - 未来的上游标签继续合并进同一历史，并必须保留已记录的社区与桌面覆盖层，而不是手工复制零散上游文件。

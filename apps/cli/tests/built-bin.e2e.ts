@@ -643,7 +643,7 @@ describe.skipIf(!existsSync(dshBin))('dsh BUILT bin (node lib/bin.js, no tsx)', 
         reject: false,
         env: { DSH_HOME: home },
       })
-      expect(result.exitCode).toBe(0)
+      expect(result.exitCode, `stdout:\n${result.stdout}\nstderr:\n${result.stderr}`).toBe(0)
       const manifest = JSON.parse(readFileSync(join(home, 'profiles', 'anchor', 'package.json'), 'utf8')) as {
         dependencies: Record<string, string>
         dsh: { profile: { bundles: string[] } }
