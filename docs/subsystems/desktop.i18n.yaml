@@ -3,4 +3,4 @@
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/subsystems/desktop.md
 desktop.md: 9cf371eaef7a1ea22ad37cd7b0879b92f30ef5ea
-desktop.zh.md: a776f3be2475e1883cb4605e7445d13b10ef300a
+desktop.zh.md: 79ee8895ad5fd62eb00012c634dfedd651493abd

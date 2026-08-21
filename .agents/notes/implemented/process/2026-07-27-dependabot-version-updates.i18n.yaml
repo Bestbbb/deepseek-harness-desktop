@@ -3,4 +3,4 @@
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-07-27-dependabot-version-updates.md
 2026-07-27-dependabot-version-updates.md: a3c0d0eb695b7985389b126edb4d96344e5d40e9
-2026-07-27-dependabot-version-updates.zh.md: 3af28198e710a03477af59be0f9dac246841d508
+2026-07-27-dependabot-version-updates.zh.md: a1b85ea0e6d5faf352c52f3cec21b95a232a90b8

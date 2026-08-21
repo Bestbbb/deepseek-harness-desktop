@@ -2,7 +2,7 @@ name: CI
 
 # The upstream repository uses private larger-runner and self-hosted pools that
 # are not available to an independent community distribution. Keep one
-# comprehensive, keyless aggregate on GitHub-hosted Linux; the separate Desktop
+# portable, keyless gates on GitHub-hosted Linux; the separate Desktop
 # workflow owns target-native macOS and Windows packaging.
 on:
   push:
@@ -53,7 +53,11 @@ jobs:
       - name: Prepare bubblewrap
         run: bash scripts/prepare-ci-bubblewrap.sh
 
-      - name: Run comprehensive keyless checks
+      - name: Run portable keyless checks
         env:
           DSH_ARCHIVE_BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before || github.sha }}
-        run: pnpm run check:ci
+        run: |
+          pnpm run check:ci:static
+          pnpm run check:ci:artifacts
+          pnpm run check:ci:lint:contracts-ready
+          pnpm run check:node-compat
