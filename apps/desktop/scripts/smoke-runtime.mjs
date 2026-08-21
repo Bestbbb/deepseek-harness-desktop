@@ -3,7 +3,7 @@
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { spawn } from 'node:child_process'
 import { createInterface } from 'node:readline'
 
@@ -25,7 +25,7 @@ const logs = []
 let patchSource = await readFile(patch, 'utf8')
 for (const [placeholder, modulePath] of [
   ['__DSH_DESKTOP_NATIVE_ENTRY__', join(runtime, 'app/node_modules/@deepseek-ai/dsh-desktop-native/lib/index.js')],
-]) patchSource = patchSource.replaceAll(placeholder, JSON.stringify(modulePath))
+]) patchSource = patchSource.replaceAll(placeholder, JSON.stringify(pathToFileURL(modulePath).href))
 await writeFile(renderedPatch, patchSource)
 const child = spawn(node, [entry, 'web', '--patch', renderedPatch, '--port', '0'], {
   cwd: join(runtime, 'app'),

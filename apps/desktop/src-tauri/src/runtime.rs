@@ -3,7 +3,7 @@
 use std::{
     io::{BufRead, BufReader},
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream},
-    path::PathBuf,
+    path::{Path, PathBuf},
     process::{Child, Command, Stdio},
     sync::{mpsc, Arc},
     thread,
@@ -242,7 +242,8 @@ fn materialize_patch(config: &RuntimeConfig) -> Result<PathBuf, String> {
                 path.display()
             )
         })?;
-        let yaml_string = serde_json::to_string(&absolute.to_string_lossy())
+        let module_url = module_file_url(&absolute)?;
+        let yaml_string = serde_json::to_string(module_url.as_str())
             .map_err(|error| format!("Could not encode desktop module path: {error}"))?;
         rendered = rendered.replace(placeholder, &yaml_string);
     }
@@ -254,6 +255,15 @@ fn materialize_patch(config: &RuntimeConfig) -> Result<PathBuf, String> {
         )
     })?;
     Ok(output)
+}
+
+fn module_file_url(path: &Path) -> Result<Url, String> {
+    Url::from_file_path(path).map_err(|_| {
+        format!(
+            "Could not encode desktop module {} as a file URL",
+            path.display()
+        )
+    })
 }
 
 fn pump_lines<R, F>(reader: R, sender: mpsc::Sender<OutputEvent>, wrap: F)
@@ -389,7 +399,7 @@ impl Drop for ManagedChild {
 
 #[cfg(test)]
 mod tests {
-    use super::parse_readiness;
+    use super::{module_file_url, parse_readiness};
 
     #[cfg(unix)]
     use super::{configure_process_group, ManagedChild};
@@ -407,6 +417,19 @@ mod tests {
     fn rejects_non_loopback_and_unrelated_output() {
         assert!(parse_readiness("dsh web: http://localhost:43123").is_none());
         assert!(parse_readiness("listening on http://127.0.0.1:43123").is_none());
+    }
+
+    #[test]
+    fn encodes_desktop_modules_as_file_urls() {
+        let module = std::env::current_dir()
+            .expect("current directory")
+            .join("desktop-native.js");
+        let url = module_file_url(&module).expect("module file URL");
+
+        assert_eq!(url.scheme(), "file");
+        assert_eq!(url.to_file_path().expect("file URL path"), module);
+        #[cfg(windows)]
+        assert!(url.as_str().starts_with("file:///"));
     }
 
     #[cfg(unix)]
