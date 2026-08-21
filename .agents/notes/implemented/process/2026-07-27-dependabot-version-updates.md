@@ -10,7 +10,7 @@ Maintained registry and GitHub Actions dependencies need a regular update path. 
 
 ## Decision
 
-The default branch carries [`.github/dependabot.yml`](../../../../.github/dependabot.yml) with weekly version-update checks for the root pnpm workspace, including `native/landlock-run`, the `python/sdk` uv project, and GitHub Actions. Every entry sets `cooldown.default-days` to `30`, so a version release becomes eligible only after it is at least 30 days old and is proposed on the next weekly check. The [in-repository Landlock release decision](2026-08-06-in-repository-landlock-release.md) owns the shared-workspace boundary.
+The default branch carries [`.github/dependabot.yml`](../../../../.github/dependabot.yml) with weekly version-update checks for the root pnpm workspace, including `native/landlock-run`, the `python/sdk` uv project, and GitHub Actions. Every entry sets `cooldown.default-days` to `30`, so a version release becomes eligible only after it is at least 30 days old and is proposed on the next weekly check. Each ecosystem groups all matching version updates into one pull request and limits version updates to one open request; security updates remain outside that limit. The [in-repository Landlock release decision](2026-08-06-in-repository-landlock-release.md) owns the shared-workspace boundary, while the [community distribution automation decision](2026-08-21-community-distribution-automation.md) owns this repository's reduced-noise profile.
 
 The root pnpm version-update scan excludes `vendor/**`, whose source and manifests move only through the [vendoring procedure](../../../../vendor/README.md). GitHub applies `exclude-paths` only to version updates; a security pull request that touches a vendored manifest is replaced through the vendoring procedure instead of being merged as generated. Dependabot pull requests receive the repository's `kind/dependency` kind and `area/infra` area labels, run the normal pull-request checks, and remain subject to maintainer review; this automation does not merge them.
 
@@ -28,7 +28,7 @@ The pnpm entry keeps the unified workspace on its pinned pnpm 11 instead of intr
 
 ## Consequences
 
-- Routine dependency updates arrive in small reviewable pull requests after the quarantine instead of requiring periodic manual discovery.
+- Routine dependency updates arrive in one reviewable grouped pull request per ecosystem after the quarantine instead of requiring periodic manual discovery.
 - A release normally appears between 30 and 36 days after publication because eligibility is evaluated weekly.
 - Dependabot does not delay security proposals; repository checks can still block unrelated fresh transitives, and review preserves the vendoring boundary.
 - Maintainers still decide whether to merge each update and diagnose any provider limitation reported by the pnpm 11 update job.

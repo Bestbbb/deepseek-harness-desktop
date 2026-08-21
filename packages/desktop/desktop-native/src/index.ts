@@ -66,19 +66,37 @@ export class NativeDesktopHost extends DesktopHost {
     this.config = resolveConfig(config)
   }
 
+  /**
+   * Probe the native bridge for desktop availability.
+   * @returns The current native desktop status after the bridge responds.
+   */
   async status(): Promise<DesktopStatus> {
     await this.request('GET', '/v1/status')
     return { available: true }
   }
 
+  /**
+   * Ask the native shell to reveal and focus its main window.
+   * @returns After the native shell acknowledges the request.
+   */
   show(): Promise<void> {
     return this.request('POST', '/v1/show')
   }
 
+  /**
+   * Deliver a user-visible notification through the native shell.
+   * @param notification - Notification title and optional body to display.
+   * @returns After the native shell accepts the notification.
+   */
   notify(notification: DesktopNotification): Promise<void> {
     return this.request('POST', '/v1/notify', notification)
   }
 
+  /**
+   * Enable or disable native login startup for the desktop application.
+   * @param enabled - Whether the application should start at login.
+   * @returns After the operating system records the state.
+   */
   setAutostart(enabled: boolean): Promise<void> {
     return this.request('POST', '/v1/autostart', { enabled })
   }

@@ -6,6 +6,19 @@ import { describe, expect, it } from 'vitest'
 const root = resolve(import.meta.dirname, '..')
 const runnerPrivatePnpmDestination = '${{ runner.temp }}/setup-pnpm'
 
+function expectPortableCommunityChecks(validation: Record<string, unknown>): void {
+  if (!Array.isArray(validation.steps)) throw new TypeError('Community validation job must define steps')
+  const steps: unknown[] = validation.steps
+  const portable: unknown = steps.find(step => isRecord(step) && step.name === 'Run portable keyless checks')
+  if (!isRecord(portable) || typeof portable.run !== 'string') {
+    throw new TypeError('Community validation job must define portable keyless checks')
+  }
+  expect(portable.run).toContain('pnpm run check:ci:static')
+  expect(portable.run).toContain('pnpm run check:ci:artifacts')
+  expect(portable.run).toContain('pnpm run check:ci:lint:contracts-ready')
+  expect(portable.run).toContain('pnpm run check:node-compat')
+}
+
 describe('CI workflow', () => {
   it('isolates every pnpm action setup destination per runner', () => {
     const workflow: unknown = yaml.load(readFileSync(resolve(root, '.github/workflows/ci.yml'), 'utf8'))
@@ -27,8 +40,18 @@ describe('CI workflow', () => {
     }
   })
 
-  it('keeps a required Wine Windows job, a non-blocking native Windows job with failover, and a master-only standby', () => {
+  it('uses the community hosted job or the upstream cross-platform topology', () => {
     const workflow = loadWorkflow('.github/workflows/ci.yml')
+    if (isRecord(workflow.jobs) && isRecord(workflow.jobs.validation)) {
+      const validation = workflow.jobs.validation
+      expect(validation).toMatchObject({
+        name: 'community / keyless',
+        'runs-on': 'ubuntu-latest',
+        'timeout-minutes': 60,
+      })
+      expectPortableCommunityChecks(validation)
+      return
+    }
     if (!isRecord(workflow.jobs)
       || !isRecord(workflow.jobs.windows)
       || !isRecord(workflow.jobs['windows-native'])
@@ -108,10 +131,20 @@ describe('CI workflow', () => {
     expect(aggregate['runs-on']).toContain('vm-backup')
   })
 
-  it('exempts push from cancellation, so one master merge does not cancel the running drill', () => {
+  it('uses community cancellation or preserves the upstream push drill', () => {
     const workflow = loadWorkflow('.github/workflows/ci.yml')
     if (!isRecord(workflow.jobs) || !isRecord(workflow.concurrency)) {
       throw new TypeError('CI workflow must define jobs and a workflow-level concurrency block')
+    }
+
+    if (isRecord(workflow.jobs.validation)) {
+      expect(workflow.concurrency['cancel-in-progress']).toBe(true)
+      expect(workflow.on).toMatchObject({
+        push: { branches: ['main'] },
+        pull_request: null,
+        workflow_dispatch: null,
+      })
+      return
     }
 
     // Cancellation applies to the whole superseded RUN, so this has to be
@@ -183,8 +216,12 @@ describe('CI workflow', () => {
     expect(config).not.toContain('packages/lsp/lsp-stdio/src/instance.ts')
   })
 
-  it('requires one release-shaped Python runtime target on every pull request', () => {
+  it('runs the community aggregate or requires the upstream Python runtime target', () => {
     const workflow = loadWorkflow('.github/workflows/ci.yml')
+    if (isRecord(workflow.jobs) && isRecord(workflow.jobs.validation)) {
+      expectPortableCommunityChecks(workflow.jobs.validation)
+      return
+    }
     const pythonRuntime = workflowJob(workflow, 'python-runtime')
     const aggregate = workflowJob(workflow, 'all-checks-passed')
     if (!Array.isArray(aggregate.needs)) {
@@ -239,8 +276,9 @@ describe('E2B e2e workflow', () => {
 })
 
 describe('DeepSeek e2e workflow', () => {
-  it('prepares bubblewrap from the pinned payload without a package transaction', () => {
+  it('is manual-only and prepares bubblewrap without a package transaction', () => {
     const workflow = loadWorkflow('.github/workflows/e2e.yml')
+    expect(workflow.on).toEqual({ workflow_dispatch: null })
     const e2e = workflowJob(workflow, 'e2e')
     if (!Array.isArray(e2e.steps)) throw new TypeError('DeepSeek e2e workflow must define steps')
 
@@ -400,21 +438,37 @@ describe('Python release workflows', () => {
 })
 
 describe('Issue lifecycle workflow', () => {
-  it('uses explicit review handoff events without rerunning when a draft becomes ready', () => {
+  it('keeps the upstream-only issue workflows as manual stubs', () => {
     const lifecycle = loadWorkflow('.github/workflows/issue-lifecycle.yml')
-    const lifecyclePullRequest = workflowEvent(lifecycle, 'pull_request')
-    const lifecycleReview = workflowEvent(lifecycle, 'pull_request_review')
-    const lifecycleJob = workflowJob(lifecycle, 'lifecycle')
     const policy = loadWorkflow('.github/workflows/issue-policy.yml')
-    const policyPullRequest = workflowEvent(policy, 'pull_request')
 
-    expect(lifecyclePullRequest.types).not.toContain('ready_for_review')
-    expect(lifecyclePullRequest.types).toContain('review_requested')
-    expect(lifecycleReview.types).toEqual(['submitted'])
-    expect(lifecycleJob.if).toBe(
-      "${{ github.event_name != 'pull_request_review' || (github.event.action == 'submitted' && github.event.review.state == 'changes_requested') }}",
-    )
-    expect(policyPullRequest.types).toContain('ready_for_review')
+    expect(lifecycle.on).toEqual({ workflow_dispatch: null })
+    expect(policy.on).toEqual({ workflow_dispatch: null })
+    expect(workflowJob(lifecycle, 'disabled').name).toBe('Upstream issue lifecycle is disabled')
+    expect(workflowJob(policy, 'disabled').name).toBe('Upstream issue policy is disabled')
+  })
+})
+
+describe('Dependabot configuration', () => {
+  it('groups weekly version updates and bounds each ecosystem to one open request', () => {
+    const config = loadWorkflow('.github/dependabot.yml')
+    if (!Array.isArray(config.updates)) throw new TypeError('Dependabot must define update entries')
+
+    for (const update of config.updates) {
+      if (!isRecord(update) || !isRecord(update.groups)) {
+        throw new TypeError('Each Dependabot update entry must define groups')
+      }
+      expect(update.schedule).toMatchObject({
+        interval: 'weekly',
+        day: 'monday',
+        time: '04:00',
+        timezone: 'Asia/Shanghai',
+      })
+      expect(update['open-pull-requests-limit']).toBe(1)
+      const groups = Object.values(update.groups)
+      expect(groups).toHaveLength(1)
+      expect(groups[0]).toMatchObject({ patterns: ['*'] })
+    }
   })
 })
 
