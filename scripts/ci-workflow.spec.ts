@@ -6,6 +6,19 @@ import { describe, expect, it } from 'vitest'
 const root = resolve(import.meta.dirname, '..')
 const runnerPrivatePnpmDestination = '${{ runner.temp }}/setup-pnpm'
 
+function expectPortableCommunityChecks(validation: Record<string, unknown>): void {
+  if (!Array.isArray(validation.steps)) throw new TypeError('Community validation job must define steps')
+  const steps: unknown[] = validation.steps
+  const portable: unknown = steps.find(step => isRecord(step) && step.name === 'Run portable keyless checks')
+  if (!isRecord(portable) || typeof portable.run !== 'string') {
+    throw new TypeError('Community validation job must define portable keyless checks')
+  }
+  expect(portable.run).toContain('pnpm run check:ci:static')
+  expect(portable.run).toContain('pnpm run check:ci:artifacts')
+  expect(portable.run).toContain('pnpm run check:ci:lint:contracts-ready')
+  expect(portable.run).toContain('pnpm run check:node-compat')
+}
+
 describe('CI workflow', () => {
   it('isolates every pnpm action setup destination per runner', () => {
     const workflow: unknown = yaml.load(readFileSync(resolve(root, '.github/workflows/ci.yml'), 'utf8'))
@@ -31,20 +44,12 @@ describe('CI workflow', () => {
     const workflow = loadWorkflow('.github/workflows/ci.yml')
     if (isRecord(workflow.jobs) && isRecord(workflow.jobs.validation)) {
       const validation = workflow.jobs.validation
-      if (!Array.isArray(validation.steps)) throw new TypeError('Community validation job must define steps')
       expect(validation).toMatchObject({
         name: 'community / keyless',
         'runs-on': 'ubuntu-latest',
         'timeout-minutes': 60,
       })
-      const portable = validation.steps.find(step => isRecord(step) && step.name === 'Run portable keyless checks')
-      if (!isRecord(portable) || typeof portable.run !== 'string') {
-        throw new TypeError('Community validation job must define portable keyless checks')
-      }
-      expect(portable.run).toContain('pnpm run check:ci:static')
-      expect(portable.run).toContain('pnpm run check:ci:artifacts')
-      expect(portable.run).toContain('pnpm run check:ci:lint:contracts-ready')
-      expect(portable.run).toContain('pnpm run check:node-compat')
+      expectPortableCommunityChecks(validation)
       return
     }
     if (!isRecord(workflow.jobs)
@@ -214,16 +219,7 @@ describe('CI workflow', () => {
   it('runs the community aggregate or requires the upstream Python runtime target', () => {
     const workflow = loadWorkflow('.github/workflows/ci.yml')
     if (isRecord(workflow.jobs) && isRecord(workflow.jobs.validation)) {
-      const validation = workflow.jobs.validation
-      if (!Array.isArray(validation.steps)) throw new TypeError('Community validation job must define steps')
-      const portable = validation.steps.find(step => isRecord(step) && step.name === 'Run portable keyless checks')
-      if (!isRecord(portable) || typeof portable.run !== 'string') {
-        throw new TypeError('Community validation job must define portable keyless checks')
-      }
-      expect(portable.run).toContain('pnpm run check:ci:static')
-      expect(portable.run).toContain('pnpm run check:ci:artifacts')
-      expect(portable.run).toContain('pnpm run check:ci:lint:contracts-ready')
-      expect(portable.run).toContain('pnpm run check:node-compat')
+      expectPortableCommunityChecks(workflow.jobs.validation)
       return
     }
     const pythonRuntime = workflowJob(workflow, 'python-runtime')
