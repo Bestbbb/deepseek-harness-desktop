@@ -36,9 +36,9 @@ pnpm run desktop:dev
 pnpm run desktop:build
 ```
 
-macOS 会产出 `.app` 和 `.dmg`；Windows 会产出 MSI 和用户级 NSIS 安装包。`.github/workflows/desktop.yml` 在 macOS arm64 与 Windows x64 runner 上执行同一套准备、冒烟、Rust 测试和目标平台原生打包流程。
+macOS 会产出 `.app` 和 `.dmg`；Windows 会产出用户级 NSIS `.exe` 安装包。随包 Harness Runtime 包含超过 32,000 个文件，因此 Windows 构建会主动避开 WiX/MSI 的实际文件表限制。`.github/workflows/desktop.yml` 在 macOS arm64 与 Windows x64 runner 上执行同一套准备、冒烟、Rust 测试和目标平台原生打包流程。
 
-也可以按 Tauri 的 `cargo-xwin` 备用方案，在 macOS 或 Linux 上交叉构建 Windows x64 NSIS 安装器。安装 `cargo-xwin`、LLVM/LLD 和 `makensis` 后，先准备 Windows 依赖闭包，再调用 Tauri；MSI 仍然只能在 Windows 上生成。
+也可以按 Tauri 的 `cargo-xwin` 备用方案，在 macOS 或 Linux 上交叉构建 Windows x64 NSIS 安装器。安装 `cargo-xwin`、LLVM/LLD 和 `makensis` 后，先准备 Windows 依赖闭包，再调用 Tauri。
 
 ```sh
 DSH_DESKTOP_TARGET_PLATFORM=win32 DSH_DESKTOP_TARGET_ARCH=x64 \

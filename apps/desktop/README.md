@@ -36,9 +36,9 @@ The release path builds installers on their target operating system:
 pnpm run desktop:build
 ```
 
-macOS produces an `.app` and `.dmg`; Windows produces MSI and per-user NSIS installers. `.github/workflows/desktop.yml` runs the same preparation, smoke, Rust tests, and target-native packaging on macOS arm64 and Windows x64 runners.
+macOS produces an `.app` and `.dmg`; Windows produces a per-user NSIS `.exe` installer. The bundled Harness runtime contains more than 32,000 files, so the Windows profile intentionally avoids WiX/MSI's practical file-table limits. `.github/workflows/desktop.yml` runs the same preparation, smoke, Rust tests, and target-native packaging on macOS arm64 and Windows x64 runners.
 
-Tauri's `cargo-xwin` fallback can also produce the Windows x64 NSIS installer from macOS or Linux. Install `cargo-xwin`, LLVM/LLD, and `makensis`, then prepare a Windows dependency closure before invoking Tauri. MSI generation remains Windows-only.
+Tauri's `cargo-xwin` fallback can also produce the Windows x64 NSIS installer from macOS or Linux. Install `cargo-xwin`, LLVM/LLD, and `makensis`, then prepare a Windows dependency closure before invoking Tauri.
 
 ```sh
 DSH_DESKTOP_TARGET_PLATFORM=win32 DSH_DESKTOP_TARGET_ARCH=x64 \

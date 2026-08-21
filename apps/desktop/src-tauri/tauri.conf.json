@@ -44,9 +44,6 @@
         "type": "downloadBootstrapper",
         "silent": true
       },
-      "wix": {
-        "version": "0.1.0.8"
-      },
       "nsis": {
         "installMode": "currentUser"
       }

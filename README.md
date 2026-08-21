@@ -89,7 +89,7 @@ pnpm run desktop:dev
 pnpm run desktop:build
 ```
 
-macOS builds produce an `.app` and `.dmg`. Windows builds produce MSI and per-user NSIS installers. Installers should be built on their target operating system; the repository CI runs the same preparation, smoke tests, Rust tests, and packaging steps on macOS arm64 and Windows x64.
+macOS builds produce an `.app` and `.dmg`. Windows builds produce a per-user NSIS `.exe` installer. The bundled Harness runtime contains more than 32,000 files, so the Windows profile intentionally avoids WiX/MSI's practical file-table limits. Installers should be built on their target operating system; the repository CI runs the same preparation, smoke tests, Rust tests, and packaging steps on macOS arm64 and Windows x64.
 
 ## Current release status
 
