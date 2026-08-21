@@ -180,6 +180,27 @@ async function pruneForeignNodePtyPrebuilds() {
   }
 }
 
+async function pruneDevelopmentArtifacts(directory) {
+  let pruned = 0
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const path = join(directory, entry.name)
+    if (entry.isDirectory()) {
+      pruned += await pruneDevelopmentArtifacts(path)
+      continue
+    }
+    if (
+      entry.name.endsWith('.map')
+      || entry.name.endsWith('.d.ts')
+      || entry.name.endsWith('.d.mts')
+      || entry.name.endsWith('.d.cts')
+    ) {
+      await rm(path, { force: true })
+      pruned += 1
+    }
+  }
+  return pruned
+}
+
 function includeInStaging(source) {
   const path = relative(repoRoot, source)
   if (path === '') return true
@@ -236,6 +257,7 @@ await mkdir(dirname(nodeOutput), { recursive: true })
 await deployRuntime()
 await installNodeRuntime()
 await pruneForeignNodePtyPrebuilds()
+const prunedDevelopmentArtifacts = await pruneDevelopmentArtifacts(appOutput)
 await assertRuntimeTarget()
 await copyFile(join(desktopDir, 'runtime/desktop.cordis.yml'), join(output, 'desktop.cordis.yml'))
 await copyFile(join(repoRoot, 'THIRD_PARTY_NOTICES.md'), join(output, 'THIRD_PARTY_NOTICES.md'))
@@ -248,3 +270,4 @@ await writeFile(join(output, 'runtime-manifest.json'), `${JSON.stringify({
 }, null, 2)}\n`)
 
 console.log(`desktop runtime (${targetPlatform}-${targetArch}): ${output}`)
+console.log(`pruned ${prunedDevelopmentArtifacts} declaration/source-map file(s) from the desktop runtime`)

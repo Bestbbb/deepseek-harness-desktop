@@ -80,7 +80,21 @@ jobs:
         run: cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml
 
       - name: Build desktop installers
+        if: runner.os != 'Windows'
         run: pnpm --filter @deepseek-ai/dsh-desktop-app run tauri:build
+
+      - name: Build desktop installer from a short Windows path
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          subst R: "$env:GITHUB_WORKSPACE"
+          try {
+            Set-Location R:\
+            pnpm --filter @deepseek-ai/dsh-desktop-app run tauri:build
+          } finally {
+            Set-Location $env:GITHUB_WORKSPACE
+            subst R: /D
+          }
 
       - name: Upload macOS application and DMG
         if: runner.os == 'macOS'
