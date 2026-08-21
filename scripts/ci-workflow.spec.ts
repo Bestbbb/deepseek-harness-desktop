@@ -27,8 +27,19 @@ describe('CI workflow', () => {
     }
   })
 
-  it('keeps a required Wine Windows job, a non-blocking native Windows job with failover, and a master-only standby', () => {
+  it('uses the community hosted job or the upstream cross-platform topology', () => {
     const workflow = loadWorkflow('.github/workflows/ci.yml')
+    if (isRecord(workflow.jobs) && isRecord(workflow.jobs.validation)) {
+      const validation = workflow.jobs.validation
+      if (!Array.isArray(validation.steps)) throw new TypeError('Community validation job must define steps')
+      expect(validation).toMatchObject({
+        name: 'community / keyless',
+        'runs-on': 'ubuntu-latest',
+        'timeout-minutes': 60,
+      })
+      expect(validation.steps.some(step => isRecord(step) && step.run === 'pnpm run check:ci')).toBe(true)
+      return
+    }
     if (!isRecord(workflow.jobs)
       || !isRecord(workflow.jobs.windows)
       || !isRecord(workflow.jobs['windows-native'])
@@ -108,10 +119,20 @@ describe('CI workflow', () => {
     expect(aggregate['runs-on']).toContain('vm-backup')
   })
 
-  it('exempts push from cancellation, so one master merge does not cancel the running drill', () => {
+  it('uses community cancellation or preserves the upstream push drill', () => {
     const workflow = loadWorkflow('.github/workflows/ci.yml')
     if (!isRecord(workflow.jobs) || !isRecord(workflow.concurrency)) {
       throw new TypeError('CI workflow must define jobs and a workflow-level concurrency block')
+    }
+
+    if (isRecord(workflow.jobs.validation)) {
+      expect(workflow.concurrency['cancel-in-progress']).toBe(true)
+      expect(workflow.on).toMatchObject({
+        push: { branches: ['main'] },
+        pull_request: null,
+        workflow_dispatch: null,
+      })
+      return
     }
 
     // Cancellation applies to the whole superseded RUN, so this has to be
@@ -183,8 +204,14 @@ describe('CI workflow', () => {
     expect(config).not.toContain('packages/lsp/lsp-stdio/src/instance.ts')
   })
 
-  it('requires one release-shaped Python runtime target on every pull request', () => {
+  it('runs the community aggregate or requires the upstream Python runtime target', () => {
     const workflow = loadWorkflow('.github/workflows/ci.yml')
+    if (isRecord(workflow.jobs) && isRecord(workflow.jobs.validation)) {
+      const validation = workflow.jobs.validation
+      if (!Array.isArray(validation.steps)) throw new TypeError('Community validation job must define steps')
+      expect(validation.steps.some(step => isRecord(step) && step.run === 'pnpm run check:ci')).toBe(true)
+      return
+    }
     const pythonRuntime = workflowJob(workflow, 'python-runtime')
     const aggregate = workflowJob(workflow, 'all-checks-passed')
     if (!Array.isArray(aggregate.needs)) {
