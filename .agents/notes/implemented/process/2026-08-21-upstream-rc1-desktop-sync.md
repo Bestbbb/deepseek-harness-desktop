@@ -18,6 +18,8 @@ Codex and Claude Code remain independent optional upstream Profile Bundles: `@de
 
 The plugin forwarder explicitly waives pnpm's workspace-root mutation guard for its managed child process. A Profile is intentionally a one-package workspace; without that scoped setting pnpm 11 rejects `add` and `remove` at the root, including installation of the optional subagent bundles. The environment override leaves forwarded arguments untouched, so non-mutating verbs keep their normal semantics and users do not need to add pnpm's `-w` flag themselves.
 
+For a bare first-party package passed to `plugin add`, the forwarder also pins the spec to the running DSH release. The npm `latest` tag intentionally lags the prerelease `next` tag for some rc.1 Bundles; resolving a bare optional provider through `latest` otherwise selects the obsolete 0.0.1 graph, whose unpublished `dsh-type-meta` dependency makes the documented install command fail. Explicit versions, tags, aliases, URLs, paths, and third-party packages remain unchanged.
+
 The [community automation policy](2026-08-21-community-distribution-automation.md) remains an intentional overlay during this and later upstream merges: standard public runners replace private upstream pools, upstream issue-project mutations remain manual stubs, and credentialed real-provider E2E stays manual-only.
 
 ## Alternatives considered
@@ -33,4 +35,5 @@ The [community automation policy](2026-08-21-community-distribution-automation.m
 - The Tauri and authenticated local-host boundaries remain isolated from ordinary Web and headless Profiles.
 - Codex and Claude Code can be used as subagent providers after explicit Profile installation, Profile restart, Agent Preset enablement, and product authentication; synchronization alone does not silently grant either tool.
 - Profile plugin installation remains usable with pnpm 11 from both the standalone CLI and pnpm-launched test or development processes.
+- Versionless first-party Bundle installation stays on the desktop runtime's DSH release instead of mixing npm release channels; users can still request another version or tag explicitly.
 - Future upstream tags are merged into the same history and must preserve the documented community and desktop overlays rather than copying individual upstream files by hand.

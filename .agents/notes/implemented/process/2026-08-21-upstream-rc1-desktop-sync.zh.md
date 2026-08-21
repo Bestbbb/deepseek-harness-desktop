@@ -18,6 +18,8 @@ Codex 与 Claude Code 仍是彼此独立的可选上游 Profile Bundle：`@deeps
 
 插件转发器会在自己管理的子进程范围内，明确豁免 pnpm 的 workspace root 变更保护。Profile 本来就是只有一个 package 的 workspace；如果没有这项局部设置，pnpm 11 会拒绝在根目录执行 `add` 与 `remove`，其中也包括安装可选子代理 Bundle。这个环境覆盖不会改变转发参数，因此非变更类命令仍保持原有语义，用户也不需要自行添加 pnpm 的 `-w` 参数。
 
+当 `plugin add` 收到未带版本的第一方 package 时，转发器还会把它固定到当前 DSH 发行版本。部分 rc.1 Bundle 的 npm `latest` 标签有意落后于预发布 `next` 标签；如果让可选 provider 的裸包名按 `latest` 解析，就会选中已经过时的 0.0.1 依赖图，其中未发布的 `dsh-type-meta` 依赖会让文档中的安装命令直接失败。用户显式指定的版本、标签、别名、URL、路径以及所有第三方 package 都不会被改写。
+
 本次及后续上游合并都继续保留[社区自动化策略](2026-08-21-community-distribution-automation.zh.md)这层有意覆盖：标准公共 runner 替代上游私有 runner，依赖上游组织的 Issue Project 变更保持为手动 stub，带凭据的真实提供方 E2E 仍然只能手动运行。
 
 ## 考虑过的替代方案
@@ -33,4 +35,5 @@ Codex 与 Claude Code 仍是彼此独立的可选上游 Profile Bundle：`@deeps
 - Tauri 与经过认证的本地主机边界继续和普通 Web、headless Profile 隔离。
 - Codex 与 Claude Code 在显式安装 Profile Bundle、重启 Profile、启用 Agent Preset 并完成对应产品认证后可以作为子代理；仅完成同步不会静默授予任何一个工具。
 - 无论从独立 CLI，还是由 pnpm 启动的测试或开发进程执行，Profile 插件安装在 pnpm 11 下都保持可用。
+- 未带版本的第一方 Bundle 安装会保持在桌面运行时对应的 DSH 发行版，不会混用 npm 发行通道；用户仍可显式指定其他版本或标签。
 - 未来的上游标签继续合并进同一历史，并必须保留已记录的社区与桌面覆盖层，而不是手工复制零散上游文件。
