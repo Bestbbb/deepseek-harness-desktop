@@ -7,9 +7,15 @@ updates:
       # Vendored Cordis sources follow vendor/README.md instead of registry updates.
       - "vendor/**"
     schedule:
-      interval: "cron"
-      cronjob: "0 4 * * *"
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
       timezone: "Asia/Shanghai"
+    open-pull-requests-limit: 1
+    groups:
+      npm-version-updates:
+        patterns:
+          - "*"
     cooldown:
       default-days: 30
     labels:
@@ -19,9 +25,15 @@ updates:
   - package-ecosystem: "uv"
     directory: "/python/sdk"
     schedule:
-      interval: "cron"
-      cronjob: "0 4 * * *"
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
       timezone: "Asia/Shanghai"
+    open-pull-requests-limit: 1
+    groups:
+      python-sdk-version-updates:
+        patterns:
+          - "*"
     cooldown:
       default-days: 30
     labels:
@@ -31,9 +43,15 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "cron"
-      cronjob: "0 4 * * *"
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
       timezone: "Asia/Shanghai"
+    open-pull-requests-limit: 1
+    groups:
+      github-actions-version-updates:
+        patterns:
+          - "*"
     cooldown:
       default-days: 30
     labels:

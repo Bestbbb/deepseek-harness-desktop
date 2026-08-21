@@ -4,6 +4,8 @@ Status: implemented
 
 [English](2026-06-19-real-api-e2e-ci.md) | 中文
 
+[社区发行仓库自动化决策](../process/2026-08-21-community-distribution-automation.md)取代了本文对独立桌面仓库的自动触发和合并信号策略。独立工作流、preflight 和 secret 卫生相关的设计依据仍然适用。
+
 ## 问题
 
 根据策略，harness 高度依赖真实 API 测试：[docs/testing.md](../../../../docs/testing.md) 指出，无密钥套件证明的是管线，而非产品；[ACP（Agent Client Protocol）inject 事故复盘（postmortem）](../../../../docs/postmortem/0001-acp-default-export-drops-inject.md)则是常设证据——178 项无密钥测试保持绿色时，真实 ACP 客户端会话却立即崩溃。真实 API e2e 套件（`pnpm run test:e2e`，即 `*.e2e.ts` 文件）的存在正是为了弥合这一缺口：它针对线上 DeepSeek API 驱动 agent（智能体）——真实模型调用、真实 bash 工具、多轮次、恢复、ACP-over-stdio。

@@ -89,7 +89,7 @@ pnpm run desktop:dev
 pnpm run desktop:build
 ```
 
-macOS 构建产出 `.app` 和 `.dmg`；Windows 构建产出 MSI 与当前用户级 NSIS 安装包。安装器应在目标操作系统上构建；仓库 CI 会在 macOS arm64 与 Windows x64 上执行相同的准备、冒烟、Rust 测试和打包步骤。
+macOS 构建产出 `.app` 和 `.dmg`；Windows 构建产出当前用户级 NSIS `.exe` 安装包。随包 Harness Runtime 包含超过 32,000 个文件，因此 Windows 构建会主动避开 WiX/MSI 的实际文件表限制。安装器应在目标操作系统上构建；仓库 CI 会在 macOS arm64 与 Windows x64 上执行相同的准备、冒烟、Rust 测试和打包步骤。
 
 ## 当前发布状态
 

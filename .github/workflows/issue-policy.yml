@@ -1,27 +1,17 @@
-name: Issue policy
+name: Issue policy (upstream-only)
 
+# The upstream repository binds this policy to its own labels, review process,
+# and repository identity. The community desktop distribution keeps this stub
+# for upstream-sync context but does not run it on pull requests.
 on:
-  pull_request:
-    types: [opened, edited, synchronize, reopened, labeled, unlabeled, ready_for_review, review_requested]
-  pull_request_review:
-    types: [submitted]
+  workflow_dispatch:
 
 permissions:
   contents: read
-  issues: read
-  pull-requests: read
 
 jobs:
-  policy:
-    name: Issue policy
+  disabled:
+    name: Upstream issue policy is disabled
     runs-on: ubuntu-latest
     steps:
-      - name: Check out trusted policy
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          ref: ${{ github.event.repository.default_branch }}
-          persist-credentials: false
-      - name: Validate pull request
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: node .github/issue-management/policy.mjs pr
+      - run: echo "The DeepSeek upstream issue policy is not used by this community repository."

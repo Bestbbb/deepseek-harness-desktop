@@ -239,8 +239,9 @@ describe('E2B e2e workflow', () => {
 })
 
 describe('DeepSeek e2e workflow', () => {
-  it('prepares bubblewrap from the pinned payload without a package transaction', () => {
+  it('is manual-only and prepares bubblewrap without a package transaction', () => {
     const workflow = loadWorkflow('.github/workflows/e2e.yml')
+    expect(workflow.on).toEqual({ workflow_dispatch: null })
     const e2e = workflowJob(workflow, 'e2e')
     if (!Array.isArray(e2e.steps)) throw new TypeError('DeepSeek e2e workflow must define steps')
 
@@ -400,21 +401,37 @@ describe('Python release workflows', () => {
 })
 
 describe('Issue lifecycle workflow', () => {
-  it('uses explicit review handoff events without rerunning when a draft becomes ready', () => {
+  it('keeps the upstream-only issue workflows as manual stubs', () => {
     const lifecycle = loadWorkflow('.github/workflows/issue-lifecycle.yml')
-    const lifecyclePullRequest = workflowEvent(lifecycle, 'pull_request')
-    const lifecycleReview = workflowEvent(lifecycle, 'pull_request_review')
-    const lifecycleJob = workflowJob(lifecycle, 'lifecycle')
     const policy = loadWorkflow('.github/workflows/issue-policy.yml')
-    const policyPullRequest = workflowEvent(policy, 'pull_request')
 
-    expect(lifecyclePullRequest.types).not.toContain('ready_for_review')
-    expect(lifecyclePullRequest.types).toContain('review_requested')
-    expect(lifecycleReview.types).toEqual(['submitted'])
-    expect(lifecycleJob.if).toBe(
-      "${{ github.event_name != 'pull_request_review' || (github.event.action == 'submitted' && github.event.review.state == 'changes_requested') }}",
-    )
-    expect(policyPullRequest.types).toContain('ready_for_review')
+    expect(lifecycle.on).toEqual({ workflow_dispatch: null })
+    expect(policy.on).toEqual({ workflow_dispatch: null })
+    expect(workflowJob(lifecycle, 'disabled').name).toBe('Upstream issue lifecycle is disabled')
+    expect(workflowJob(policy, 'disabled').name).toBe('Upstream issue policy is disabled')
+  })
+})
+
+describe('Dependabot configuration', () => {
+  it('groups weekly version updates and bounds each ecosystem to one open request', () => {
+    const config = loadWorkflow('.github/dependabot.yml')
+    if (!Array.isArray(config.updates)) throw new TypeError('Dependabot must define update entries')
+
+    for (const update of config.updates) {
+      if (!isRecord(update) || !isRecord(update.groups)) {
+        throw new TypeError('Each Dependabot update entry must define groups')
+      }
+      expect(update.schedule).toMatchObject({
+        interval: 'weekly',
+        day: 'monday',
+        time: '04:00',
+        timezone: 'Asia/Shanghai',
+      })
+      expect(update['open-pull-requests-limit']).toBe(1)
+      const groups = Object.values(update.groups)
+      expect(groups).toHaveLength(1)
+      expect(groups[0]).toMatchObject({ patterns: ['*'] })
+    }
   })
 })
 
