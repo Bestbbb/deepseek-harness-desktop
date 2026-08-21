@@ -64,6 +64,8 @@ Harness Desktop 不维护单独的提供方抽象，而是直接使用上游 Har
 
 提供方支持取决于具体模型与认证方式。Bedrock、Vertex、Azure 与仅 OAuth 的路由需要各自的原生凭据或设置，不能只填通用 API key。自定义端点与视觉能力声明见上游[提供方指南](docs/user/guide/providers.zh.md)。
 
+<a id="run"></a>
+
 ## 运行
 
 ### 环境要求
@@ -72,6 +74,8 @@ Harness Desktop 不维护单独的提供方抽象，而是直接使用上游 Har
 - pnpm 11.7
 - Rust stable
 - macOS 或 Windows 对应的 [Tauri 2 平台依赖](https://v2.tauri.app/start/prerequisites/)
+
+<a id="run-from-source"></a>
 
 ### 从源码运行
 
