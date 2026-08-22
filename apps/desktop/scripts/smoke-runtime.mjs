@@ -27,7 +27,7 @@ for (const [placeholder, modulePath] of [
   ['__DSH_DESKTOP_NATIVE_ENTRY__', join(runtime, 'app/node_modules/@deepseek-ai/dsh-desktop-native/lib/index.js')],
 ]) patchSource = patchSource.replaceAll(placeholder, JSON.stringify(pathToFileURL(modulePath).href))
 await writeFile(renderedPatch, patchSource)
-const child = spawn(node, [entry, 'web', '--patch', renderedPatch, '--port', '0'], {
+const child = spawn(node, [entry, 'web', '--patch', renderedPatch, '--port', '0', '--no-open'], {
   cwd: join(runtime, 'app'),
   env: {
     ...process.env,

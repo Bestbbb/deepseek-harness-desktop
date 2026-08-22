@@ -197,6 +197,7 @@ fn spawn_runtime(
         .arg(patch)
         .arg("--port")
         .arg(port.to_string())
+        .arg("--no-open")
         .current_dir(&config.working_directory)
         .env("DSH_HOME", &config.dsh_home)
         .env("DSH_DESKTOP_AUTH_TOKEN", &config.auth_token)
