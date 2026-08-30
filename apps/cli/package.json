@@ -80,7 +80,7 @@
     "@deepseek-ai/dsh-agent-instructions": "workspace:^",
     "commander": "^15.0.0",
     "@deepseek-ai/cordis": "workspace:^",
-    "js-yaml": "^4.2.0",
+    "js-yaml": "^5.2.2",
     "node-addon-require-builtin": "^0.1.4"
   },
   "devDependencies": {
@@ -97,6 +97,6 @@
     "@deepseek-ai/dsh-system-prompt": "workspace:^",
     "@deepseek-ai/dsh-tools": "workspace:^",
     "@types/js-yaml": "^4.0.9",
-    "execa": "^10.0.0"
+    "execa": "^10.0.1"
   }
 }
