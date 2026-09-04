@@ -1,0 +1,83 @@
+<main class="dsh-home"><section class="dsh-hero"><div class="dsh-hero-copy">
+
+# DeepSeek Harness for your desktop.
+
+Work in your local projects with your choice of models and a plugin-based agent.
+
+<div class="dsh-actions">
+
+[Download](https://github.com/Bestbbb/deepseek-harness-desktop/releases) [Read the guide](./en/guide/quickstart.md)
+
+</div></div><div class="dsh-hero-preview">
+
+![Harness Desktop conversation workspace before a model is configured](./harness-desktop-main.png)
+
+</div></section>
+
+<section class="dsh-models"><div class="dsh-models-copy">
+
+## Choose your model.
+
+Configure DeepSeek, other supported providers, or an OpenAI-compatible gateway. Your provider handles inference and billing.
+
+[Model setup and authentication](./en/guide/providers.md)
+
+</div><div class="dsh-models-preview">
+
+![Harness Desktop Models settings with provider configuration controls](./harness-desktop-models.png)
+
+</div></section>
+
+<section class="dsh-extension">
+
+## A desktop app with room to extend.
+
+Harness owns the agent runtime. Tauri supplies the native window and operating-system integration.
+
+<div class="dsh-extension-grid"><div>
+
+### Native where it matters
+
+System WebView, native menus, keyboard shortcuts, runtime supervision, and diagnostic export. No bundled Electron or Chromium.
+
+[Desktop architecture](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/apps/desktop/README.md)
+
+</div><div>
+
+### Plugins at the core
+
+Use Cordis plugins, Agent presets, skills, and MCP integrations. Optional Codex and Claude Code bundles add delegated agents after setup.
+
+[Plugin development](./en/develop/basic/index.md)
+
+</div></div></section>
+
+<section class="dsh-start">
+
+## Start with a local project.
+
+1. **Install.** Choose the macOS Apple Silicon or Windows x64 installer from the release assets.
+2. **Connect.** Configure your model provider in Settings, using its supported authentication method.
+3. **Work.** Choose a workspace and an Agent preset, then describe your task.
+
+<div class="dsh-preview-note">
+
+### Before you install
+
+This is a community preview, not an official DeepSeek product. macOS previews are ad-hoc signed and not notarized; Windows previews are unsigned. Check each release's platform notes and bundled version.
+
+Local execution is not offline inference. Plugins and external agents run code; review permissions before granting workspace access. Automatic updates are not configured.
+
+[Download](https://github.com/Bestbbb/deepseek-harness-desktop/releases)
+
+</div></section>
+
+<footer class="dsh-home-footer">
+
+[Source on GitHub](https://github.com/Bestbbb/deepseek-harness-desktop)
+
+[Upstream Harness](https://github.com/deepseek-ai/deepseek-harness)
+
+[MIT license](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/LICENSE)
+
+</footer></main>

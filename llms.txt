@@ -1,0 +1,191 @@
+# Harness Desktop
+
+> 基于 DeepSeek Harness 和 Tauri 的社区桌面应用，支持本地工作区、模型配置和插件扩展。
+
+页面 URL 去掉末尾斜杠再加 `.md` 即为该页原始 Markdown(根路径用 `/index.md`);下方列表是各页精确地址。Drop any trailing slash and append `.md` to a page URL for its raw Markdown (the site root is `/index.md`); the list below carries the exact addresses.
+
+## 简体中文
+
+- [使用 Web UI](/deepseek-harness-desktop/guide/quickstart.md): 入门
+- [配置模型](/deepseek-harness-desktop/guide/providers.md): 入门
+- [Python](/deepseek-harness-desktop/guide/python-sdk.md): SDK
+- [GitHub 评审会话](/deepseek-harness-desktop/guide/github-review.md): 自动化
+- [会话内提醒](/deepseek-harness-desktop/guide/schedule.md): 自动化
+- [记忆 MCP](/deepseek-harness-desktop/guide/mcp-memory.md): 集成
+- [第一个 Harness 插件](/deepseek-harness-desktop/develop/basic/index.md): 基础
+- [开发一个 Tool](/deepseek-harness-desktop/develop/basic/tool.md): 基础
+- [插件配置](/deepseek-harness-desktop/develop/basic/config.md): 基础
+- [打包与安装插件](/deepseek-harness-desktop/develop/basic/publish.md): 基础
+- [插件与生命周期](/deepseek-harness-desktop/develop/framework/index.md): 框架能力
+- [服务与依赖](/deepseek-harness-desktop/develop/framework/service.md): 框架能力
+- [事件系统](/deepseek-harness-desktop/develop/framework/events.md): 框架能力
+- [能力的三层拆分](/deepseek-harness-desktop/develop/practice/index.md): 实战
+- [LLM 适配器](/deepseek-harness-desktop/develop/practice/llm-adapter.md): 实战
+- [运行时 Cordis 工具](/deepseek-harness-desktop/develop/practice/dynamic-cordis.md): 实战
+- [总览](/deepseek-harness-desktop/develop/cordis-tutorial/index.md): Cordis 框架教程
+- [1. 第一个插件](/deepseek-harness-desktop/develop/cordis-tutorial/01-first-plugin.md): Cordis 框架教程
+- [2. 生命周期与副作用](/deepseek-harness-desktop/develop/cordis-tutorial/02-lifecycle-and-effects.md): Cordis 框架教程
+- [3. 服务](/deepseek-harness-desktop/develop/cordis-tutorial/03-services.md): Cordis 框架教程
+- [4. 事件](/deepseek-harness-desktop/develop/cordis-tutorial/04-events.md): Cordis 框架教程
+- [5. 配置](/deepseek-harness-desktop/develop/cordis-tutorial/05-config.md): Cordis 框架教程
+- [6. 组合与热重载](/deepseek-harness-desktop/develop/cordis-tutorial/06-composition-and-hmr.md): Cordis 框架教程
+- [7. 进入 Harness](/deepseek-harness-desktop/develop/cordis-tutorial/07-into-the-harness.md): Cordis 框架教程
+- [架构](/deepseek-harness-desktop/reference/index.md): 概念
+- [Cordis 入门](/deepseek-harness-desktop/reference/cordis-primer.md): 概念
+- [能力服务](/deepseek-harness-desktop/reference/capability-seams.md): 概念
+- [Agent 生命周期](/deepseek-harness-desktop/reference/agent-lifecycle.md): 概念
+- [Tool 执行](/deepseek-harness-desktop/reference/tool-execution-pipeline.md): 概念
+- [API Gateway](/deepseek-harness-desktop/reference/api-gateway.md): 概念
+- [插件配置](/deepseek-harness-desktop/reference/config-catalog.md): 生成参考
+- [Tool Schema](/deepseek-harness-desktop/reference/tool-catalog.md): 生成参考
+- [持久化事件](/deepseek-harness-desktop/reference/persistence-catalog.md): 生成参考
+- [Context](/deepseek-harness-desktop/reference/cordis-api/context.md): Cordis API
+- [Events](/deepseek-harness-desktop/reference/cordis-api/events.md): Cordis API
+- [Fiber](/deepseek-harness-desktop/reference/cordis-api/fiber.md): Cordis API
+- [Plugin Registry](/deepseek-harness-desktop/reference/cordis-api/registry.md): Cordis API
+- [Service](/deepseek-harness-desktop/reference/cordis-api/service.md): Cordis API
+- [继承接口面](/deepseek-harness-desktop/reference/cordis-api/inherited.md): Cordis API
+- [新增 Package](/deepseek-harness-desktop/reference/cookbook/adding-a-package.md): 开发手册
+- [新增 Tool](/deepseek-harness-desktop/reference/cookbook/adding-a-tool.md): 开发手册
+- [新增 LLM Adapter](/deepseek-harness-desktop/reference/cookbook/adding-an-llm-adapter.md): 开发手册
+- [新增设置卡片](/deepseek-harness-desktop/reference/cookbook/adding-a-settings-card.md): 开发手册
+- [扩展模式](/deepseek-harness-desktop/reference/cookbook/extension-cookbook.md): 开发手册
+- [子系统](/deepseek-harness-desktop/reference/subsystems/index.md): 总览
+- [核心](/deepseek-harness-desktop/reference/subsystems/core.md): 内核与作用域
+- [作用域](/deepseek-harness-desktop/reference/subsystems/scope.md): 内核与作用域
+- [运行时不变式](/deepseek-harness-desktop/reference/subsystems/invariants.md): 内核与作用域
+- [会话](/deepseek-harness-desktop/reference/subsystems/session.md): 会话与持久化
+- [会话查询](/deepseek-harness-desktop/reference/subsystems/session-query.md): 会话与持久化
+- [会话引用](/deepseek-harness-desktop/reference/subsystems/session-reference.md): 会话与持久化
+- [会话标题](/deepseek-harness-desktop/reference/subsystems/session-title.md): 会话与持久化
+- [会话投影](/deepseek-harness-desktop/reference/subsystems/session-projection.md): 会话与持久化
+- [会话持久化](/deepseek-harness-desktop/reference/subsystems/persistence.md): 会话与持久化
+- [Spill 存储](/deepseek-harness-desktop/reference/subsystems/spill.md): 会话与持久化
+- [遥测](/deepseek-harness-desktop/reference/subsystems/session-telemetry.md): 会话与持久化
+- [LLM 流式响应](/deepseek-harness-desktop/reference/subsystems/llm-streaming.md): 模型与上下文
+- [Token 计量](/deepseek-harness-desktop/reference/subsystems/token-meter.md): 模型与上下文
+- [系统提示词](/deepseek-harness-desktop/reference/subsystems/system-prompt.md): 模型与上下文
+- [上下文压缩](/deepseek-harness-desktop/reference/subsystems/compaction.md): 模型与上下文
+- [工具](/deepseek-harness-desktop/reference/subsystems/tools.md): 执行与工具
+- [Bash 执行](/deepseek-harness-desktop/reference/subsystems/shell.md): 执行与工具
+- [子进程](/deepseek-harness-desktop/reference/subsystems/subprocess.md): 执行与工具
+- [PTY 会话](/deepseek-harness-desktop/reference/subsystems/terminal.md): 执行与工具
+- [后台任务](/deepseek-harness-desktop/reference/subsystems/jobs.md): 执行与工具
+- [文件系统](/deepseek-harness-desktop/reference/subsystems/filesystem.md): 执行与工具
+- [LSP 导航](/deepseek-harness-desktop/reference/subsystems/lsp.md): 执行与工具
+- [代码运行时](/deepseek-harness-desktop/reference/subsystems/code-runtime.md): 执行与工具
+- [Web 访问](/deepseek-harness-desktop/reference/subsystems/web.md): 执行与工具
+- [技能](/deepseek-harness-desktop/reference/subsystems/skills.md): 执行与工具
+- [工作流](/deepseek-harness-desktop/reference/subsystems/workflow.md): 执行与工具
+- [子代理](/deepseek-harness-desktop/reference/subsystems/subagent.md): 执行与工具
+- [审批](/deepseek-harness-desktop/reference/subsystems/approval.md): 策略与交互
+- [权限预设](/deepseek-harness-desktop/reference/subsystems/permission-presets.md): 策略与交互
+- [沙箱](/deepseek-harness-desktop/reference/subsystems/sandbox.md): 策略与交互
+- [计划模式](/deepseek-harness-desktop/reference/subsystems/plan.md): 策略与交互
+- [用户交互](/deepseek-harness-desktop/reference/subsystems/user-questions.md): 策略与交互
+- [命令](/deepseek-harness-desktop/reference/subsystems/commands.md): 策略与交互
+- [目标](/deepseek-harness-desktop/reference/subsystems/goal.md): 策略与交互
+- [定时提醒](/deepseek-harness-desktop/reference/subsystems/schedule.md): 策略与交互
+- [HTTP 服务器](/deepseek-harness-desktop/reference/subsystems/web-server.md): 平台与接入
+- [Web Client 架构](/deepseek-harness-desktop/reference/subsystems/web-client.md): 平台与接入
+- [客户端模块](/deepseek-harness-desktop/reference/subsystems/client-modules.md): 平台与接入
+- [客户端 Slots](/deepseek-harness-desktop/reference/subsystems/slots.md): 平台与接入
+- [Conversation 组装](/deepseek-harness-desktop/reference/subsystems/conversation.md): 平台与接入
+- [Typert](/deepseek-harness-desktop/reference/subsystems/typert.md): 平台与接入
+- [存储](/deepseek-harness-desktop/reference/subsystems/storage.md): 平台与接入
+- [工作区](/deepseek-harness-desktop/reference/subsystems/workspace.md): 平台与接入
+- [用户设置](/deepseek-harness-desktop/reference/subsystems/settings.md): 平台与接入
+- [用户凭据](/deepseek-harness-desktop/reference/subsystems/credentials.md): 平台与接入
+
+## English
+
+- [Use the Web UI](/deepseek-harness-desktop/en/guide/quickstart.md): Guide
+- [Configure models](/deepseek-harness-desktop/en/guide/providers.md): Guide
+- [Python](/deepseek-harness-desktop/en/guide/python-sdk.md): SDK
+- [GitHub review sessions](/deepseek-harness-desktop/en/guide/github-review.md): Automation
+- [Session reminders](/deepseek-harness-desktop/en/guide/schedule.md): Automation
+- [Memory MCP](/deepseek-harness-desktop/en/guide/mcp-memory.md): Integrations
+- [Your first Harness plugin](/deepseek-harness-desktop/en/develop/basic/index.md): Basics
+- [Build a tool](/deepseek-harness-desktop/en/develop/basic/tool.md): Basics
+- [Plugin configuration](/deepseek-harness-desktop/en/develop/basic/config.md): Basics
+- [Package and install](/deepseek-harness-desktop/en/develop/basic/publish.md): Basics
+- [Plugin lifecycle](/deepseek-harness-desktop/en/develop/framework/index.md): Framework
+- [Services and dependencies](/deepseek-harness-desktop/en/develop/framework/service.md): Framework
+- [Event system](/deepseek-harness-desktop/en/develop/framework/events.md): Framework
+- [Capability layering](/deepseek-harness-desktop/en/develop/practice/index.md): Practice
+- [LLM adapter](/deepseek-harness-desktop/en/develop/practice/llm-adapter.md): Practice
+- [Runtime Cordis tools](/deepseek-harness-desktop/en/develop/practice/dynamic-cordis.md): Practice
+- [Overview](/deepseek-harness-desktop/en/develop/cordis-tutorial/index.md): Cordis framework tutorial
+- [1. Your first plugin](/deepseek-harness-desktop/en/develop/cordis-tutorial/01-first-plugin.md): Cordis framework tutorial
+- [2. Lifecycle and effects](/deepseek-harness-desktop/en/develop/cordis-tutorial/02-lifecycle-and-effects.md): Cordis framework tutorial
+- [3. Services](/deepseek-harness-desktop/en/develop/cordis-tutorial/03-services.md): Cordis framework tutorial
+- [4. Events](/deepseek-harness-desktop/en/develop/cordis-tutorial/04-events.md): Cordis framework tutorial
+- [5. Configuration](/deepseek-harness-desktop/en/develop/cordis-tutorial/05-config.md): Cordis framework tutorial
+- [6. Composition and HMR](/deepseek-harness-desktop/en/develop/cordis-tutorial/06-composition-and-hmr.md): Cordis framework tutorial
+- [7. Into the harness](/deepseek-harness-desktop/en/develop/cordis-tutorial/07-into-the-harness.md): Cordis framework tutorial
+- [Architecture](/deepseek-harness-desktop/en/reference/index.md): Concepts
+- [Cordis primer](/deepseek-harness-desktop/en/reference/cordis-primer.md): Concepts
+- [Capability services](/deepseek-harness-desktop/en/reference/capability-seams.md): Concepts
+- [Agent lifecycle](/deepseek-harness-desktop/en/reference/agent-lifecycle.md): Concepts
+- [Tool execution](/deepseek-harness-desktop/en/reference/tool-execution-pipeline.md): Concepts
+- [API Gateway](/deepseek-harness-desktop/en/reference/api-gateway.md): Concepts
+- [Plugin configuration](/deepseek-harness-desktop/en/reference/config-catalog.md): Generated reference
+- [Tool schemas](/deepseek-harness-desktop/en/reference/tool-catalog.md): Generated reference
+- [Persistence events](/deepseek-harness-desktop/en/reference/persistence-catalog.md): Generated reference
+- [Context](/deepseek-harness-desktop/en/reference/cordis-api/context.md): Cordis Core API
+- [Events](/deepseek-harness-desktop/en/reference/cordis-api/events.md): Cordis Core API
+- [Fiber](/deepseek-harness-desktop/en/reference/cordis-api/fiber.md): Cordis Core API
+- [Plugin Registry](/deepseek-harness-desktop/en/reference/cordis-api/registry.md): Cordis Core API
+- [Service](/deepseek-harness-desktop/en/reference/cordis-api/service.md): Cordis Core API
+- [Inherited surface](/deepseek-harness-desktop/en/reference/cordis-api/inherited.md): Cordis Core API
+- [Adding a package](/deepseek-harness-desktop/en/reference/cookbook/adding-a-package.md): Cookbook
+- [Adding a tool](/deepseek-harness-desktop/en/reference/cookbook/adding-a-tool.md): Cookbook
+- [Adding an LLM adapter](/deepseek-harness-desktop/en/reference/cookbook/adding-an-llm-adapter.md): Cookbook
+- [Adding a settings card](/deepseek-harness-desktop/en/reference/cookbook/adding-a-settings-card.md): Cookbook
+- [Extension patterns](/deepseek-harness-desktop/en/reference/cookbook/extension-cookbook.md): Cookbook
+- [Subsystems](/deepseek-harness-desktop/en/reference/subsystems/index.md): Overview
+- [Core](/deepseek-harness-desktop/en/reference/subsystems/core.md): Core and scopes
+- [Scopes](/deepseek-harness-desktop/en/reference/subsystems/scope.md): Core and scopes
+- [Runtime invariants](/deepseek-harness-desktop/en/reference/subsystems/invariants.md): Core and scopes
+- [Sessions](/deepseek-harness-desktop/en/reference/subsystems/session.md): Sessions and persistence
+- [Session query](/deepseek-harness-desktop/en/reference/subsystems/session-query.md): Sessions and persistence
+- [Session references](/deepseek-harness-desktop/en/reference/subsystems/session-reference.md): Sessions and persistence
+- [Session titles](/deepseek-harness-desktop/en/reference/subsystems/session-title.md): Sessions and persistence
+- [Session projections](/deepseek-harness-desktop/en/reference/subsystems/session-projection.md): Sessions and persistence
+- [Session persistence](/deepseek-harness-desktop/en/reference/subsystems/persistence.md): Sessions and persistence
+- [Spill storage](/deepseek-harness-desktop/en/reference/subsystems/spill.md): Sessions and persistence
+- [SessionTelemetryBackend](/deepseek-harness-desktop/en/reference/subsystems/session-telemetry.md): Sessions and persistence
+- [LLM streaming](/deepseek-harness-desktop/en/reference/subsystems/llm-streaming.md): Model and context
+- [Token metering](/deepseek-harness-desktop/en/reference/subsystems/token-meter.md): Model and context
+- [System prompts](/deepseek-harness-desktop/en/reference/subsystems/system-prompt.md): Model and context
+- [Compaction](/deepseek-harness-desktop/en/reference/subsystems/compaction.md): Model and context
+- [Tools](/deepseek-harness-desktop/en/reference/subsystems/tools.md): Execution and tools
+- [Bash execution](/deepseek-harness-desktop/en/reference/subsystems/shell.md): Execution and tools
+- [Subprocesses](/deepseek-harness-desktop/en/reference/subsystems/subprocess.md): Execution and tools
+- [PTY sessions](/deepseek-harness-desktop/en/reference/subsystems/terminal.md): Execution and tools
+- [Background jobs](/deepseek-harness-desktop/en/reference/subsystems/jobs.md): Execution and tools
+- [Filesystem](/deepseek-harness-desktop/en/reference/subsystems/filesystem.md): Execution and tools
+- [LSP navigation](/deepseek-harness-desktop/en/reference/subsystems/lsp.md): Execution and tools
+- [Code runtime](/deepseek-harness-desktop/en/reference/subsystems/code-runtime.md): Execution and tools
+- [Web access](/deepseek-harness-desktop/en/reference/subsystems/web.md): Execution and tools
+- [Skills](/deepseek-harness-desktop/en/reference/subsystems/skills.md): Execution and tools
+- [Workflows](/deepseek-harness-desktop/en/reference/subsystems/workflow.md): Execution and tools
+- [Subagents](/deepseek-harness-desktop/en/reference/subsystems/subagent.md): Execution and tools
+- [Approvals](/deepseek-harness-desktop/en/reference/subsystems/approval.md): Policy and interaction
+- [Permission presets](/deepseek-harness-desktop/en/reference/subsystems/permission-presets.md): Policy and interaction
+- [Sandboxing](/deepseek-harness-desktop/en/reference/subsystems/sandbox.md): Policy and interaction
+- [Plan mode](/deepseek-harness-desktop/en/reference/subsystems/plan.md): Policy and interaction
+- [User interaction](/deepseek-harness-desktop/en/reference/subsystems/user-questions.md): Policy and interaction
+- [Human commands](/deepseek-harness-desktop/en/reference/subsystems/commands.md): Policy and interaction
+- [Goals](/deepseek-harness-desktop/en/reference/subsystems/goal.md): Policy and interaction
+- [Scheduled reminders](/deepseek-harness-desktop/en/reference/subsystems/schedule.md): Policy and interaction
+- [HTTP server](/deepseek-harness-desktop/en/reference/subsystems/web-server.md): Platform and access
+- [Web Client architecture](/deepseek-harness-desktop/en/reference/subsystems/web-client.md): Platform and access
+- [Client modules](/deepseek-harness-desktop/en/reference/subsystems/client-modules.md): Platform and access
+- [Client slots](/deepseek-harness-desktop/en/reference/subsystems/slots.md): Platform and access
+- [Conversation assembly](/deepseek-harness-desktop/en/reference/subsystems/conversation.md): Platform and access
+- [Typert](/deepseek-harness-desktop/en/reference/subsystems/typert.md): Platform and access
+- [Storage](/deepseek-harness-desktop/en/reference/subsystems/storage.md): Platform and access
+- [Workspaces](/deepseek-harness-desktop/en/reference/subsystems/workspace.md): Platform and access
+- [User settings](/deepseek-harness-desktop/en/reference/subsystems/settings.md): Platform and access
+- [User credentials](/deepseek-harness-desktop/en/reference/subsystems/credentials.md): Platform and access
