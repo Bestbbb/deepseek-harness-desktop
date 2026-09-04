@@ -4,12 +4,20 @@ use std::{
     io::{BufRead, BufReader},
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream},
     path::{Path, PathBuf},
-    process::{Child, Command, Stdio},
+    process::{Command, Stdio},
     sync::{mpsc, Arc},
     thread,
-    time::{Duration, Instant},
+    time::Duration,
 };
+#[cfg(unix)]
+use std::{process::Child, time::Instant};
 use url::Url;
+
+#[cfg(windows)]
+#[path = "runtime_windows.rs"]
+mod windows;
+#[cfg(windows)]
+use windows::ManagedChild;
 
 const SHUTDOWN_GRACE: Duration = Duration::from_secs(3);
 const RESTART_DELAY: Duration = Duration::from_millis(500);
@@ -206,25 +214,26 @@ fn spawn_runtime(
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
-    configure_process_group(&mut command);
-    let mut child = command.spawn().map_err(|error| {
+    let mut child = ManagedChild::spawn(&mut command).map_err(|error| {
         format!(
             "Could not start the bundled Harness runtime at {}: {error}",
             config.node.display()
         )
     })?;
     let stdout = child
+        .child
         .stdout
         .take()
         .ok_or_else(|| "Harness runtime stdout was not captured".to_owned())?;
     let stderr = child
+        .child
         .stderr
         .take()
         .ok_or_else(|| "Harness runtime stderr was not captured".to_owned())?;
     let (sender, receiver) = mpsc::channel();
     pump_lines(stdout, sender.clone(), OutputEvent::Stdout);
     pump_lines(stderr, sender, OutputEvent::Stderr);
-    Ok((ManagedChild::new(child)?, receiver))
+    Ok((child, receiver))
 }
 
 fn materialize_patch(config: &RuntimeConfig) -> Result<PathBuf, String> {
@@ -296,58 +305,26 @@ fn configure_process_group(command: &mut Command) {
     command.process_group(0);
 }
 
-#[cfg(windows)]
-fn configure_process_group(_command: &mut Command) {}
-
+#[cfg(unix)]
 struct ManagedChild {
     child: Child,
-    #[cfg(windows)]
-    job: windows_sys::Win32::Foundation::HANDLE,
+    stopped: bool,
 }
 
+#[cfg(unix)]
 impl ManagedChild {
-    fn new(child: Child) -> Result<Self, String> {
-        #[cfg(windows)]
-        {
-            use std::os::windows::io::AsRawHandle;
-            use windows_sys::Win32::{
-                Foundation::CloseHandle,
-                System::JobObjects::{
-                    AssignProcessToJobObject, CreateJobObjectW, JobObjectExtendedLimitInformation,
-                    SetInformationJobObject, JOBOBJECT_EXTENDED_LIMIT_INFORMATION,
-                    JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
-                },
-            };
-            unsafe {
-                let job = CreateJobObjectW(std::ptr::null(), std::ptr::null());
-                if job.is_null() {
-                    return Err("Could not create the Windows runtime Job Object".to_owned());
-                }
-                let mut info: JOBOBJECT_EXTENDED_LIMIT_INFORMATION = std::mem::zeroed();
-                info.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
-                let configured = SetInformationJobObject(
-                    job,
-                    JobObjectExtendedLimitInformation,
-                    (&info as *const JOBOBJECT_EXTENDED_LIMIT_INFORMATION).cast(),
-                    std::mem::size_of::<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>() as u32,
-                );
-                let assigned = configured != 0
-                    && AssignProcessToJobObject(job, child.as_raw_handle() as _) != 0;
-                if !assigned {
-                    CloseHandle(job);
-                    return Err(
-                        "Could not assign the Harness runtime to its Windows Job Object".to_owned(),
-                    );
-                }
-                return Ok(Self { child, job });
-            }
-        }
-        #[cfg(not(windows))]
-        Ok(Self { child })
+    fn spawn(command: &mut Command) -> Result<Self, String> {
+        configure_process_group(command);
+        Ok(Self {
+            child: command.spawn().map_err(|error| error.to_string())?,
+            stopped: false,
+        })
     }
 
-    #[cfg(unix)]
     fn terminate(&mut self) {
+        if self.stopped {
+            return;
+        }
         let process_group = self.child.id() as i32;
         unsafe {
             libc::kill(-process_group, libc::SIGTERM);
@@ -356,6 +333,7 @@ impl ManagedChild {
         while Instant::now() < deadline {
             let _ = self.child.try_wait();
             if !process_group_alive(process_group) {
+                self.stopped = true;
                 return;
             }
             thread::sleep(POLL_INTERVAL);
@@ -365,22 +343,7 @@ impl ManagedChild {
         }
         let _ = self.child.kill();
         let _ = self.child.wait();
-    }
-
-    #[cfg(windows)]
-    fn terminate(&mut self) {
-        unsafe {
-            windows_sys::Win32::System::JobObjects::TerminateJobObject(self.job, 1);
-        }
-        let deadline = Instant::now() + SHUTDOWN_GRACE;
-        while Instant::now() < deadline {
-            if matches!(self.child.try_wait(), Ok(Some(_))) {
-                return;
-            }
-            thread::sleep(POLL_INTERVAL);
-        }
-        let _ = self.child.kill();
-        let _ = self.child.wait();
+        self.stopped = true;
     }
 }
 
@@ -389,12 +352,10 @@ fn process_group_alive(process_group: i32) -> bool {
     unsafe { libc::kill(-process_group, 0) == 0 }
 }
 
-#[cfg(windows)]
+#[cfg(unix)]
 impl Drop for ManagedChild {
     fn drop(&mut self) {
-        unsafe {
-            windows_sys::Win32::Foundation::CloseHandle(self.job);
-        }
+        self.terminate();
     }
 }
 
@@ -403,10 +364,45 @@ mod tests {
     use super::{module_file_url, parse_readiness};
 
     #[cfg(unix)]
-    use super::{configure_process_group, ManagedChild};
+    use super::{process_group_alive, ManagedChild};
 
     #[cfg(unix)]
-    use std::{process::Command, thread, time::Duration};
+    use std::{
+        process::Command,
+        thread,
+        time::{Duration, Instant},
+    };
+
+    #[cfg(unix)]
+    fn wait_for_group_exit(process_group: i32) {
+        let deadline = Instant::now() + Duration::from_secs(10);
+        while process_group_alive(process_group) {
+            assert!(
+                Instant::now() < deadline,
+                "managed process group survived termination"
+            );
+            thread::sleep(Duration::from_millis(10));
+        }
+    }
+
+    #[cfg(unix)]
+    struct GroupCleanup(i32);
+
+    #[cfg(unix)]
+    impl Drop for GroupCleanup {
+        fn drop(&mut self) {
+            if process_group_alive(self.0) {
+                // Keep the regression fixture bounded even if owner Drop is broken.
+                unsafe {
+                    libc::kill(-self.0, libc::SIGKILL);
+                }
+                let deadline = Instant::now() + Duration::from_secs(3);
+                while process_group_alive(self.0) && Instant::now() < deadline {
+                    thread::sleep(Duration::from_millis(10));
+                }
+            }
+        }
+    }
 
     #[test]
     fn accepts_the_exact_loopback_readiness_line() {
@@ -436,39 +432,48 @@ mod tests {
     #[cfg(unix)]
     #[test]
     fn terminates_the_managed_process_group() {
-        let mut command = Command::new("sh");
+        let mut command = Command::new("/bin/sh");
+        command.env_clear();
         command.args(["-c", "sleep 30 & wait"]);
-        configure_process_group(&mut command);
-        let child = command.spawn().expect("spawn process group");
-        let process_group = child.id() as i32;
-        let mut managed = ManagedChild::new(child).expect("manage child");
+        let mut managed = ManagedChild::spawn(&mut command).expect("spawn process group");
+        let process_group = managed.child.id() as i32;
 
         managed.terminate();
-        thread::sleep(Duration::from_millis(50));
-
-        let alive = unsafe { libc::kill(-process_group, 0) } == 0;
-        assert!(!alive, "managed process group survived termination");
+        wait_for_group_exit(process_group);
     }
 
     #[cfg(unix)]
     #[test]
     fn terminates_descendants_after_the_group_leader_exits() {
-        let mut command = Command::new("sh");
+        let mut command = Command::new("/bin/sh");
+        command.env_clear();
         command.args(["-c", "sleep 30 & exit 0"]);
-        configure_process_group(&mut command);
-        let mut child = command.spawn().expect("spawn process group");
-        let process_group = child.id() as i32;
-        child.wait().expect("wait for group leader");
+        let mut managed = ManagedChild::spawn(&mut command).expect("spawn process group");
+        let process_group = managed.child.id() as i32;
+        managed.child.wait().expect("wait for group leader");
         assert!(
             unsafe { libc::kill(-process_group, 0) } == 0,
             "fixture descendant did not survive its group leader"
         );
-        let mut managed = ManagedChild::new(child).expect("manage exited leader");
-
         managed.terminate();
-        thread::sleep(Duration::from_millis(50));
+        wait_for_group_exit(process_group);
+    }
 
-        let alive = unsafe { libc::kill(-process_group, 0) } == 0;
-        assert!(!alive, "descendant survived after its group leader exited");
+    #[cfg(unix)]
+    #[test]
+    fn dropping_the_runtime_owner_cleans_up_descendants() {
+        let mut command = Command::new("/bin/sh");
+        command.env_clear().args(["-c", "sleep 30 & exit 0"]);
+        let mut managed = ManagedChild::spawn(&mut command).expect("spawn process group");
+        let process_group = managed.child.id() as i32;
+        let _cleanup = GroupCleanup(process_group);
+        managed.child.wait().expect("wait for group leader");
+        assert!(
+            process_group_alive(process_group),
+            "fixture descendant is missing"
+        );
+
+        drop(managed);
+        wait_for_group_exit(process_group);
     }
 }

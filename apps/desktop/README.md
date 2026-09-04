@@ -15,6 +15,8 @@ Browser access and native operations use independent credentials:
 
 The Rust supervisor owns the complete child process tree. It uses a Unix process group on macOS and a Job Object on Windows, restarts an unexpected runtime exit on the same port, and terminates descendants on application exit. Window state, single-instance activation, standard window/edit shortcuts, the native menu, tray behavior, notifications, autostart, and updater plumbing are native Tauri capabilities. The application menu can export a bounded diagnostic text file; the exporter never reads sessions, configuration, credentials, or user files, and redacts desktop tokens, bearer credentials, API-key fields, and the home-directory prefix before writing.
 
+Windows starts the runtime suspended and without a console window, then resumes it after Job assignment. Reported startup failures terminate and reap the child before retry; shutdown waits for the Job's active-process count to reach zero. Abrupt host termination between process creation and Job assignment can still leave a suspended child; this sequence is not atomic process creation. The [desktop lifecycle decision](../../.agents/notes/implemented/architecture/2026-08-20-tauri-desktop-carrier.md) records the platform verification requirements.
+
 The File menu exposes **New Session**, with **Cmd+N** on macOS. The application menu exposes **Settings** and diagnostic export.
 
 The main window disables Tauri's native drag-and-drop handler so the upstream attachment UI can receive browser file-drop events, including on Windows. Window creation remains in application setup; the configured loading window is not created automatically.
