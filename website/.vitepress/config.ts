@@ -6,6 +6,7 @@ import type { DefaultTheme, PageData, SiteConfig } from 'vitepress'
 import type { ViteDevServer } from 'vite'
 import { withMermaid } from 'vitepress-plugin-mermaid'
 import { landingLink, localeCollections, orderedPages, routeLink, sectionSpec, type DocsLocale, type DocsPage, type DocsSidebar } from '../docs.ts'
+import { repositoryUrl } from '../repository.ts'
 import { docsSourceFiles, emitRawMarkdownPages, llmsTxt, projectDocs, rawMarkdownRoute } from '../../scripts/project-doc-site.ts'
 
 projectDocs()
@@ -187,14 +188,14 @@ const sharedTheme: Pick<DefaultTheme.Config, 'search' | 'socialLinks' | 'editLin
     },
   },
   socialLinks: [
-    { icon: 'github', link: 'https://github.com/deepseek-ai/deepseek-harness' },
+    { icon: 'github', link: repositoryUrl },
   ],
   editLink: {
     pattern: ({ frontmatter }: PageData) => {
       const data: unknown = frontmatter
-      const editSource: unknown = typeof data === 'object' && data !== null ? Reflect.get(data, 'editSource') : undefined
-      if (typeof editSource !== 'string') throw new Error('Projected documentation page has no editSource frontmatter.')
-      return `https://github.com/deepseek-ai/deepseek-harness/edit/master/${editSource}`
+      const editSourceUrl: unknown = typeof data === 'object' && data !== null ? Reflect.get(data, 'editSourceUrl') : undefined
+      if (typeof editSourceUrl !== 'string') throw new Error('Projected documentation page has no editSourceUrl frontmatter.')
+      return editSourceUrl
     },
     text: '在 GitHub 上编辑此页',
   },
@@ -205,8 +206,8 @@ const base = process.env.DOCS_BASE ?? '/'
 
 /** Site identity shared by the VitePress configuration and the llms.txt index. */
 const siteIdentity = {
-  title: 'DeepSeek Harness',
-  description: '用于构建 Agent Harness 的插件化 SDK',
+  title: 'Harness Desktop',
+  description: '基于 DeepSeek Harness 和 Tauri 的社区桌面应用，支持本地工作区、模型配置和插件扩展。',
 }
 
 /**
@@ -218,8 +219,7 @@ const wordmark = readFileSync(resolve(import.meta.dirname, '../public/wordmark.s
   .replace('<svg ', '<svg class="dsh-wordmark" ')
 
 /**
- * Styles the default theme does not provide, carried inline because the site
- * runs the stock theme with no theme directory of its own.
+ * Shared documentation navigation styles; product-page styles live in the theme.
  *
  * The navigation-bar lockup pairs with `siteTitle`. The scrollbar rules replace
  * the sidebar's platform bar, which reserves 15px of a 265px column and draws a
@@ -282,17 +282,17 @@ const scrollbarScript = `
 `
 
 /**
- * Navigation-bar title: the DeepSeek wordmark and the release-stage tag.
+ * Navigation-bar title: the upstream wordmark and the community desktop label.
  * VitePress renders `siteTitle` as HTML.
  *
- * @param previewTag - Localized release-stage label.
+ * @param desktopLabel - Desktop distribution label.
  * @returns Markup placed beside the navigation-bar home link.
  */
-function siteTitle(previewTag: string): string {
-  return `<span class="dsh-lockup">${wordmark}<span class="dsh-tag">${previewTag}</span></span>`
+function siteTitle(desktopLabel: string): string {
+  return `<span class="dsh-lockup">${wordmark}<span class="dsh-tag">${desktopLabel}</span></span>`
 }
 
-export default withMermaid({
+const config = withMermaid({
   title: siteIdentity.title,
   description: siteIdentity.description,
   base,
@@ -316,7 +316,7 @@ export default withMermaid({
       label: '简体中文',
       lang: 'zh-CN',
       themeConfig: {
-        siteTitle: siteTitle('技术预览'),
+        siteTitle: siteTitle('Desktop'),
         nav: [
           { text: '入门', link: landingLink('root', guideModules.root.guide), activeMatch: '^/guide/' },
           ...moduleNav('root'),
@@ -341,8 +341,9 @@ export default withMermaid({
       label: 'English',
       lang: 'en-US',
       link: '/en/',
+      description: 'A community Tauri desktop app for DeepSeek Harness, with local workspaces, model configuration, and plugins.',
       themeConfig: {
-        siteTitle: siteTitle('Preview'),
+        siteTitle: siteTitle('Desktop'),
         nav: [
           { text: 'Guide', link: landingLink('en', guideModules.en.guide), activeMatch: '^/en/guide/' },
           ...moduleNav('en'),
@@ -355,9 +356,9 @@ export default withMermaid({
         editLink: {
           pattern: ({ frontmatter }: PageData) => {
             const data: unknown = frontmatter
-            const editSource: unknown = typeof data === 'object' && data !== null ? Reflect.get(data, 'editSource') : undefined
-            if (typeof editSource !== 'string') throw new Error('Projected documentation page has no editSource frontmatter.')
-            return `https://github.com/deepseek-ai/deepseek-harness/edit/master/${editSource}`
+            const editSourceUrl: unknown = typeof data === 'object' && data !== null ? Reflect.get(data, 'editSourceUrl') : undefined
+            if (typeof editSourceUrl !== 'string') throw new Error('Projected documentation page has no editSourceUrl frontmatter.')
+            return editSourceUrl
           },
           text: 'Edit this page on GitHub',
         },
@@ -412,3 +413,15 @@ export default withMermaid({
   mermaid: {},
   themeConfig: sharedTheme,
 })
+
+// The theme registers Mermaid asynchronously; retain the plugin's configuration
+// and resolution hooks without its eager app-entry component import.
+const mermaidPlugin = config.vite?.plugins?.find(plugin =>
+  plugin && !Array.isArray(plugin) && 'name' in plugin && plugin.name === 'vite-plugin-mermaid',
+)
+if (!mermaidPlugin || !('transform' in mermaidPlugin)) {
+  throw new Error('Mermaid plugin registration changed; check the lazy theme integration.')
+}
+delete mermaidPlugin.transform
+
+export default config

@@ -1,12 +1,41 @@
+---
+description: "Native window, notification, and autostart operations for plugins running inside Harness Desktop."
+kind: "package-reference"
+---
+
 # @deepseek-ai/dsh-desktop
 
 English | [中文](README.zh.md)
 
-`dsh-desktop` defines `ctx.desktop`, the native capability supplied only when a desktop host owns the running Harness process. The service exposes window activation, operating-system notifications, login autostart, and an availability probe. A provider must reject an operation the host did not complete; it must not silently emulate native behavior inside Node.
+## Summary
+
+Desktop-hosted plugins can show the application window, send operating-system notifications, and control launch at login through `ctx.desktop`. A provider rejects operations the native host cannot complete. Browser and headless deployments do not receive an emulated desktop service.
+
+## Table of Contents
+
+- [Composition](#composition)
+- [Implementation](#implementation)
+- [Model Experience](#model-experience)
+- [Known Limitations and Deferred Work](#known-limitations-and-deferred-work)
+
+<a id="composition"></a>
 
 ## Composition
 
-Load one Service Provider in desktop-only composition. The browser and headless profiles do not mount this definition or invent a fallback, so ordinary Harness deployments carry no desktop assumption.
+Load the [native provider](../desktop-native/README.md) in the [desktop launch overlay](../../../apps/desktop/runtime/desktop.cordis.yml). This abstract service has no configuration and is not an independently installable Profile Bundle.
+
+<a id="implementation"></a>
+
+## Implementation
+
+<details>
+<summary>Native capability ownership</summary>
+
+The [service definition](src/index.ts) exposes operations without depending on Tauri or a browser. Its provider owns the process transport. No runtime invariant companion is published because the abstract service owns no mutable observations; Cordis owns service registration and disposal.
+
+</details>
+
+<a id="model-experience"></a>
 
 ## Model Experience
 
@@ -26,4 +55,12 @@ The service preserves every reusable model-request prefix because it contributes
 
 ## Known Limitations and Deferred Work
 
-- **Trusted Host consumers only** — the service has no plugin principal or per-call permission grant; a mounted Host plugin can invoke every operation the active provider implements.
+<a id="known-limitations-and-deferred-work"></a>
+
+- **Trusted Host consumers only**: the service has no plugin principal or per-call permission grant; a mounted Host plugin can invoke every operation the active provider implements.
+
+<a id="dev-note"></a>
+
+### Dev Note
+
+None.

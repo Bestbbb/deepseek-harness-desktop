@@ -73,18 +73,12 @@ pub fn run() {
 }
 
 fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
-    let auth_token = random_token();
     let bridge_token = random_token();
-    let initialization_script = format!(
-        "Object.defineProperty(globalThis, '__DSH_DESKTOP_AUTH_TOKEN__', {{ value: {}, enumerable: false, configurable: false }});",
-        serde_json::to_string(&auth_token)?,
-    );
     let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::App("index.html".into()))
         .title("Harness Desktop")
         .inner_size(1180.0, 780.0)
         .min_inner_size(820.0, 600.0)
         .visible(true)
-        .initialization_script(&initialization_script)
         .build()?;
     let close_window = window.clone();
     window.on_window_event(move |event| {
@@ -142,7 +136,6 @@ fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
             working_directory: paths.working_directory,
             desktop_native_entry: paths.desktop_native_entry,
             dsh_home,
-            auth_token,
             bridge_url: bridge.url.clone(),
             bridge_token,
         },

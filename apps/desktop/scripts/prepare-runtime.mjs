@@ -2,14 +2,15 @@
 
 import { createReadStream } from 'node:fs'
 import {
-  copyFile, cp, lstat, mkdir, mkdtemp, readFile, readdir, realpath, rename, rm, stat, writeFile,
+  copyFile, cp, lstat, mkdir, mkdtemp, readFile, readdir, realpath, rename, rm, stat, unlink, writeFile,
 } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
 import { dirname, join, relative, resolve, sep } from 'node:path'
-import { tmpdir } from 'node:os'
+import { homedir, tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { spawn } from 'node:child_process'
 import { pipeline } from 'node:stream/promises'
+import { prepareRuntimeOutput } from './runtime-output.mjs'
 
 const desktopDir = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const repoRoot = resolve(desktopDir, '../..')
@@ -110,7 +111,7 @@ async function materializeLinks(directory) {
     if ((await lstat(path)).isSymbolicLink()) {
       const target = await realpath(path)
       const targetStat = await stat(target)
-      await rm(path, { recursive: true, force: true })
+      await unlink(path)
       if (targetStat.isDirectory()) {
         await cp(target, path, { recursive: true, dereference: true })
       } else {
@@ -252,7 +253,7 @@ async function rebuildProductionScripts() {
   )
 }
 
-await rm(output, { recursive: true, force: true })
+await prepareRuntimeOutput(output, [repoRoot, homedir()])
 await mkdir(dirname(nodeOutput), { recursive: true })
 await deployRuntime()
 await installNodeRuntime()

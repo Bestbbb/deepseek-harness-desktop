@@ -17,13 +17,13 @@ import { gfmFromMarkdown } from 'mdast-util-gfm'
 import { gfm } from 'micromark-extension-gfm'
 import type { Nodes } from 'mdast'
 import { docsPages, localeCollections, orderedPages, type DocsLocale, type DocsPage } from '../website/docs.ts'
+import { rawRepositoryUrl, repositoryDefaultRef, repositoryUrl } from '../website/repository.ts'
 import {
   isExternalOrAbsoluteMarkdownUrl,
   markdownDestination,
   splitMarkdownUrlTarget,
 } from './markdown.ts'
 
-const REPOSITORY_URL = 'https://github.com/deepseek-ai/deepseek-harness'
 const root = resolve(import.meta.dirname, '..')
 const generatedRoot = resolve(root, 'website/.generated')
 
@@ -31,10 +31,10 @@ const generatedRoot = resolve(root, 'website/.generated')
  * Resolve the public repository ref used by projected source links.
  *
  * @param environment Build environment containing an optional explicit public ref.
- * @returns The configured public ref, or `master`.
+ * @returns The configured public ref, or the community repository's default branch.
  */
 export function resolveRepositoryRef(environment: NodeJS.ProcessEnv): string {
-  return environment.DOCS_REPOSITORY_REF ?? 'master'
+  return environment.DOCS_REPOSITORY_REF ?? repositoryDefaultRef
 }
 
 interface Replacement {
@@ -140,10 +140,10 @@ function githubTarget(
   image: boolean,
 ): string {
   const path = repoPath(absPath, repoRoot)
-  if (image) return `https://raw.githubusercontent.com/deepseek-ai/deepseek-harness/${repositoryRef}/${path}${suffix}`
+  if (image) return `${rawRepositoryUrl}/${repositoryRef}/${path}${suffix}`
   const kind = lstatSync(absPath).isDirectory() ? 'tree' : 'blob'
   const lineSuffix = line === undefined ? suffix : `#L${line}`
-  return `${REPOSITORY_URL}/${kind}/${repositoryRef}/${path}${lineSuffix}`
+  return `${repositoryUrl}/${kind}/${repositoryRef}/${path}${lineSuffix}`
 }
 
 /**
@@ -206,11 +206,13 @@ export function rewriteMarkdown(source: string, options: RewriteMarkdownOptions)
  *
  * @param markdown Projected Markdown content.
  * @param page Publication manifest entry for the content.
+ * @param editSourceUrl Optional public edit URL resolved before VitePress serializes theme functions.
  * @returns Markdown with projection-owned frontmatter fields.
  */
-export function addProjectionFrontmatter(markdown: string, page: Pick<DocsPage, 'source' | 'outline'>): string {
+export function addProjectionFrontmatter(markdown: string, page: Pick<DocsPage, 'source' | 'outline'>, editSourceUrl?: string): string {
   const fields = [
     `editSource: ${JSON.stringify(page.source)}`,
+    ...(editSourceUrl === undefined ? [] : [`editSourceUrl: ${JSON.stringify(editSourceUrl)}`]),
     ...(page.outline === undefined ? [] : [`outline: ${JSON.stringify(page.outline)}`]),
   ].join('\n')
   if (markdown.startsWith('---\n')) return markdown.replace('---\n', `---\n${fields}\n`)
@@ -235,10 +237,11 @@ const REPOSITORY_BADGE = /^\[!\[[^\]]*\]\(https:\/\/img\.shields\.io\/[^)]*\)\]\
  */
 function withoutRepositoryChrome(markdown: string): string {
   const lines = markdown.split('\n')
+  const frontmatterEnd = lines[0] === '---' ? lines.indexOf('---', 1) + 1 : 0
   const switcher = lines.findIndex(line => LANGUAGE_SWITCHER.test(line))
   // Only the switcher introducing the page qualifies; further down the same
   // text is prose or a sample rather than the page's own header.
-  if (switcher !== -1 && switcher < 8) {
+  if (switcher >= frontmatterEnd && switcher - frontmatterEnd < 8) {
     lines.splice(switcher, lines[switcher + 1] === '' ? 2 : 1)
   }
   const badge = lines.findLastIndex(line => REPOSITORY_BADGE.test(line))
@@ -253,7 +256,7 @@ function withoutRepositoryChrome(markdown: string): string {
  *
  * @param markdown Rewritten canonical Markdown content.
  * @param page Publication manifest entry for the content.
- * @returns Full Markdown for ordinary pages or frontmatter-only Markdown for a locale home page.
+ * @returns Full page content without duplicate repository-only navigation.
  */
 export function projectedPageContent(markdown: string, page: DocsPage): string {
   if (page.sidebar !== null) return withoutRepositoryChrome(markdown)
@@ -265,7 +268,7 @@ export function projectedPageContent(markdown: string, page: DocsPage): string {
   if (closing === -1) {
     throw new Error(`project-doc-site: locale home source ${JSON.stringify(page.source)} has unclosed YAML frontmatter.`)
   }
-  return markdown.slice(0, closing + closingDelimiter.length)
+  return withoutRepositoryChrome(markdown)
 }
 
 /**
@@ -299,7 +302,7 @@ function referencedImages(): string[] {
       route: page.route,
       pages: docsPages,
       repoRoot: root,
-      repositoryRef: 'master',
+      repositoryRef: repositoryDefaultRef,
       placeImage: (absPath) => {
         const real = publishableImage(absPath, root)
         if (real !== undefined) found.add(real)
@@ -419,8 +422,12 @@ function projectPagesInto(
 /** Rebuild the disposable VitePress source tree from the publication manifest. */
 export function projectDocs(): void {
   rmSync(generatedRoot, { recursive: true, force: true })
-  projectPagesInto(generatedRoot, defaultProjectionContext(), (markdown, page) =>
-    addProjectionFrontmatter(projectedPageContent(markdown, page), page))
+  const context = defaultProjectionContext()
+  projectPagesInto(generatedRoot, context, (markdown, page) =>
+    addProjectionFrontmatter(
+      projectedPageContent(markdown, page), page,
+      `${repositoryUrl}/edit/${context.repositoryRef}/${page.source}`,
+    ))
 }
 
 /**

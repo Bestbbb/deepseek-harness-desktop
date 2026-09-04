@@ -23,7 +23,6 @@ pub struct RuntimeConfig {
     pub working_directory: PathBuf,
     pub desktop_native_entry: PathBuf,
     pub dsh_home: PathBuf,
-    pub auth_token: String,
     pub bridge_url: String,
     pub bridge_token: String,
 }
@@ -119,13 +118,15 @@ fn supervise(
             while let Ok(event) = output.try_recv() {
                 match event {
                     OutputEvent::Stdout(line) => {
-                        publish(RuntimeEvent::Log(line.clone()));
+                        publish(RuntimeEvent::Log(super::diagnostics::redact(&line, None)));
                         if let Some(url) = parse_readiness(&line) {
                             stable_port = url.port();
                             pending_url = Some(url);
                         }
                     }
-                    OutputEvent::Stderr(line) => publish(RuntimeEvent::Log(line)),
+                    OutputEvent::Stderr(line) => {
+                        publish(RuntimeEvent::Log(super::diagnostics::redact(&line, None)))
+                    }
                 }
             }
             if !ready && pending_url.as_ref().is_some_and(listener_open) {
@@ -200,7 +201,6 @@ fn spawn_runtime(
         .arg("--no-open")
         .current_dir(&config.working_directory)
         .env("DSH_HOME", &config.dsh_home)
-        .env("DSH_DESKTOP_AUTH_TOKEN", &config.auth_token)
         .env("DSH_DESKTOP_BRIDGE_URL", &config.bridge_url)
         .env("DSH_DESKTOP_BRIDGE_TOKEN", &config.bridge_token)
         .stdin(Stdio::null())

@@ -1,7 +1,7 @@
 /** Tests for the documentation website projection adapter. */
 
 import { execFileSync } from 'node:child_process'
-import { existsSync, globSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, globSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, dirname, join, resolve } from 'node:path'
 import { fromMarkdown } from 'mdast-util-from-markdown'
@@ -9,6 +9,7 @@ import { gfmFromMarkdown } from 'mdast-util-gfm'
 import { gfm } from 'micromark-extension-gfm'
 import type { Nodes } from 'mdast'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
+import { cleanDocSiteOutput, docSiteBuildOptions } from '../website/build.ts'
 import { docsPages, landingLink, routeLink, sectionSpec, type DocsPage } from '../website/docs.ts'
 import {
   addProjectionFrontmatter, emitRawMarkdownPages, llmsTxt, projectedPageContent, publishableImage,
@@ -70,6 +71,78 @@ describe('website source layout', () => {
   })
 })
 
+describe('documentation site build', () => {
+  it.each([
+    { mode: 'SPA', mpa: false, expectedMpa: undefined },
+    { mode: 'MPA', mpa: true, expectedMpa: 'true' },
+  ])('$mode build removes stale output before writing', async ({ mpa, expectedMpa }) => {
+    const root = mkdtempSync(join(tmpdir(), 'dsh-doc-build-'))
+    roots.push(root)
+    const outDir = join(root, '.dist')
+    const stale = join(outDir, 'stale.md')
+    mkdirSync(outDir)
+    writeFileSync(stale, 'stale\n')
+
+    const options = docSiteBuildOptions(root, mpa)
+    expect(options.mpa).toBe(expectedMpa)
+    expect(existsSync(stale)).toBe(true)
+    await options.onAfterConfigResolve?.({ outDir } as never)
+    expect(existsSync(outDir)).toBe(false)
+  })
+
+  it('refuses to remove the site root or an outside directory', () => {
+    const root = mkdtempSync(join(tmpdir(), 'dsh-doc-build-root-'))
+    const outside = mkdtempSync(join(tmpdir(), 'dsh-doc-build-outside-'))
+    roots.push(root, outside)
+    writeFileSync(join(root, 'keep'), 'root\n')
+    writeFileSync(join(outside, 'keep'), 'outside\n')
+
+    expect(() => {
+      cleanDocSiteOutput(root, root)
+    }).toThrow('must be a child of site root')
+    expect(() => {
+      cleanDocSiteOutput(root, outside)
+    }).toThrow('must be a child of site root')
+    expect(readFileSync(join(root, 'keep'), 'utf8')).toBe('root\n')
+    expect(readFileSync(join(outside, 'keep'), 'utf8')).toBe('outside\n')
+  })
+
+  it('unlinks a link-shaped output without removing its target', () => {
+    const root = mkdtempSync(join(tmpdir(), 'dsh-doc-build-link-root-'))
+    const outside = mkdtempSync(join(tmpdir(), 'dsh-doc-build-link-target-'))
+    roots.push(root, outside)
+    const outDir = join(root, '.dist')
+    const keep = join(outside, 'keep')
+    writeFileSync(keep, 'outside\n')
+    symlinkSync(outside, outDir, 'junction')
+
+    cleanDocSiteOutput(root, outDir)
+
+    expect(existsSync(outDir)).toBe(false)
+    expect(readFileSync(keep, 'utf8')).toBe('outside\n')
+  })
+
+  it('refuses output whose nearest existing parent resolves outside the site root', () => {
+    const root = mkdtempSync(join(tmpdir(), 'dsh-doc-build-parent-link-root-'))
+    const outside = mkdtempSync(join(tmpdir(), 'dsh-doc-build-parent-link-target-'))
+    roots.push(root, outside)
+    const linkedParent = join(root, 'linked')
+    const outDir = join(linkedParent, 'missing', '.dist')
+    const keep = join(outside, 'keep')
+    writeFileSync(keep, 'outside\n')
+    symlinkSync(outside, linkedParent, 'junction')
+
+    try {
+      expect(() => {
+        cleanDocSiteOutput(root, outDir)
+      }).toThrow('must resolve inside site root')
+      expect(readFileSync(keep, 'utf8')).toBe('outside\n')
+    } finally {
+      unlinkSync(linkedParent)
+    }
+  })
+})
+
 describe('publishableImage', () => {
   it('accepts a regular file inside the repository', () => {
     const { root } = fixture()
@@ -97,8 +170,8 @@ describe('publishableImage', () => {
 })
 
 describe('resolveRepositoryRef', () => {
-  it('defaults to public master instead of a private workflow SHA', () => {
-    expect(resolveRepositoryRef({ GITHUB_SHA: 'private-sha' })).toBe('master')
+  it('defaults to the community main branch instead of a workflow SHA', () => {
+    expect(resolveRepositoryRef({ GITHUB_SHA: 'private-sha' })).toBe('main')
   })
 
   it('accepts an explicit public repository ref', () => {
@@ -119,7 +192,7 @@ describe('rewriteMarkdown', () => {
       repositoryRef: 'abc123',
     })).toBe(
       '[B](./reference/b.md#part) '
-      + '[source](https://github.com/deepseek-ai/deepseek-harness/blob/abc123/packages/tool.ts#L2) '
+      + '[source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/abc123/packages/tool.ts#L2) '
       + '[web](https://example.com)\n',
     )
   })
@@ -145,7 +218,7 @@ describe('rewriteMarkdown', () => {
       pages,
       repoRoot: root,
       repositoryRef: 'abc123',
-    })).toBe('![logo](https://raw.githubusercontent.com/deepseek-ai/deepseek-harness/abc123/packages/logo.svg)\n')
+    })).toBe('![logo](https://raw.githubusercontent.com/Bestbbb/deepseek-harness-desktop/abc123/packages/logo.svg)\n')
   })
 
   it('hands an image to the placer and uses the URL it returns', () => {
@@ -224,7 +297,7 @@ describe('rewriteMarkdown', () => {
       repositoryRef: 'abc123',
     })).toBe(
       '[title](./reference/b.md "b.md") '
-      + '[escaped](https://github.com/deepseek-ai/deepseek-harness/blob/abc123/docs/x(y).md)\n',
+      + '[escaped](https://github.com/Bestbbb/deepseek-harness-desktop/blob/abc123/docs/x(y).md)\n',
     )
   })
 
@@ -279,16 +352,20 @@ describe('rewriteMarkdown', () => {
 })
 
 describe('docsPages locale routes', () => {
-  it('redirects both locale roots to their locale-relative quick-start page', () => {
+  it('publishes the desktop landing page at both existing locale roots', () => {
     const homes = docsPages.filter(page => page.sidebar === null)
     expect(homes.map(page => page.route).sort()).toEqual(['en/index.md', 'index.md'])
     for (const page of homes) {
       const source = readFileSync(resolve(repositoryRoot, page.source), 'utf8')
       const projected = projectedPageContent(source, page)
-      expect(projected).toContain('layout: false')
-      expect(projected).toContain('http-equiv: refresh')
-      expect(projected).toContain('content: 0; url=./guide/quickstart')
-      expect(projected).not.toContain('# DeepSeek Harness')
+      expect(projected).toContain('layout: page')
+      expect(projected).not.toContain('http-equiv: refresh')
+      expect(projected).toContain('class="dsh-hero"')
+      expect(projected).toContain('https://github.com/Bestbbb/deepseek-harness-desktop/releases')
+      expect(projected).toContain('harness-desktop-main.png')
+      expect(projected).toContain('harness-desktop-models.png')
+      expect(projected).not.toContain('English | [中文]')
+      expect(projected).not.toContain('[English](index.md) | 中文')
     }
   })
 
@@ -377,7 +454,7 @@ describe('docsPages locale routes', () => {
     const translated = rootPages.filter(page => page.contentLocale === 'zh-CN')
     const fallbacks = rootPages.filter(page => page.contentLocale === 'en-US')
 
-    expect(translated).toHaveLength(43)
+    expect(translated).toHaveLength(46)
     expect(translated.every(page => page.source.endsWith('.zh.md'))).toBe(true)
     expect(fallbacks).toEqual([])
   })
@@ -492,6 +569,13 @@ describe('sidebar ordering', () => {
 })
 
 describe('addProjectionFrontmatter', () => {
+  it('stores the resolved edit URL for callbacks serialized without module closures', () => {
+    const editUrl = 'https://github.com/Bestbbb/deepseek-harness-desktop/edit/main/docs/guide.md'
+    expect(addProjectionFrontmatter('# Guide\n', { source: 'docs/guide.md' }, editUrl)).toBe(
+      `---\neditSource: "docs/guide.md"\neditSourceUrl: "${editUrl}"\n---\n\n# Guide\n`,
+    )
+  })
+
   it('adds frontmatter to an ordinary Markdown page', () => {
     expect(addProjectionFrontmatter('# Guide\n', { source: 'docs/guide.md' })).toBe(
       '---\neditSource: "docs/guide.md"\n---\n\n# Guide\n',
@@ -526,11 +610,11 @@ describe('projectedPageContent', () => {
     order: 0,
   })
 
-  it('omits the source-only body from locale home pages', () => {
+  it('preserves the home body and removes its switcher after long frontmatter', () => {
     expect(projectedPageContent(
       '---\nlayout: false\nhead:\n  - - meta\n    - http-equiv: refresh\n      content: 0; url=./guide/quickstart\n---\n\n# Harness\n\n[English](index.md) | 中文\n',
       page(null),
-    )).toBe('---\nlayout: false\nhead:\n  - - meta\n    - http-equiv: refresh\n      content: 0; url=./guide/quickstart\n---\n')
+    )).toBe('---\nlayout: false\nhead:\n  - - meta\n    - http-equiv: refresh\n      content: 0; url=./guide/quickstart\n---\n\n# Harness\n')
   })
 
   it('keeps the full body for ordinary pages', () => {
@@ -564,7 +648,7 @@ describe('projectedPageContent', () => {
 })
 
 describe('rawMarkdownPageContent', () => {
-  it('keeps the home body the rendered site omits and drops the VitePress frontmatter', () => {
+  it('keeps the home body and drops the VitePress frontmatter', () => {
     expect(rawMarkdownPageContent(
       '---\nlayout: false\nhead:\n  - - meta\n    - http-equiv: refresh\n      content: 0; url=./guide/quickstart\n---\n\n# Harness\n\nEnglish | [中文](./index.md)\n\nBody.\n',
       'docs/user/index.zh.md',
@@ -691,7 +775,9 @@ describe('raw Markdown projection of the published manifest', () => {
     for (const route of ['index.md', 'en/index.md']) {
       const home = readFileSync(join(mirror, route), 'utf8')
       expect(home.startsWith('---'), route).toBe(false)
-      expect(home, route).toContain('# DeepSeek Harness')
+      expect(home, route).toContain('DeepSeek Harness')
+      expect(home.match(/^# /gm), route).toHaveLength(1)
+      expect(home, route).toContain('harness-desktop-models.png')
     }
   })
 

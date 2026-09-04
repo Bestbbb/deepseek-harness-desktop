@@ -30,7 +30,7 @@ interface RuntimePlatform {
 
 type RuntimePlatformManifest = Record<string, RuntimePlatform>
 
-const AGENT_PRESET_GLOB = 'apps/cli/config/agent-presets/*/agent.cordis.yml'
+const AGENT_PRESET_GLOB = 'packages/preset/agent-presets/presets/*/agent.cordis.yml'
 
 export interface RuntimeClosureResult {
   failures: string[]
@@ -106,7 +106,7 @@ if (import.meta.main) {
   })
   const result = await verifyRuntimeClosure(root, values.manifest)
   if (result.failures.length > 0) {
-    console.error('verify-runtime-closure: preset plugins or required workspace peers are missing from python/sdk-runtime dependencies:')
+    console.error(`verify-runtime-closure: preset plugins or required workspace peers are missing from ${values.manifest ?? 'python/sdk-runtime/package.json'} dependencies:`)
     for (const failure of result.failures) console.error(`  ${failure}`)
     process.exitCode = 1
   } else {
@@ -181,6 +181,7 @@ function disabledOnPlatform(value: unknown, processPlatform: string): boolean {
 function processPlatformForTarget(target: string): string {
   if (target.startsWith('linux-')) return 'linux'
   if (target.startsWith('macos-')) return 'darwin'
+  if (target.startsWith('win-')) return 'win32'
   throw new Error(`verify-runtime-closure: unsupported runtime target ${JSON.stringify(target)}`)
 }
 

@@ -107,7 +107,7 @@ fn read_tail(path: &Path, limit: u64) -> Result<String, String> {
     Ok(text)
 }
 
-fn redact(input: &str, home: Option<&Path>) -> String {
+pub(crate) fn redact(input: &str, home: Option<&Path>) -> String {
     let mut output = input.to_owned();
     if let Some(home) = home.and_then(Path::to_str) {
         if !home.is_empty() {
@@ -125,6 +125,8 @@ fn redact(input: &str, home: Option<&Path>) -> String {
         "\"apiKey\":\"",
         "\"api_key\":\"",
         "\"token\":\"",
+        "?token=",
+        "&token=",
     ] {
         output = redact_after_marker(&output, marker);
     }
@@ -173,6 +175,7 @@ mod tests {
             "Sec-WebSocket-Protocol: dsh-auth.ws-secret\n",
             "Authorization: Bearer provider-secret\n",
             "config={\"apiKey\":\"api-secret\",\"token\":\"token-secret\"}\n",
+            "dsh web: http://127.0.0.1:43123/?token=launch-secret\n",
             "/Users/alice/project\n",
         );
         let redacted = redact(input, Some(Path::new("/Users/alice")));
@@ -183,6 +186,7 @@ mod tests {
             "provider-secret",
             "api-secret",
             "token-secret",
+            "launch-secret",
             "/Users/alice",
         ] {
             assert!(!redacted.contains(secret), "secret survived: {secret}");

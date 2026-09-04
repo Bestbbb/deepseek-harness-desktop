@@ -1,4 +1,4 @@
-# Agent Note: Sync the desktop distribution to dsh-v0.1.1-rc.1
+# Agent Note: Keep the desktop distribution aligned with upstream Harness
 
 Status: implemented
 
@@ -10,9 +10,9 @@ Harness Desktop was first cut from `dsh-v0.1.0-rc.8`, while upstream `dsh-v0.1.1
 
 ## Decision
 
-Merge the exact public upstream tag `dsh-v0.1.1-rc.1` into the community history and retain the desktop implementation as a narrow overlay. The overlay consists of the Tauri app, the desktop runtime dependency root, the `ctx.desktop` seam and native provider, its authenticated profile patch, desktop tests and packaging workflow, and desktop-specific documentation. Package and Tauri versions follow the upstream Harness version so the bundled runtime manifest names the code it actually contains.
+The community history merges the exact public upstream tag `dsh-v0.1.2-rc.1` and retains the desktop implementation as a narrow overlay. The overlay consists of the Tauri app, the desktop runtime dependency root, the `ctx.desktop` seam and native provider, its profile patch, desktop tests and packaging workflow, and desktop-specific documentation. Package and Tauri versions follow the upstream Harness version so the bundled runtime manifest names the code it actually contains.
 
-The desktop runtime continues to boot the upstream `web` Profile and applies `desktop.cordis.yml` only as a final launch overlay. The runtime dependency root follows the current production Web closure, including rc.1's plugin inventory, authorization, provider, and client packages. It does not fork the agent loop, LLM adapter abstraction, Profile loader, or plugin manager.
+The desktop runtime boots the upstream `web` Profile and applies `desktop.cordis.yml` only as a final launch overlay. The runtime dependency root follows the current production Web closure, including plugin inventory, authorization, provider, and client packages. It does not fork the agent loop, LLM adapter abstraction, Profile loader, or plugin manager. [Dependency generation](../../../../scripts/sync-desktop-runtime.ts) and [release verification](../../../../scripts/verify-desktop-release.ts) reject stale package lists and divergent native/runtime versions before packaging.
 
 Codex and Claude Code remain independent optional upstream Profile Bundles: `@deepseek-ai/dsh-subagent-codex` and `@deepseek-ai/dsh-subagent-claude-code`. They are not added to the default desktop production closure. Installing one makes its dormant Host provider available after a Profile restart; a copied Agent Preset must separately enable the matching `subagent_codex` or `subagent_claude_code` tool. Each provider uses its pinned product runtime and the user's corresponding product authentication; Harness Desktop does not collect those product credentials or start a provider before a tool call.
 
@@ -21,6 +21,14 @@ The plugin forwarder explicitly waives pnpm's workspace-root mutation guard for 
 For a bare first-party package passed to `plugin add`, the forwarder also pins the spec to the running DSH release. The npm `latest` tag intentionally lags the prerelease `next` tag for some rc.1 Bundles; resolving a bare optional provider through `latest` otherwise selects the obsolete 0.0.1 graph, whose unpublished `dsh-type-meta` dependency makes the documented install command fail. Explicit versions, tags, aliases, URLs, paths, and third-party packages remain unchanged.
 
 The [community automation policy](2026-08-21-community-distribution-automation.md) remains an intentional overlay during this and later upstream merges: standard public runners replace private upstream pools, upstream issue-project mutations remain manual stubs, and credentialed real-provider E2E stays manual-only.
+
+The [Markdown wrapping check](../../../../scripts/verify-md-wrap.ts) discovers system-prompt snapshots with a wildcard basename and filters back to the exact Markdown filename. Node 22's literal-basename glob traversal treats linked snapshot files as directories and throws `ENOTDIR`. Real-path deduplication preserves the original corpus; focused fixtures verify linked files and reject hard-wrapped prose without admitting other snapshot extensions.
+
+The [runtime closure verifier](../../../../scripts/verify-runtime-closure.ts) traverses application entry manifests as well as package and vendor manifests. Both desktop and Python deploy roots declare the required peers reached through the CLI dependency graph; preset-only discovery cannot see those edges. A fixture reaches a missing peer through an application entry, then verifies the repaired declaration.
+
+[Runtime output preparation](../../../../apps/desktop/scripts/runtime-output.mjs) checks directory ownership before recursive cleanup. Empty outputs receive a marker so an interrupted build remains replaceable; completed older outputs require both the runtime manifest and the desktop deployment package identity. Physical-path checks reject the repository, user home, their ancestors, and directory-link outputs. Link materialization unlinks a symlink or Windows junction before copying its target, never recursively removes the link. [Output tests](../../../../scripts/desktop-runtime-output.spec.ts) verify replacement and preservation of unowned files through real Node subprocesses.
+
+Translation discovery excludes generated desktop resources, downloaded runtime archives, Rust targets, and generated native metadata in both its traversal and file predicate. The source desktop READMEs remain in the bilingual corpus; packaging a copy does not turn that copy into an independent documentation source.
 
 ## Alternatives considered
 
@@ -31,7 +39,7 @@ The [community automation policy](2026-08-21-community-distribution-automation.m
 
 ## Consequences
 
-- The desktop application receives rc.1's upstream provider, multimodal, authorization, Profile, plugin, and subagent framework without a second implementation.
+- The desktop application receives the selected upstream release's provider, multimodal, authorization, Profile, plugin, and subagent framework without a second implementation.
 - The Tauri and authenticated local-host boundaries remain isolated from ordinary Web and headless Profiles.
 - Codex and Claude Code can be used as subagent providers after explicit Profile installation, Profile restart, Agent Preset enablement, and product authentication; synchronization alone does not silently grant either tool.
 - Profile plugin installation remains usable with pnpm 11 from both the standalone CLI and pnpm-launched test or development processes.

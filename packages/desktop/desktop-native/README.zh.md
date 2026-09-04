@@ -1,14 +1,47 @@
+---
+description: "为调用 Tauri 桌面宿主的插件提供经认证的回环传输，并说明配置和失败行为。"
+kind: "package-reference"
+---
+
 # @deepseek-ai/dsh-desktop-native
 
 [English](README.md) | 中文
 
-`dsh-desktop-native` 通过随机回环 origin 把每次操作转发到 Tauri 进程，以此提供 `ctx.desktop`。Tauri supervisor 向内置 Node 进程注入该 origin 和另一枚每次启动重新生成的 256 位 token。提供方会在发送 token 之前拒绝非回环 origin，并且从不把 token 放进 URL 或诊断信息。
+## 概述
+
+Tauri 应用管理 Harness 时，插件可通过 `ctx.desktop` 调用原生桌面操作。每次调用都使用私有回环 bridge 和独立的每次启动 token。提供方在发送凭据前拒绝非回环 origin，并拒绝失败或超时的操作。
+
+## 目录
+
+- [配置](#configuration)
+- [实现](#implementation)
+- [模型体验](#model-experience)
+- [已知限制与延后工作](#known-limitations-and-deferred-work)
+
+<a id="configuration"></a>
 
 ## 配置
 
-`endpoint` 必须是精确的 `http://127.0.0.1:<port>` origin。`token` 必填并带有 secret role。`timeoutMs` 默认是 5000 毫秒，分别作用于每次操作。
+[桌面 overlay](../../../apps/desktop/runtime/desktop.cordis.yml) 使用 Rust 提供的值挂载该提供方。它是 Cordis 插件，不是可独立安装的 Profile Bundle。
 
-只有桌面 overlay 会挂载该提供方。普通浏览器和 headless 调用既没有 bridge 环境变量，也没有该服务。
+| 字段 | 默认值 | 含义 |
+|---|---|---|
+| `endpoint` | 必填 | 精确的 `http://127.0.0.1:<port>` origin，不含用户信息、路径、查询或片段。 |
+| `token` | 必填 | 原生 bridge 使用的 secret-role token，从不放入 URL。 |
+| `timeoutMs` | `5000` | 每次操作独立计算的超时毫秒数。 |
+
+<a id="implementation"></a>
+
+## 实现
+
+<details>
+<summary>原生 bridge 的归属</summary>
+
+[提供方](src/index.ts) 向 [Rust bridge](../../../apps/desktop/src-tauri/src/bridge.rs) 发送经认证的请求。浏览器认证由上游 Connection 包负责，使用另一份凭据。该包不发布运行时 invariant companion，因为请求相互独立，且提供方不维护原生状态的镜像。
+
+</details>
+
+<a id="model-experience"></a>
 
 ## 模型体验
 
@@ -16,7 +49,7 @@
 
 #### 模型看到什么
 
-没有直接内容。`NativeDesktopHost.notify()` 负责传递 consumer 请求，不返回面向模型的文字。
+没有直接内容。`NativeDesktopHost.notify()` 负责传递消费方请求，不返回面向模型的文字。
 
 #### Token 影响
 
@@ -28,4 +61,13 @@
 
 ## 已知限制与延后工作
 
-- **单向可用性** — 提供方可以调用 Rust，但没有暴露从 Rust 进入 Harness 的原生事件流；菜单目前直接派发到 WebView。
+<a id="known-limitations-and-deferred-work"></a>
+
+- **没有原生事件流**：提供方可以调用 Rust，但不暴露从 Rust 进入 Harness 的事件；菜单直接派发到 WebView。
+- **可信本地插件**：token 认证 Harness 进程，而不是其中的各个插件。
+
+<a id="dev-note"></a>
+
+### 开发备注
+
+无。

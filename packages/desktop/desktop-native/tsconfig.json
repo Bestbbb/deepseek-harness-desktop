@@ -9,7 +9,6 @@
   "references": [
     { "path": "../../../vendor/cordis" },
     { "path": "../../../vendor/schemastery" },
-    { "path": "../desktop" },
-    { "path": "../../runtime-diagnostics/invariants" }
+    { "path": "../desktop" }
   ]
 }

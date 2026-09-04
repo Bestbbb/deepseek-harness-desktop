@@ -1,7 +1,13 @@
+---
+description: "Desktop runtime deployment dependencies, generation, and validation for packaging maintainers."
+---
+
 # `@deepseek-ai/dsh-desktop-runtime`
 
 English | [中文](README.zh.md)
 
-This private workspace package is the deployment root for the desktop application's bundled TypeScript runtime. Its explicit dependencies are the closed production workspace graph reachable from the CLI, Web profile, and desktop-native provider, including peer-only runtime edges that legacy `pnpm deploy` would otherwise omit.
+This private workspace package is the deployment root for the desktop application's bundled TypeScript runtime. It contains no application logic. Its dependencies close the production workspace graph reachable from the CLI, Web frontend, and desktop-native provider, including required peer dependencies that legacy `pnpm deploy` would otherwise omit.
 
-It contains no application logic. `apps/desktop/scripts/prepare-runtime.mjs` deploys this manifest with production dependencies into the Tauri resource directory, and `scripts/verify-runtime-closure.ts --manifest apps/desktop-runtime/package.json` rejects a missing workspace edge before packaging.
+After changing the upstream base or desktop composition, run `pnpm run desktop:sync` from the repository root, then `pnpm install --frozen-lockfile` if the lockfile is already current. A changed dependency manifest requires updating the lockfile before an immutable install. [The generator](../../scripts/sync-desktop-runtime.ts) follows production, optional, and required peer edges; it excludes development dependencies and optional-only peers.
+
+`pnpm run desktop:verify` rejects stale dependency declarations, missing runtime edges, and inconsistent JavaScript/native version fields. Runtime preparation runs this check before building. [The preparation script](../desktop/scripts/prepare-runtime.mjs) deploys production dependencies and the verified Node executable into Tauri resources. See the [desktop guide](../desktop/README.md#following-upstream) for release alignment.

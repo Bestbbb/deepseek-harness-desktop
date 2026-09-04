@@ -20,6 +20,10 @@ The [Dependabot policy](2026-07-27-dependabot-version-updates.md) retains the 30
 
 The initial ungrouped Dependabot pull requests are closed after this configuration reaches the default branch. Dependency updates are never auto-merged.
 
+The [Desktop workflow](../../../../.github/workflows/desktop.yml) checks runtime-source changes on native macOS arm64 and Windows x64 hosted runners. A `desktop-v*` tag must match the JavaScript and native application versions. Only successful builds of both targets admit publication of their installers and a checksum file; pull requests do not publish releases. [Desktop release tests](../../../../scripts/desktop-release.spec.ts) cover the version checks, runner matrix, artifact requirements, and tag-only publication.
+
+The [workflow tests](../../../../scripts/ci-workflow.spec.ts) retain upstream platform, wheel, and dependency-layout assertions while accepting the community runner and trigger policies. pnpm setup directories include the run id and attempt, and manual live e2e uses the upstream four-worker subprocess limit.
+
 ## Alternatives considered
 
 - **Recreate the upstream GitHub App, labels, and project configuration.** Rejected because the community repository does not use the upstream organization's triage process, and copying its credentials or identifiers would not define an appropriate local policy.

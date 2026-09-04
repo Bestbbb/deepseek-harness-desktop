@@ -12,8 +12,6 @@ import type { Nodes } from 'mdast'
 import { parseMarkdown, visitMarkdown } from './markdown.ts'
 import { isArchivedAgentNotePath, uniqueRepoFiles } from './repo-files.ts'
 
-const root = resolve(import.meta.dirname, '..')
-
 /** Files to check: doc-typecheck's scope, system-prompt expected outputs, and the AGENTS.md pair. */
 const PATTERNS = [
   'README.md',
@@ -22,10 +20,13 @@ const PATTERNS = [
   'docs/**/*.md',
   'packages/*/*.md',
   'packages/*/*/*.md',
-  'examples/**/system-prompt.expected.md',
-  'packages/**/system-prompt.expected.md',
+  // Node 22's literal basename traversal treats file symlinks as directories.
+  // Filter the wildcard results back to the exact basename in checkMarkdownWrap.
+  'snapshots/**/system-prompt.expected.*',
+  'packages/**/system-prompt.expected.*',
   'AGENTS.md',
   'packages/AGENTS.md',
+  'snapshots/AGENTS.md',
 ]
 
 /** A located hard-wrap: a prose paragraph spanning more than one source line. */
@@ -48,7 +49,7 @@ function maskVitePressStructure(source: string): string {
 }
 
 /** Find every hard-wrapped prose paragraph in one Markdown file via its AST. */
-function findViolations(absPath: string): Violation[] {
+function findViolations(root: string, absPath: string): Violation[] {
   const file = relative(root, absPath)
   const source = readFileSync(absPath, 'utf8')
   const parsedSource = maskVitePressStructure(source)
@@ -69,17 +70,33 @@ function findViolations(absPath: string): Violation[] {
   return out
 }
 
-const files = uniqueRepoFiles(root, PATTERNS, isArchivedAgentNotePath)
-const all = files.flatMap(file => findViolations(file.abs))
-const checked = files.length
-
-if (all.length === 0) {
-  console.log(`verify-md-wrap: ${checked} file(s) checked, no hard-wrapped prose paragraphs.`)
-  process.exit(0)
+/**
+ * Check the documentation and system-prompt corpus without following file symlinks as directories.
+ * @param root - Repository root.
+ * @returns The deduplicated file count and located hard-wrapped paragraphs.
+ */
+export function checkMarkdownWrap(root: string): { checked: number; violations: Violation[] } {
+  const seen = new Set<string>()
+  const files = PATTERNS.flatMap(pattern => uniqueRepoFiles(root, [pattern], path =>
+    isArchivedAgentNotePath(path)
+    || (pattern.endsWith('/system-prompt.expected.*') && !path.endsWith('/system-prompt.expected.md')),
+  )).filter((file) => {
+    if (seen.has(file.real)) return false
+    seen.add(file.real)
+    return true
+  })
+  return { checked: files.length, violations: files.flatMap(file => findViolations(root, file.abs)) }
 }
 
-console.error('verify-md-wrap: hard-wrapped prose paragraphs found (write one physical line per paragraph):')
-for (const v of all) {
-  console.error(`  ${v.file}:${v.line}  ${v.text.slice(0, 80)}${v.text.length > 80 ? '…' : ''}`)
+if (import.meta.main) {
+  const { checked, violations } = checkMarkdownWrap(resolve(import.meta.dirname, '..'))
+  if (violations.length === 0) {
+    console.log(`verify-md-wrap: ${checked} file(s) checked, no hard-wrapped prose paragraphs.`)
+  } else {
+    console.error('verify-md-wrap: hard-wrapped prose paragraphs found (write one physical line per paragraph):')
+    for (const v of violations) {
+      console.error(`  ${v.file}:${v.line}  ${v.text.slice(0, 80)}${v.text.length > 80 ? '…' : ''}`)
+    }
+    process.exitCode = 1
+  }
 }
-process.exit(1)
