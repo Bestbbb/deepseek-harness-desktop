@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import * as yaml from 'js-yaml'
 import { describe, expect, it } from 'vitest'
@@ -21,6 +21,22 @@ function expectPortableCommunityChecks(validation: Record<string, unknown>): voi
 }
 
 describe('CI workflow', () => {
+  it('keeps automatic community PR jobs off upstream private runner pools', () => {
+    const ci = loadWorkflow('.github/workflows/ci.yml')
+    if (!isRecord(ci.jobs) || !isRecord(ci.jobs.validation)) return
+    for (const file of readdirSync(resolve(root, '.github/workflows')).filter(file => file.endsWith('.yml'))) {
+      const workflow = loadWorkflow(`.github/workflows/${file}`)
+      if (!isRecord(workflow.on) || !Object.hasOwn(workflow.on, 'pull_request')) continue
+      if (!isRecord(workflow.jobs)) throw new TypeError(`${file} must define jobs`)
+      for (const [name, job] of Object.entries(workflow.jobs)) {
+        if (!isRecord(job)) throw new TypeError(`${file}: ${name} must define a job`)
+        const runners = JSON.stringify({ runsOn: job['runs-on'], strategy: job.strategy })
+        expect(runners, `${file}: ${name} cannot use DeepSeek's private runner pools`)
+          .not.toMatch(/self-hosted|vm-backup|dsh-(?:ubuntu|windows|win-ci)/)
+      }
+    }
+  })
+
   it('isolates every pnpm action setup destination per runner', () => {
     const files = ['.github/workflows/ci.yml', '.github/workflows/ci-master.yml']
     const setups: Array<{ jobName: string; step: unknown }> = []
@@ -760,6 +776,16 @@ describe('npm release workflows', () => {
 })
 
 describe('Documentation site publication', () => {
+  it('keeps the upstream Cloudflare account and preview deployment disabled', () => {
+    const workflow = loadWorkflow('.github/workflows/build-preview-cloudflare.yml')
+    expect(workflow.on).toEqual({ workflow_dispatch: null })
+    expect(workflow.permissions).toEqual({ contents: 'read' })
+    expect(workflowJob(workflow, 'disabled')).toMatchObject({
+      name: 'Upstream Cloudflare preview is disabled', 'runs-on': 'ubuntu-latest',
+    })
+    expect(JSON.stringify(workflow)).not.toContain('secrets.')
+  })
+
   it('keeps Pages deployment dispatch-only from a dsh-v* tag', () => {
     const workflow = loadWorkflow('.github/workflows/docs-pages.yml')
     const build = workflowJob(workflow, 'build')

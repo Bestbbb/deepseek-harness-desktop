@@ -22,7 +22,9 @@ The initial ungrouped Dependabot pull requests are closed after this configurati
 
 The [Desktop workflow](../../../../.github/workflows/desktop.yml) checks runtime-source changes on native macOS arm64 and Windows x64 hosted runners. A `desktop-v*` tag must match the JavaScript and native application versions. Only successful builds of both targets admit publication of their installers and a checksum file; pull requests do not publish releases. [Desktop release tests](../../../../scripts/desktop-release.spec.ts) cover the version checks, runner matrix, artifact requirements, and tag-only publication.
 
-The [workflow tests](../../../../scripts/ci-workflow.spec.ts) retain upstream platform, wheel, and dependency-layout assertions while accepting the community runner and trigger policies. pnpm setup directories include the run id and attempt, and manual live e2e uses the upstream four-worker subprocess limit.
+The [workflow tests](../../../../scripts/ci-workflow.spec.ts) retain upstream platform, wheel, and dependency-layout assertions while accepting the community runner and trigger policies. pnpm setup directories include the run id and attempt, and manual live e2e uses the upstream four-worker subprocess limit. Every automatic PR workflow is checked for upstream private runner labels.
+
+The upstream Cloudflare preview workflow remains a manual explanation-only task. Its private runner and Cloudflare account are unavailable to this repository, and a source contribution does not authorize a website deployment. The keyless documentation build remains in CI; public hosting is configured separately for the community repository.
 
 ## Alternatives considered
 

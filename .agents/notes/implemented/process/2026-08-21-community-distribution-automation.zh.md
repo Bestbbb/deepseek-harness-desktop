@@ -22,7 +22,9 @@ Issue policy 与 Issue lifecycle 工作流文件保留为只能手动运行的�
 
 [Desktop 工作流](../../../../.github/workflows/desktop.yml)在原生 macOS arm64 和 Windows x64 托管 runner 上检查运行时源码变更。`desktop-v*` 标签必须与 JavaScript 和原生应用版本一致。两个目标均构建成功后才允许发布安装包及校验和文件，PR 不发布版本。[桌面发布测试](../../../../scripts/desktop-release.spec.ts)覆盖版本检查、runner 矩阵、产物要求和仅标签触发的发布。
 
-[工作流测试](../../../../scripts/ci-workflow.spec.ts)保留上游的平台、wheel 包和依赖布局断言，同时接受社区 runner 与触发策略。pnpm 安装目录包含运行 id 和尝试次数，手动真实 e2e 采用上游的四个 worker 子进程限制。
+[工作流测试](../../../../scripts/ci-workflow.spec.ts)保留上游的平台、wheel 包和依赖布局断言，同时接受社区 runner 与触发策略。pnpm 安装目录包含运行 id 和尝试次数，手动真实 e2e 采用上游的四个 worker 子进程限制。每个自动 PR 工作流都会检查是否使用了上游私有 runner 标签。
+
+上游 Cloudflare 预览工作流保留为只能手动运行的说明任务。本仓库无法使用它的私有 runner 和 Cloudflare 账户，源码贡献也不代表授权部署网站。CI 仍保留无密钥的文档构建；公开托管需为社区仓库单独配置。
 
 ## 考虑过的替代方案
 
