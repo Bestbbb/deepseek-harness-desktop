@@ -42,6 +42,8 @@ const TOOL_TURN_INTERVAL = 10
 const TOOLS_PER_TOOL_TURN = 10
 const EXPECTED_TOOL_CALLS = LONG_HISTORY_TURNS / TOOL_TURN_INTERVAL * TOOLS_PER_TOOL_TURN
 const EXPECTED_TRAJECTORY_ROWS = 2_100
+// Mirrors COLLAPSED_SESSION_LIMIT in ui-workspace/src/client/rows/WorkspaceBrowser.tsx.
+const SIDEBAR_PREVIEW_ROWS = 5
 const DEFAULT_HISTORY_TURNS = 24
 const PERF_REPLAY_CONTEXT_WINDOW = 10_000_000
 const STREAM_PACE_MS = 8
@@ -804,6 +806,24 @@ async function conversationTurns(page: Page): Promise<number> {
   return stableCount(page.locator('[data-chat-flow-key^="9:turn-tail"]'), count => count > 0)
 }
 
+async function trajectoryLogicalRows(page: Page): Promise<number> {
+  const raw = await page.locator('[data-trajectory-scroll] table').getAttribute('aria-rowcount')
+  if (raw === null || !/^\d+$/.test(raw)) {
+    throw new Error(`trajectory table has invalid aria-rowcount ${JSON.stringify(raw)}`)
+  }
+  return Number(raw)
+}
+
+async function trajectoryState(page: Page): Promise<{ logicalRows: number; mountedRows: number }> {
+  await page.locator('[data-trajectory-scroll] table[data-scroll-ready="true"]')
+    .waitFor({ timeout: 30_000 })
+  const mountedRows = await stableCount(
+    page.locator('[data-trajectory-scroll] tr[data-trajectory-row-key]'),
+    count => count > 0,
+  )
+  return { logicalRows: await trajectoryLogicalRows(page), mountedRows }
+}
+
 function retainedDelta(
   before: RetainedBrowserState,
   after: RetainedBrowserState,
@@ -903,24 +923,53 @@ async function closePerformanceWorld(world: PerformanceWorld): Promise<void> {
   if (failures.length > 1) throw new AggregateError(failures, 'web performance teardown failed')
 }
 
+async function withPerformanceWorld(
+  options: PerformanceWorldOptions,
+  run: (world: PerformanceWorld) => Promise<void>,
+): Promise<void> {
+  const world = await launchPerformanceWorld(options)
+  const failures: unknown[] = []
+  try {
+    await run(world)
+  } catch (error) {
+    failures.push(error)
+  }
+  try {
+    await closePerformanceWorld(world)
+  } catch (error) {
+    failures.push(error)
+  }
+  if (failures.length === 1) throw failures[0]
+  if (failures.length > 1) throw new AggregateError(failures, 'web performance case and cleanup failed')
+}
+
 async function openPerformancePage(
   world: PerformanceWorld,
   expectedSessions: number,
 ): Promise<Locator> {
   await world.page.goto(world.scaffold.authenticatedUrl, { waitUntil: 'load' })
   await world.page.waitForSelector('[class*="frame"]', { timeout: 30_000 })
-  const group = world.page.getByRole('treeitem').first()
-  await expect.poll(() => group.textContent(), { timeout: 30_000 })
-    .toContain(`${String(expectedSessions)} ${expectedSessions === 1 ? 'session' : 'sessions'}`)
+  expect(await world.scaffold.ctx.sessionPersistence.list()).toHaveLength(expectedSessions)
+  const label = world.page.getByText('Ungrouped', { exact: true })
+  await label.waitFor({ timeout: 30_000 })
+  const group = label.locator('..').locator('..')
   return group
 }
 
-async function openLongHistory(page: Page): Promise<number> {
-  await page.getByRole('textbox', { name: 'Search name, keywords...', exact: true })
+async function searchLongHistory(page: Page): Promise<Locator> {
+  const searchButton = page.getByRole('button', { name: 'Search sessions' })
+  if (await searchButton.getAttribute('aria-expanded') !== 'true') await searchButton.click()
+  await page.getByRole('textbox', { name: 'Search sessions...', exact: true })
     .fill('LONG_PERF_SENTINEL')
   const results = page.getByRole('tree', { name: 'Search results' }).getByRole('treeitem')
   await expect.poll(() => results.count(), { timeout: 60_000 }).toBe(1)
-  await results.first().click()
+  await results.first().waitFor({ timeout: 60_000 })
+  return results.first()
+}
+
+async function openLongHistory(page: Page): Promise<number> {
+  const result = await searchLongHistory(page)
+  await result.click()
   await page.getByRole('tab', { name: 'Chat', exact: true }).waitFor({ timeout: 30_000 })
   return conversationTurns(page)
 }
@@ -1184,12 +1233,11 @@ describe('manual web performance: complex workspace and history', () => {
   })
 
   it('reports workspace, history, and trajectory cardinality costs', async () => {
-    const world = await launchPerformanceWorld({
+    await withPerformanceWorld({
       browser,
       sidebarSessions: SIDEBAR_SESSION_COUNT,
       seedLongHistory: true,
-    })
-    try {
+    }, async (world) => {
       const bootStarted = performance.now()
       const group = await openPerformancePage(world, SIDEBAR_SESSION_COUNT + 1)
       const bootReadyMs = performance.now() - bootStarted
@@ -1200,8 +1248,13 @@ describe('manual web performance: complex workspace and history', () => {
         () => globalThis.performance.getEntriesByName('first-contentful-paint')[0]?.startTime,
       )
 
-      const sidebar = await measure(cdp, async () => {
+      const sidebarPreview = await measure(cdp, async () => {
         await group.click()
+        return stableCount(page.getByRole('treeitem'), count => count === SIDEBAR_PREVIEW_ROWS + 1)
+      })
+      const sidebar = await measure(cdp, async () => {
+        const hidden = SIDEBAR_SESSION_COUNT + 1 - SIDEBAR_PREVIEW_ROWS
+        await page.getByRole('button', { name: `Show ${String(hidden)} more sessions`, exact: true }).click()
         return stableCount(
           page.getByRole('treeitem'),
           count => count === SIDEBAR_SESSION_COUNT + 2,
@@ -1211,14 +1264,7 @@ describe('manual web performance: complex workspace and history', () => {
       await group.click()
       await expect.poll(() => page.getByRole('treeitem').count()).toBe(1)
 
-      const contentSearch = await measure(cdp, async () => {
-        await page.getByRole('textbox', { name: 'Search name, keywords...', exact: true })
-          .fill('LONG_PERF_SENTINEL')
-        const results = page.getByRole('tree', { name: 'Search results' }).getByRole('treeitem')
-        await expect.poll(() => results.count(), { timeout: 60_000 }).toBe(1)
-        await results.first().waitFor({ timeout: 60_000 })
-        return results.first()
-      })
+      const contentSearch = await measure(cdp, () => searchLongHistory(page))
       const opened = await measure(cdp, async () => {
         await contentSearch.value.click()
         await page.getByRole('tab', { name: 'Trajectory', exact: true }).waitFor({ timeout: 30_000 })
@@ -1226,23 +1272,27 @@ describe('manual web performance: complex workspace and history', () => {
       })
       expect(opened.value).toBe(DEFAULT_HISTORY_TURNS)
 
-      const trajectoryRows = page.getByRole('row')
       const coldTrajectory = await measure(cdp, async () => {
         await page.getByRole('tab', { name: 'Trajectory', exact: true }).click()
-        return stableCount(trajectoryRows, count => count === EXPECTED_TRAJECTORY_ROWS)
+        return trajectoryState(page)
       })
-      expect(coldTrajectory.value).toBe(EXPECTED_TRAJECTORY_ROWS)
+      expect(coldTrajectory.value.logicalRows).toBeGreaterThan(0)
+      expect(coldTrajectory.value.logicalRows).toBeLessThan(EXPECTED_TRAJECTORY_ROWS)
 
       const collapseTurns = await measure(cdp, async () => {
         await page.getByRole('button', { name: 'Collapse turns', exact: true }).click()
-        return stableCount(trajectoryRows, count => count > 0 && count < EXPECTED_TRAJECTORY_ROWS)
+        await expect.poll(() => trajectoryLogicalRows(page))
+          .toBeLessThan(coldTrajectory.value.logicalRows)
+        return trajectoryState(page)
       })
-      expect(collapseTurns.value).toBeLessThan(EXPECTED_TRAJECTORY_ROWS)
       const trajectorySearch = await measure(cdp, async () => {
         await page.getByRole('searchbox', { name: 'Search trajectory', exact: true }).fill('turn 499')
-        return stableCount(trajectoryRows, count => count > 0 && count < 20)
+        await expect.poll(() => trajectoryLogicalRows(page)).toBeLessThan(20)
+        await page.locator('[data-trajectory-scroll]').getByText('LONG_PERF_SENTINEL turn 499:', { exact: false })
+          .waitFor()
+        return trajectoryState(page)
       })
-      expect(trajectorySearch.value).toBeLessThan(20)
+      expect(trajectorySearch.value.logicalRows).toBeGreaterThan(0)
 
       await page.getByRole('tab', { name: 'Chat', exact: true }).click()
       const historyPages: { turns: number; measurement: Measurement }[] = []
@@ -1261,9 +1311,27 @@ describe('manual web performance: complex workspace and history', () => {
 
       const warmTrajectory = await measure(cdp, async () => {
         await page.getByRole('tab', { name: 'Trajectory', exact: true }).click()
-        return stableCount(trajectoryRows, count => count === EXPECTED_TRAJECTORY_ROWS)
+        return trajectoryState(page)
       })
-      expect(warmTrajectory.value).toBe(EXPECTED_TRAJECTORY_ROWS)
+      const trajectoryPages: { logicalRows: number; mountedRows: number; measurement: Measurement }[] = []
+      // Trajectory owns a separate visible history window even when Chat has loaded the full log.
+      while (await page.locator('[data-history-load]').count() > 0) {
+        const previousRows = await trajectoryLogicalRows(page)
+        const older = await measure(cdp, async () => {
+          const button = page.locator('[data-history-load] button')
+          await expect.poll(() => button.isEnabled()).toBe(true)
+          // Avoid auto-scrolling, which independently requests another page.
+          await button.evaluate((element: HTMLButtonElement) => { element.click() })
+          // The final page can only remove the load row, without adding a rendered record.
+          await expect.poll(async () => await page.locator('[data-history-load]').count() === 0
+            || await trajectoryLogicalRows(page) > previousRows, { timeout: 30_000 }).toBe(true)
+          return trajectoryState(page)
+        })
+        trajectoryPages.push({ ...older.value, measurement: older.measurement })
+      }
+      const expandedTrajectory = await trajectoryState(page)
+      expect(expandedTrajectory.logicalRows).toBe(EXPECTED_TRAJECTORY_ROWS)
+      expect(expandedTrajectory.mountedRows).toBeLessThan(expandedTrajectory.logicalRows)
       const warmConversation = await measure(cdp, async () => {
         await page.getByRole('tab', { name: 'Chat', exact: true }).click()
         return conversationTurns(page)
@@ -1286,30 +1354,30 @@ describe('manual web performance: complex workspace and history', () => {
             ? null
             : rounded(firstContentfulPaintMs),
         },
-        sidebarExpand: sidebar.measurement,
+        sidebarPreview: { rows: sidebarPreview.value, ...sidebarPreview.measurement },
+        sidebarExpand: { rows: sidebar.value, ...sidebar.measurement },
         contentSearch: contentSearch.measurement,
         openLongHistory: { initialTurns: opened.value, ...opened.measurement },
-        coldTrajectory: { rows: coldTrajectory.value, ...coldTrajectory.measurement },
-        collapseTurns: { rows: collapseTurns.value, ...collapseTurns.measurement },
-        trajectorySearch: { rows: trajectorySearch.value, ...trajectorySearch.measurement },
+        coldTrajectory: { ...coldTrajectory.value, ...coldTrajectory.measurement },
+        collapseTurns: { ...collapseTurns.value, ...collapseTurns.measurement },
+        trajectorySearch: { ...trajectorySearch.value, ...trajectorySearch.measurement },
         historyPages,
-        warmTrajectory: { rows: warmTrajectory.value, ...warmTrajectory.measurement },
+        warmTrajectory: { ...warmTrajectory.value, ...warmTrajectory.measurement },
+        trajectoryPages,
+        expandedTrajectory,
         warmConversation: { turns: warmConversation.value, ...warmConversation.measurement },
       }, null, 2)}`)
       expect(world.tripwire.warnings).toEqual([])
       expect(world.tripwire.pageErrors).toEqual([])
-    } finally {
-      await closePerformanceWorld(world)
-    }
+    })
   })
 
   it('reports default 24-turn history plus eight continued turns', async () => {
-    const world = await launchPerformanceWorld({
+    await withPerformanceWorld({
       browser,
       replay: performanceReplayOverride(COMPARISON_TURNS, comparisonTurn),
       seedLongHistory: true,
-    })
-    try {
+    }, async (world) => {
       await openPerformancePage(world, 1)
       const cdp = await world.page.context().newCDPSession(world.page)
       await cdp.send('Performance.enable')
@@ -1331,18 +1399,15 @@ describe('manual web performance: complex workspace and history', () => {
       }, null, 2)}`)
       expect(world.tripwire.warnings).toEqual([])
       expect(world.tripwire.pageErrors).toEqual([])
-    } finally {
-      await closePerformanceWorld(world)
-    }
+    })
   })
 
   it('reports fully expanded 500-turn history plus eight continued turns', async () => {
-    const world = await launchPerformanceWorld({
+    await withPerformanceWorld({
       browser,
       replay: performanceReplayOverride(COMPARISON_TURNS, comparisonTurn),
       seedLongHistory: true,
-    })
-    try {
+    }, async (world) => {
       await openPerformancePage(world, 1)
       const cdp = await world.page.context().newCDPSession(world.page)
       await cdp.send('Performance.enable')
@@ -1377,18 +1442,14 @@ describe('manual web performance: complex workspace and history', () => {
       }, null, 2)}`)
       expect(world.tripwire.warnings).toEqual([])
       expect(world.tripwire.pageErrors).toEqual([])
-    } finally {
-      await closePerformanceWorld(world)
-    }
+    })
   })
 
   it('reports one hundred generated turns and the next user-message paint', async () => {
-    const world = await launchPerformanceWorld({
+    await withPerformanceWorld({
       browser,
       replay: performanceReplayOverride(POST_SOAK_RENDER_TURN, soakTurn),
-    })
-    let testFailure: unknown
-    try {
+    }, async (world) => {
       await world.page.goto(world.scaffold.authenticatedUrl, { waitUntil: 'load' })
       await world.page.waitForSelector('[class*="frame"]', { timeout: 30_000 })
       await connectFreshWorkspace(world.page, world.scaffold.workspaceCwd, 'continuous-conversation-perf')
@@ -1413,19 +1474,6 @@ describe('manual web performance: complex workspace and history', () => {
       }, null, 2)}`)
       expect(world.tripwire.warnings).toEqual([])
       expect(world.tripwire.pageErrors).toEqual([])
-    } catch (error) {
-      testFailure = error
-      throw error
-    } finally {
-      try {
-        await closePerformanceWorld(world)
-      } catch (cleanupError) {
-        if (testFailure === undefined) throw cleanupError
-        throw new AggregateError(
-          [testFailure, cleanupError],
-          'continuous conversation performance test and teardown failed',
-        )
-      }
-    }
+    })
   })
 })

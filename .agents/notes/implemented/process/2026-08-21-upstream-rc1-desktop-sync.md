@@ -38,6 +38,8 @@ The [runtime closure verifier](../../../../scripts/verify-runtime-closure.ts) tr
 
 Translation discovery excludes generated desktop resources, downloaded runtime archives, Rust targets, and generated native metadata in both its traversal and file predicate. The source desktop READMEs remain in the bilingual corpus; packaging a copy does not turn that copy into an independent documentation source.
 
+The [manual browser benchmark](../../../../apps/web/tests/complex-history.perf.ts) follows the upstream compact-sidebar controls and independent Chat/Trajectory history windows. It verifies fixture cardinality separately from mounted DOM rows, so pagination and virtualization do not require shrinking the workload or rendering all records at once. Test-body and cleanup failures remain independently visible. Its Chromium timing and heap reports supplement desktop verification; they neither establish native WebView performance nor replace a credentialed model task.
+
 ## Alternatives considered
 
 - **Keep the desktop release on rc.8.** Rejected because provider, multimodal, credential, plugin, and subagent behavior would immediately diverge from the public Harness release line.
