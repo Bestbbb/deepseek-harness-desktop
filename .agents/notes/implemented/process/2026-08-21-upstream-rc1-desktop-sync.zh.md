@@ -16,6 +16,8 @@ Harness Desktop 最初基于 `dsh-v0.1.0-rc.8`，而上游 `dsh-v0.1.1-rc.1` 已
 
 原生菜单栏由带类型约束的 `Submenu` 切片组装，因为 macOS 不显示普通的顶层菜单项。New Session 位于 File 子菜单；向根列表插入 `MenuItem` 会使 Rust 编译失败。macOS 原生验收检查实际显示的 File 菜单、已启用的 New Session 菜单项和 Cmd+N 绑定；[侧栏测试](../../../../packages/client/ui-sidebar/tests/sidebar-root.client.spec.tsx)覆盖桌面新建会话事件的传递。
 
+主窗口依据其 [Tauri 配置](../../../../apps/desktop/src-tauri/tauri.conf.json)创建，并禁用原生拖放捕获。Tauri 的默认捕获会阻断 Windows 上游附件 UI 使用的浏览器文件拖放事件。Rust 配置测试拒绝启用捕获或自动创建窗口；[附件测试](../../../../packages/client/ui-attachment/tests/composer-attachments.client.spec.tsx)覆盖浏览器拖放的接受、阻止和取消。这些检查不能替代 Windows WebView2 中的真实文件拖放验收。
+
 依赖生成器把仅通过可选路径到达的包保留在部署根的 `optionalDependencies` 中，其中也包括可选依赖边之下的必需下游依赖。必需路径会把相应子树提升到 `dependencies`。如果将所有依赖边都展平为必需依赖，npm 就会在其他平台以 `EBADPLATFORM` 拒绝安装打包运行时，例如 x64 runner 无法安装 Linux ARM64 Landlock 载荷。[生成器测试](../../../../scripts/sync-desktop-runtime.spec.ts)覆盖可选子树、循环依赖、必需路径提升和重叠的直接声明；打包安装工作流保留真实 npm 消费方验证。
 
 桌面应用的 npm 载荷只选择 Rust 源码、能力配置、图标和具名原生构建输入，而不是整个 `src-tauri` 目录。npm 显式选择目录时可能遍历已忽略的 Rust 构建输出，包括嵌入的运行时副本和已有安装包。[桌面发布测试](../../../../scripts/desktop-release.spec.ts)固定这份仅含源码的选择清单；各目标平台的原生安装包构建仍独立组装其资源。

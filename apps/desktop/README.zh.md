@@ -17,6 +17,8 @@ Rust supervisor 拥有完整子进程树：macOS 使用 Unix 进程组，Windows
 
 File 菜单提供 **New Session**，macOS 上的快捷键为 **Cmd+N**。应用菜单提供 **Settings** 和诊断导出。
 
+主窗口禁用 Tauri 的原生拖放处理器，使上游附件 UI 可以接收浏览器文件拖放事件，包括 Windows 平台。窗口仍由应用初始化过程创建；配置中的加载窗口不会自动创建。
+
 桌面数据位于 Tauri 应用数据目录下独立的 `harness` home，不会修改用户的 CLI profile。会话、设置和只写凭证存储可以跨应用更新保留，同时与单独安装的 CLI 隔离。
 
 ## 开发

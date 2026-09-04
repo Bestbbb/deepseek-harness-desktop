@@ -17,6 +17,8 @@ The Rust supervisor owns the complete child process tree. It uses a Unix process
 
 The File menu exposes **New Session**, with **Cmd+N** on macOS. The application menu exposes **Settings** and diagnostic export.
 
+The main window disables Tauri's native drag-and-drop handler so the upstream attachment UI can receive browser file-drop events, including on Windows. Window creation remains in application setup; the configured loading window is not created automatically.
+
 Desktop data lives under Tauri's application-data directory in a dedicated `harness` home. It does not mutate the user's CLI profile. Sessions, settings, and write-only credential storage therefore survive app updates while remaining isolated from a separately installed CLI.
 
 ## Development

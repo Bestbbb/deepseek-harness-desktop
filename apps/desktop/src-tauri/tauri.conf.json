@@ -8,7 +8,20 @@
     "beforeBundleCommand": "node scripts/sign-runtime.mjs"
   },
   "app": {
-    "windows": [],
+    "windows": [
+      {
+        "label": "main",
+        "create": false,
+        "url": "index.html",
+        "title": "Harness Desktop",
+        "width": 1180,
+        "height": 780,
+        "minWidth": 820,
+        "minHeight": 600,
+        "visible": true,
+        "dragDropEnabled": false
+      }
+    ],
     "security": {
       "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src http://127.0.0.1:* ws://127.0.0.1:*"
     }

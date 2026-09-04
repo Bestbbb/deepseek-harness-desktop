@@ -15,7 +15,7 @@ use std::{
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, Submenu, SubmenuBuilder},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    AppHandle, Manager, RunEvent, WebviewUrl, WebviewWindowBuilder,
+    AppHandle, Manager, RunEvent, WebviewWindowBuilder,
 };
 #[cfg(target_os = "macos")]
 use tauri_plugin_autostart::MacosLauncher;
@@ -74,12 +74,14 @@ pub fn run() {
 
 fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let bridge_token = random_token();
-    let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::App("index.html".into()))
-        .title("Harness Desktop")
-        .inner_size(1180.0, 780.0)
-        .min_inner_size(820.0, 600.0)
-        .visible(true)
-        .build()?;
+    let window_config = app
+        .config()
+        .app
+        .windows
+        .iter()
+        .find(|config| config.label == "main")
+        .ok_or("the desktop configuration must declare the main window")?;
+    let window = WebviewWindowBuilder::from_config(app, window_config)?.build()?;
     let close_window = window.clone();
     window.on_window_event(move |event| {
         if let tauri::WindowEvent::CloseRequested { api, .. } = event {
@@ -338,5 +340,29 @@ fn shutdown(app: &AppHandle) {
         if let Ok(mut bridge) = state.bridge.lock() {
             bridge.take();
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn main_window_preserves_browser_file_drops_and_setup_owned_creation() {
+        let config: tauri::Config = serde_json::from_str(include_str!("../tauri.conf.json"))
+            .expect("the shipped Tauri configuration must parse");
+        let window = config
+            .app
+            .windows
+            .iter()
+            .find(|window| window.label == "main")
+            .expect("the main window must be configured");
+        assert!(
+            !window.drag_drop_enabled,
+            "HTML5 file drops need the native handler disabled"
+        );
+        assert!(!window.create, "setup owns main-window creation");
+        assert!(
+            window.visible,
+            "the loading window must be immediately visible"
+        );
     }
 }
