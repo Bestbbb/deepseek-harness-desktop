@@ -40,7 +40,7 @@ pnpm run desktop:dev
 
 `desktop:prepare` 检查桌面依赖清单、构建 Harness、部署生产 workspace 依赖图、下载对应平台的官方 Node.js 22.22.0 发行包、校验 SHA-256，并生成 Tauri resource 目录。`desktop:smoke` 启动这份真实的打包运行时，检查匿名访问拒绝、cookie 登录、模型与会话 RPC、多路复用 WebSocket 事件流，以及强制重启进程后的认证重连。
 
-准备步骤按内置 Node 的头文件重建已批准的原生依赖，包括会话锁使用的 `fs-ext` 扩展，然后使用内置可执行文件加载 `fs-ext`、`node-pty`、`koffi` 和 `sharp`。仅通过 TypeScript 构建不能证明这些原生模块的 ABI 兼容性。
+准备步骤按内置 Node 的头文件重建已批准的原生依赖，包括会话锁使用的 `fs-ext` 扩展。桌面项目的开发依赖固定 `node-gyp` 和 npm 生命周期执行器；执行器显式接收这个编译器，而不是选择 npm 内置的版本。随后使用内置可执行文件加载 `fs-ext`、`node-pty`、`koffi` 和 `sharp`。仅通过 TypeScript 构建不能证明这些原生模块的 ABI 兼容性。
 
 准备步骤只替换空目录或已生成的 Harness Desktop 运行时目录。`DSH_DESKTOP_RUNTIME_OUTPUT` 可以指定其他输出位置，但普通文件、目录链接、无关的非空目录，以及包含仓库或用户主目录的路径，都会在清理前被拒绝。旧输出无法证明归属时，请选择空目录；不要在生成的运行时目录中存放个人文件。
 

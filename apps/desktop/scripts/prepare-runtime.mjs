@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url'
 import { spawn } from 'node:child_process'
 import { pipeline } from 'node:stream/promises'
 import { prepareRuntimeOutput } from './runtime-output.mjs'
-import { assertNativeBuildHost, nativeBuildEnvironment } from './runtime-native.mjs'
+import { assertNativeBuildHost, rebuildNativePackage } from './runtime-native.mjs'
 
 const desktopDir = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const repoRoot = resolve(desktopDir, '../..')
@@ -246,18 +246,9 @@ async function deployRuntime() {
 }
 
 async function rebuildProductionScripts() {
-  // Legacy deploy retains workspace importer ids, so pnpm rebuild at the
-  // deployment root traverses an empty importer. npm reads the installed tree.
-  await run(
-    process.platform === 'win32' ? 'npm.cmd' : 'npm',
-    [
-      'rebuild', 'esbuild', 'node-pty', 'koffi', 'fs-ext', '@deepseek-ai/dsh-subprocess-local',
-      '--foreground-scripts', '--ignore-scripts=false',
-    ],
-    appOutput,
-    process.platform === 'win32',
-    nativeBuildEnvironment(nodeVersion, targetArch),
-  )
+  for (const name of ['node-pty', 'koffi', 'fs-ext', '@deepseek-ai/dsh-subprocess-local']) {
+    await rebuildNativePackage(join(appOutput, 'node_modules', name), nodeVersion, targetArch)
+  }
 }
 
 assertNativeBuildHost(targetPlatform, targetArch)
