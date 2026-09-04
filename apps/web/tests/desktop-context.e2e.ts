@@ -10,7 +10,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import {
   fixtureUserPrompts, launchWebScaffold, readPersistedEvents, type WebScaffold,
 } from './scaffold.ts'
-import { connectFreshWorkspace, newEnglishPage, REPO_ROOT } from './support.ts'
+import { connectFreshWorkspace, REPO_ROOT } from './support.ts'
 
 const FIXTURE = join(REPO_ROOT, 'snapshots/web/desktop-context/session.v2.jsonl')
 
@@ -37,7 +37,10 @@ describe('desktop context in the shipped Web composition', () => {
       extraInstallAnchors: [join(REPO_ROOT, 'packages/desktop/desktop-native/package.json')],
     })
     browser = await chromium.launch()
-    page = await newEnglishPage(browser)
+    // The fixture persists clientTimeZone; the browser must not inherit the runner's zone.
+    page = await browser.newPage({
+      viewport: { width: 1680, height: 1000 }, locale: 'en-US', timezoneId: 'Asia/Taipei',
+    })
     await page.goto(scaffold.authenticatedUrl, { waitUntil: 'load' })
     await connectFreshWorkspace(page, scaffold.workspaceCwd)
   })
