@@ -1,8 +1,8 @@
 # 用户交互
 
-[dsh-user-questions](https://github.com/Bestbbb/deepseek-harness-desktop/tree/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/interaction/user-questions) 的用户交互 seam。它是工具或权限插件需要人类回答后 agent（智能体）才能继续时所使用的、提供方无关的词汇。Agent-scoped waterfall listener 组合可用的 UI 界面，其中包括转发到已连接 client 的 listener。
+[dsh-user-questions](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-questions) 的用户交互 seam。它是工具或权限插件需要人类回答后 agent（智能体）才能继续时所使用的、提供方无关的词汇。Agent-scoped waterfall listener 组合可用的 UI 界面，其中包括转发到已连接 client 的 listener。
 
-源码：[`packages/interaction/user-questions/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/interaction/user-questions/src/index.ts)
+源码：[`packages/interaction/user-questions/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-questions/src/index.ts)
 
 ## 问题选项
 
@@ -147,7 +147,7 @@ Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnp
 async ask(request: AskUserQuestionRequest): Promise<AskUserQuestionAnswer>
 ```
 
-Source: [`packages/interaction/user-questions/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/interaction/user-questions/src/index.ts)
+Source: [`packages/interaction/user-questions/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-questions/src/index.ts)
 
 <a id="user-questions-events"></a>
 
@@ -172,5 +172,5 @@ Ask composed answerers for structured user input. Return an answer to claim the 
 
 Types: [Agent](./core.md) · [Scoped](./scope.md)
 
-Source: [`packages/interaction/user-questions/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/interaction/user-questions/src/types.ts)
+Source: [`packages/interaction/user-questions/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-questions/src/types.ts)
 <!-- END GENERATED cordis-surface -->

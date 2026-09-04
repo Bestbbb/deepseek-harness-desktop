@@ -2,9 +2,9 @@
 
 subagent seam 让一个 agent（智能体）将工作委派给子 agent。与 [bash](./shell.md) 一样，它是**一项可选能力**，不属于 agent loop（智能体循环），因此其类型定义在此而非 [core.md](./core.md) 中。它不同于其他能力 seam，因为**同一上下文中可共存多个提供方实现**，并按名称注册（`ctx.subagents`），而 bash 只允许一个执行器。该注册表遵循 [LLM（大语言模型）适配器注册表](./llm-streaming.md)，而非单服务的 bash 执行器。
 
-Service Definition：[dsh-subagent](https://github.com/Bestbbb/deepseek-harness-desktop/tree/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/subagent/subagent)（`ctx.subagents` + 下文词汇）。Service Provider 是六个兄弟包：`dsh-subagent-spawn-in-process`、`dsh-subagent-fork-in-process`、`dsh-subagent-acp`、`dsh-subagent-codex`、`dsh-subagent-claude-code`、`dsh-subagent-dsh-sdk`；面向模型的 Consumer 包括 [dsh-tool-subagent](https://github.com/Bestbbb/deepseek-harness-desktop/tree/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/subagent/tool-subagent)（按提供方委派）和 [dsh-tool-subagent-control](https://github.com/Bestbbb/deepseek-harness-desktop/tree/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/subagent/tool-subagent-control)（可选的全局 `send_message`、`interrupt_agent` 与 `list_agents` 控制工具）。同一个 `ctx.subagents` 服务通过内部激活管理器负责可继续子 agent 编排，并直接基于会话存储和可选的会话持久化提供只读的 child 与后代发现。产品提供方设计理由见 [Codex 与 Claude Code Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/.agents/notes/implemented/feature/2026-08-04-claude-code-and-codex-subagent-backends.zh.md)；通用 seam 的设计理由见 [subagent Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/.agents/notes/implemented/feature/2026-06-21-subagent-capability-seam.zh.md)、[可继续 subagent Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/.agents/notes/implemented/feature/2026-07-28-continuable-subagent-conversations.zh.md)、[相邻 Agent 消息 Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/.agents/notes/implemented/architecture/2026-08-27-adjacent-agent-steer-messaging.zh.md)、[持久化目录 Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/.agents/notes/implemented/feature/2026-07-22-durable-subagent-catalog-and-list-agents.zh.md)、[列表身份投影 Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/.agents/notes/implemented/architecture/2026-08-06-subagent-list-identity-projection.zh.md)和[服务合并 Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/.agents/notes/implemented/simplification/2026-07-26-merge-subagent-control-service.zh.md)。
+Service Definition：[dsh-subagent](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/subagent)（`ctx.subagents` + 下文词汇）。Service Provider 是六个兄弟包：`dsh-subagent-spawn-in-process`、`dsh-subagent-fork-in-process`、`dsh-subagent-acp`、`dsh-subagent-codex`、`dsh-subagent-claude-code`、`dsh-subagent-dsh-sdk`；面向模型的 Consumer 包括 [dsh-tool-subagent](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/tool-subagent)（按提供方委派）和 [dsh-tool-subagent-control](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/tool-subagent-control)（可选的全局 `send_message`、`interrupt_agent` 与 `list_agents` 控制工具）。同一个 `ctx.subagents` 服务通过内部激活管理器负责可继续子 agent 编排，并直接基于会话存储和可选的会话持久化提供只读的 child 与后代发现。产品提供方设计理由见 [Codex 与 Claude Code Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/feature/2026-08-04-claude-code-and-codex-subagent-backends.zh.md)；通用 seam 的设计理由见 [subagent Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/feature/2026-06-21-subagent-capability-seam.zh.md)、[可继续 subagent Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/feature/2026-07-28-continuable-subagent-conversations.zh.md)、[相邻 Agent 消息 Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/architecture/2026-08-27-adjacent-agent-steer-messaging.zh.md)、[持久化目录 Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/feature/2026-07-22-durable-subagent-catalog-and-list-agents.zh.md)、[列表身份投影 Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/architecture/2026-08-06-subagent-list-identity-projection.zh.md)和[服务合并 Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/simplification/2026-07-26-merge-subagent-control-service.zh.md)。
 
-源码：[`packages/subagent/subagent/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/subagent/subagent/src/types.ts)、[`packages/subagent/subagent/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/subagent/subagent/src/index.ts)和 [`packages/subagent/subagent/src/continuation.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/subagent/subagent/src/continuation.ts)
+源码：[`packages/subagent/subagent/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/subagent/src/types.ts)、[`packages/subagent/subagent/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/subagent/src/index.ts)和 [`packages/subagent/subagent/src/continuation.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/subagent/src/continuation.ts)
 
 ## 两类能力，两种发现方式
 
@@ -102,7 +102,7 @@ interface SubagentStartRequest {
 }
 ```
 
-`signal` 是就绪前后唯一的取消通道。[subagent 组合控制 Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/.agents/notes/implemented/feature/2026-07-12-subagent-persona-tool-filter-and-depth.zh.md)规定 persona、live 全局工具过滤、绝对深度以及「可见性而非权限」的设计理由。
+`signal` 是就绪前后唯一的取消通道。[subagent 组合控制 Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/feature/2026-07-12-subagent-persona-tool-filter-and-depth.zh.md)规定 persona、live 全局工具过滤、绝对深度以及「可见性而非权限」的设计理由。
 
 面向调用方的请求不携带目录格式细节或继续执行状态。`SubagentRuntime.start()` 会在能力检查后解析分离的一次性描述符，再将以下面向提供方的请求传给所选传输；可继续子 agent 绝不会到达 `SubagentProvider.start()`：
 
@@ -254,13 +254,13 @@ interface ContinuableCreateSpec {
 }
 ```
 
-描述符（[descriptor.ts](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/subagent/subagent/src/descriptor.ts) 中的 `SubagentDescriptorData`）是每个由会话支撑的 subagent 所使用、按模式判别的持久化身份。两种模式都携带提供方名称。`one-shot` 描述符可以携带调用方拥有的可选显示 `label`；`continuable` 描述符要求以委派 `description` 作为持久化创建标签，并另外对已解析的子 agent `agentOptions.provider`／`model`／`reasoningEffort` 与可选的 `persona`／`toolFilter` 建立快照，用于冷恢复。它绝不会对可合并扩展的 `AgentOptions` 对象建立快照，因此无关的扩展值不会破坏继续执行，后续新增组合配置输入则是一次有意的版本更改。描述符省略 `subagentDepth`（冷恢复以持久化 header 中的 `delegationDepth` 作为单调下界）和 `outputSchema`（单次运行或 Activation 的结果约定，而非持久化身份）。
+描述符（[descriptor.ts](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/subagent/src/descriptor.ts) 中的 `SubagentDescriptorData`）是每个由会话支撑的 subagent 所使用、按模式判别的持久化身份。两种模式都携带提供方名称。`one-shot` 描述符可以携带调用方拥有的可选显示 `label`；`continuable` 描述符要求以委派 `description` 作为持久化创建标签，并另外对已解析的子 agent `agentOptions.provider`／`model`／`reasoningEffort` 与可选的 `persona`／`toolFilter` 建立快照，用于冷恢复。它绝不会对可合并扩展的 `AgentOptions` 对象建立快照，因此无关的扩展值不会破坏继续执行，后续新增组合配置输入则是一次有意的版本更改。描述符省略 `subagentDepth`（冷恢复以持久化 header 中的 `delegationDepth` 作为单调下界）和 `outputSchema`（单次运行或 Activation 的结果约定，而非持久化身份）。
 
 本地一次性提供方会在子 agent 的初始轮次内、首次请求前追加描述符。继续执行管理器会在任何提供方提供的谱系之后、初始提示词获准之前追加描述符；`Session.inheritedEventCount` 仍是 fork 谱系边界：恢复时的描述符权威读取子 agent 自身的后缀，而供列表使用的身份投影以 last-wins 折叠 `subagent/descriptor`，子 agent 自己的描述符会覆盖 fork seed 中祖先的描述符。seeded cold list 会跳过 cache hint，直到权威 observation 提供该精确 cut。该事件只进入日志：不含 `surfaceOp`，绝不进入模型历史，并由仅追加日志跨压缩保留。格式错误的当前版本描述符属于损坏；本运行时无法对不受支持的版本进行分类。
 
 ## 持久化枚举：`listChildren()`、`listDescendants()` 与其条目
 
-`SubagentRuntime.listChildren(parentSessionId)` 从 `ctx.sessions.list()` 与可选 `ctx.sessionPersistence.list()` 的实时优先合并中枚举 parent 直接且由会话支撑的 subagent——不经查询服务，也不会加载或恢复任何 Agent。候选是持久 header 携带 `origin: 'subagent'` 的直接 child；该标记只负责枚举分类与粗粒度的通用路由拒绝，不能证明描述符有效、child 可恢复或操作已获授权——身份由投影折叠负责，恢复由 Activation 约定负责。每行的 `mode`／`label` 是已注册 `subagent` projection unit 的值，经三级阶梯供值：存活 child 由 `stateOf()` 供值（零日志读取）；冷 child 先读可选的投影 checkpoint 缓存（`cachedSnapshot`——过 own-suffix seq 门的身份即定值，own descriptor 一经追加不可变）；否则在一次 `persistence.inspect()` 读取上经注册表折叠（有界并发，每次列表重新计算）。该缓存是纯可选加速层：服务缺席、行里是 `null` 哨兵或 key 缺席、seq 门不过、读取出错，都静默落到权威重折。折叠规则是 `subagent/descriptor` last-wins 且没有失败通道：子 agent 自己的描述符覆盖 fork seed 中祖先的描述符，格式错误或版本不认识的载荷折叠为可序列化的 `null` 哨兵，视同无值。结果是按 `createdAt`、再按 id 排序的 `SubagentListEntry[]`：取到身份即生成带有 `mode: 'one-shot' | 'continuable'` 和 `activity: 'running' | 'inactive'` 的 `child` 条目；可继续条目始终携带 `label`，一次性条目则只在启动调用方提供展示元数据时携带该字段。已定局而折叠无身份的候选生成 `corrupt` diagnostic——缺失、格式错误与版本不认识的描述符有意不再细分（`unsupported` 仍保留在类型中但从不产出）；运行中而无身份的候选被省略（描述符落盘前的创建窗口）；冷检查失败生成一条 `unavailable` diagnostic 并在下次列表自然重试，因此一个损坏的 sibling 不会隐藏健康 child。`hasChildren` 标记存在持久 subagent origin 的直接后代，读取自同一份合并材料。活动状态只表示逻辑记录是否在 `ctx.sessions` 中存活，而不表示结果或可恢复性。缺少持久化时，枚举退化为仅存活枚举而不是报错——此时冷 child 本就无法恢复。`listChildren()` 要求运行时的投影注册表；缺少会话存储时会抛出携带错误码 `SUBAGENT_CONTROL_SESSION_STORE_UNAVAILABLE` 的 `SubagentError`，并在任何读取之前检查，因此零 child 的部署同样确定失败；列表工具在插件加载时要求 `ctx.subagents` 与 `ctx.agents`。UI 等服务消费方可以展示两种模式，并为无标签的一次性 child 选择回退展示；面向模型的 `list_agents` 适配器（[dsh-tool-subagent-control](https://github.com/Bestbbb/deepseek-harness-desktop/tree/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/subagent/tool-subagent-control) 中可单独加载的 `/list-agents` 插件）则只保留可继续条目，并通过在线 Agent 注册表将状态细化为自己的 `running`／`idle`／`ready` 词汇，其中 `ready` 把仅存于存储的 child 命名为可恢复而非终态。枚举不会查询继续执行管理器的 Activation map、Agent 注册表或提供方可用性；`send_message` 仍是消息送达时的权威操作，列表中的运行中可继续 child 仍可能因所有权冲突而拒绝投递。读路径的设计理由见[列表身份投影 Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/.agents/notes/implemented/architecture/2026-08-06-subagent-list-identity-projection.zh.md)。
+`SubagentRuntime.listChildren(parentSessionId)` 从 `ctx.sessions` 与会话查询引擎 `listSessions()` 的实时优先合并中枚举 parent 直接且由会话支撑的 subagent——不会加载或恢复任何 Agent。候选是持久 header 携带 `origin: 'subagent'` 的直接 child；该标记只负责枚举分类与粗粒度的通用路由拒绝，不能证明描述符有效、child 可恢复或操作已获授权——身份由投影折叠负责，恢复由 Activation 约定负责。每行的 `mode`／`label` 是已注册 `subagent` projection unit 的值，经三级阶梯供值：存活 child 由注册表水位缓存供值（零日志读取）；冷 child 先读可选的投影 checkpoint 缓存（`cachedSnapshot`——过 own-suffix seq 门的身份即定值，own descriptor 一经追加不可变）；否则在一次 `query.observeSession()` 冷观察上经注册表折叠（有界并发，每次列表重新计算）。该缓存是纯可选加速层：服务缺席、行里是 `null` 哨兵或 key 缺席、seq 门不过、读取出错，都静默落到权威重折。折叠规则是 `subagent/descriptor` last-wins 且没有失败通道：子 agent 自己的描述符覆盖 fork seed 中祖先的描述符，格式错误或版本不认识的载荷折叠为可序列化的 `null` 哨兵，视同无值。结果是按 `createdAt`、再按 id 排序的 `SubagentListEntry[]`：取到身份即生成带有 `mode: 'one-shot' | 'continuable'` 和 `activity: 'running' | 'inactive'` 的 `child` 条目；可继续条目始终携带 `label`，一次性条目则只在启动调用方提供展示元数据时携带该字段。已定局而折叠无身份的候选生成 `corrupt` diagnostic——缺失、格式错误与版本不认识的描述符有意不再细分（`unsupported` 仍保留在类型中但从不产出）；运行中而无身份的候选被省略（描述符落盘前的创建窗口）；冷检查失败生成一条 `unavailable` diagnostic 并在下次列表自然重试，因此一个损坏的 sibling 不会隐藏健康 child。`hasChildren` 标记存在持久 subagent origin 的直接后代，读取自同一份合并材料。活动状态只表示逻辑记录是否在 `ctx.sessions` 中存活，而不表示结果或可恢复性。缺少持久化时，枚举退化为仅存活枚举而不是报错——此时冷 child 本就无法恢复。缺少 `ctx.sessionProjections` 注册表时，`listChildren()` 抛出携带错误码 `SUBAGENT_CONTROL_PROJECTIONS_UNAVAILABLE` 的 `SubagentError`，缺少会话存储时则抛出 `SUBAGENT_CONTROL_SESSION_STORE_UNAVAILABLE`，两者都在任何读取之前检查，因此零 child 的部署同样确定失败；列表工具在插件加载时要求 `ctx.subagents` 与 `ctx.agents`。UI 等服务消费方可以展示两种模式，并为无标签的一次性 child 选择回退展示；面向模型的 `list_agents` 适配器（[dsh-tool-subagent-control](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/tool-subagent-control) 中可单独加载的 `/list-agents` 插件）则只保留可继续条目，并通过在线 Agent 注册表将状态细化为自己的 `running`／`idle`／`ready` 词汇，其中 `ready` 把仅存于存储的 child 命名为可恢复而非终态。枚举不会查询继续执行管理器的 Activation map、Agent 注册表或提供方可用性；`send_message` 仍是消息送达时的权威操作，列表中的运行中可继续 child 仍可能因所有权冲突而拒绝投递。读路径的设计理由见[列表身份投影 Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/architecture/2026-08-06-subagent-list-identity-projection.zh.md)。
 
 `SubagentRuntime.listDescendants(rootSessionId)` 将同一份实时优先语料与基于投影的解释应用到根的完整后代树，并按稳定 pre-order 输出。普通会话和一次性 child 仍作为遍历节点，因此其下的可继续后代仍可发现；只有 `origin: 'subagent'` 的候选会生成条目。每个返回的 child 或 diagnostic 都从枚举所得的持久 header 附加树位置；冷检查在提供身份前还会重新校验完整生命周期：
 
@@ -457,7 +457,7 @@ interface SubagentProvider {
 spawn 和 fork 后端通过 `parent.ctx` 创建一个普通的单次 agent，将取消信号传入核心创建流程，并通过 `AgentHandle` 进行 dispose；而可继续子 agent 则由继续执行管理器通过其自己的 activation-owner 作用域创建。移除提供方会阻止新的 start，但不会撤销已接受的 run。每个子 agent 获得一个新的扁平作用域，而非继承父级注册。深度与 fork 种子注入复用既有的 agent 和会话词汇：
 
 - **委派深度**由持久 `SessionHeader.delegationDepth` 与可合并扩展的运行时字段 `AgentOptions.subagentDepth` 共同表示；缺失表示顶层深度为零，存在的较大值具有权威性。两个字段都归该 seam 所有——循环既不设置也不读取它们——因此进程内子 agent 会持久保存 parent 深度 + 1，冷恢复无法降低深度，而且每次 start 都会拒绝超出安全整数域、或高于已定义绝对 `request.maxDepth` 上限的派生深度。
-- **Fork 种子注入**使用 [`CreateAgentOptions.seed`](./core.md#creation-and-ownership)（一个 `SessionEvent[]` 前缀，经由 `AgentLoop.createAgent` → `ctx.sessions.prepare({ seed })` 传递，与 `ctx.agents.resume()` 使用的原语相同）。fork 后端传入父级日志的一段*平衡的已完成轮次前缀*——父级事件直到并包括其最后一个 `turn/end`——因此种子从 0 连续，[invariants](https://github.com/Bestbbb/deepseek-harness-desktop/tree/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/runtime-diagnostics/invariants) 回放可以接受它（进行中的、未平衡的轮次被排除在外）。
+- **Fork 种子注入**使用 [`CreateAgentOptions.seed`](./core.md#creation-and-ownership)（一个 `SessionEvent[]` 前缀，经由 `AgentLoop.createAgent` → `ctx.sessions.prepare({ seed })` 传递，与 `ctx.agents.resume()` 使用的原语相同）。fork 后端传入父级日志的一段*平衡的已完成轮次前缀*——父级事件直到并包括其最后一个 `turn/end`——因此种子从 0 连续，[invariants](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/runtime-diagnostics/invariants) 回放可以接受它（进行中的、未平衡的轮次被排除在外）。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 
@@ -481,7 +481,7 @@ Singleton settings owner read by delegation tools when an Agent is published.
 current(): SubagentModelSelectionSettings
 ```
 
-Source: [`packages/subagent/tool-subagent/src/model-selection-settings.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/subagent/tool-subagent/src/model-selection-settings.ts)
+Source: [`packages/subagent/tool-subagent/src/model-selection-settings.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/tool-subagent/src/model-selection-settings.ts)
 
 <a id="ctxsubagents--subagentruntime"></a>
 
@@ -680,7 +680,7 @@ async start(name: string, request: SubagentStartRequest): Promise<SubagentRun>
 
 Types: [Agent](./core.md) · [ContentBlock](./llm-streaming.md) · [MessageId](./llm-streaming.md) · [SessionId](./core.md)
 
-Source: [`packages/subagent/subagent/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/subagent/subagent/src/index.ts)
+Source: [`packages/subagent/subagent/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/subagent/src/index.ts)
 
 <a id="subagent-events"></a>
 
@@ -706,7 +706,7 @@ A published child settled. Scope-filtered dispatch uses the same delegating pare
 
 Types: [Scoped](./scope.md)
 
-Source: [`packages/subagent/subagent/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/subagent/subagent/src/index.ts)
+Source: [`packages/subagent/subagent/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/subagent/src/index.ts)
 
 <a id="subagentprovider-added--emit"></a>
 
@@ -723,7 +723,7 @@ A provider became resolvable in the registry.
 'subagent/provider-added'(provider: SubagentProvider): void
 ```
 
-Source: [`packages/subagent/subagent/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/subagent/subagent/src/index.ts)
+Source: [`packages/subagent/subagent/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/subagent/src/index.ts)
 
 <a id="subagentprovider-removed--emit"></a>
 
@@ -740,7 +740,7 @@ A provider left the registry. Accepted runs remain holder-owned.
 'subagent/provider-removed'(name: string): void
 ```
 
-Source: [`packages/subagent/subagent/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/subagent/subagent/src/index.ts)
+Source: [`packages/subagent/subagent/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/subagent/src/index.ts)
 
 <a id="subagentstart--emit"></a>
 
@@ -764,5 +764,5 @@ A provider established a published child. For in-process providers, `ctx.agents.
 
 Types: [Scoped](./scope.md)
 
-Source: [`packages/subagent/subagent/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/subagent/subagent/src/index.ts)
+Source: [`packages/subagent/subagent/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/subagent/src/index.ts)
 <!-- END GENERATED cordis-surface -->

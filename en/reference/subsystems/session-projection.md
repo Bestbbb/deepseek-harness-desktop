@@ -1,8 +1,8 @@
 # Session Projections
 
-The session-projection seam — a [capability seam](../capability-seams.md) through which domain host plugins serve whole current values of log-derived per-session state to client carriers: the Service Definition and registry ([dsh-session-projection](https://github.com/Bestbbb/deepseek-harness-desktop/tree/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/session/session-projection), `ctx.sessionProjections`), domain contributors (each registering one pure unit), and carriers ([dsh-session-controller](https://github.com/Bestbbb/deepseek-harness-desktop/tree/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/api/session-controller)'s history tail page and `session/projection` push frame). It is one optional capability, not part of the agent-loop spine. The framework drives, the domain computes: the registry subscribes to `session/event` once and folds every committed event through every unit; domains hold no subscriptions and clients never fold domain events — they receive finished values. Design authority: the [session-projection RFC](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/.agents/notes/proposed/architecture/2026-07-27-session-projection-and-command-log.md); drive/cache/feed contracts: the [package README](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/session/session-projection/README.md).
+The session-projection seam — a [capability seam](../capability-seams.md) through which domain host plugins serve whole current values of log-derived per-session state to client carriers: the Service Definition and registry ([dsh-session-projection](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-projection), `ctx.sessionProjections`), domain contributors (each registering one pure unit), and carriers ([dsh-session-controller](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/session-controller)'s history tail page and `session/projection` push frame). It is one optional capability, not part of the agent-loop spine. The framework drives, the domain computes: the registry subscribes to `session/event` once and folds every committed event through every unit; domains hold no subscriptions and clients never fold domain events — they receive finished values. Design authority: the [session-projection RFC](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/proposed/architecture/2026-07-27-session-projection-and-command-log.md); drive/cache/feed contracts: the [package README](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-projection/README.md).
 
-Source: [`packages/session/session-projection/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/session/session-projection/src/index.ts)
+Source: [`packages/session/session-projection/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-projection/src/index.ts)
 
 ## The unit
 
@@ -136,6 +136,25 @@ The persisted projection cache service. Opens the `session_projcache` domain at 
 cachedSnapshot( meta: SessionHeader, inheritedEventCount: SessionLogOffset, keys?: readonly Extract<keyof SessionProjectionMap, string>[], ): ProjectionSnapshot | undefined
 
 /**
+ * Read only a predecessor checkpoint's title as a zero-I/O listing hint.
+ *
+ * The authoritative Session header supplies the lifecycle identity. A cache
+ * checkpoint can lag that log but cannot lead it because writes flush the
+ * log first, so a matching predecessor title is a genuine (possibly stale)
+ * fact from this Session. The registry still requires the current title
+ * projection's row version and schema. No other predecessor projection is
+ * exposed: format normalization can change their current meaning, and the
+ * strict {@link cachedSnapshot} / hydration paths continue to reject them.
+ * @param meta - authoritative listed Session header.
+ * @param inheritedEventCount - exact inherited cut completing the lifecycle identity.
+ * @returns a title-only checkpoint view with `asOfSeq: -1`, or `undefined`
+ *   when the record is current, newer, unrelated, missing, or incompatible
+ *   with the title unit. The sentinel avoids reusing a sequence that a
+ *   cardinality-changing Session migration may have remapped.
+ */
+cachedPredecessorTitle( meta: SessionHeader, inheritedEventCount: SessionLogOffset, ): ProjectionSnapshot | undefined
+
+/**
  * Hydrate projection cells for an already-prepared Session without another
  * persistence read. The cache seeds matching rows; the supplied exact log
  * advances every unit to the observation cut. No checkpoint is written
@@ -175,7 +194,7 @@ coldSnapshot( meta: SessionHeader, inheritedEventCount: SessionLogOffset, events
 
 Types: [Session](./session.md) · [SessionEvent](./session.md) · [SessionHeader](./persistence.md) · [SessionLogOffset](./session.md)
 
-Source: [`packages/session/session-projection-cache/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/session/session-projection-cache/src/index.ts)
+Source: [`packages/session/session-projection-cache/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-projection-cache/src/index.ts)
 
 <a id="ctxsessionprojections--sessionprojectionregistry"></a>
 
@@ -269,9 +288,9 @@ checkpoint(session: Session): ProjectionCheckpoint
  * yields an end below every watermark and the restore rejects for a full
  * re-read.
  * @param checkpoint - persisted rows for one session (possibly stale or empty).
- * @returns the seq to hand the persistence `readFrom`, or `undefined`
- *   when no unit is registered (no read needed — {@link restore} would
- *   serve empty values regardless).
+ * @returns the offset for the stored-log suffix read (`SessionHandle.read`),
+ *   or `undefined` when no unit is registered (no read needed —
+ *   {@link restore} would serve empty values regardless).
  */
 restoreFloor(checkpoint: ProjectionCheckpoint): SessionLogOffset | undefined
 
@@ -292,8 +311,8 @@ viewCheckpoint( checkpoint: ProjectionCheckpoint, keys?: readonly Extract<keyof 
  * Cold read: fold every persisted unit over a stored log suffix, seeding
  * each from its checkpoint row when usable — the one read recipe (cached
  * state + forward tail replay + `view`) applied without a live `Session`.
- * Call with the events returned by a persistence
- * `readFrom(id, restoreFloor(checkpoint))` and that same floor as
+ * Call with the stored events at or past `restoreFloor(checkpoint)` (a
+ * `SessionHandle.read` slice) and that same floor as
  * `baseSeq`; the floor's one-below anchor makes the supplied end honest,
  * so a shrunk log is detected here. A row is usable iff its
  * `ver` matches the live unit's `stateVersion`, it does not predate `baseSeq`
@@ -329,5 +348,5 @@ hydrate( session: Session, checkpoint: ProjectionCheckpoint, events: readonly Se
 
 Types: [Session](./session.md) · [SessionEvent](./session.md) · [SessionHeader](./persistence.md) · [SessionLogOffset](./session.md)
 
-Source: [`packages/session/session-projection/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/session/session-projection/src/index.ts)
+Source: [`packages/session/session-projection/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-projection/src/index.ts)
 <!-- END GENERATED cordis-surface -->

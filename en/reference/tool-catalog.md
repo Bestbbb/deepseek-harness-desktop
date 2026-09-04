@@ -5,7 +5,7 @@
 
 Every model-facing tool a shipped plugin contributes to `ctx.tools`: the `name`, `description`, and JSON-Schema `parameters` the model receives via the system-prompt assembly. It complements the [subsystem pages](./subsystems/core.md) (the types plus each page's generated Cordis API region) — this page is the *tools* the agent is offered.
 
-This file is GENERATED and verified fresh by `pnpm run verify-tool-catalog` (part of `doc-sync`) — do not edit it by hand. Unlike the cordis catalog (a pure source-AST pass), this generator BOOTS each tool plugin on a real context and reads `ctx.tools.schemas()`, because a tool schema is not statically knowable (runtime-spread enums, concatenated descriptions, config-driven names, raw-JSON-Schema MCP tools). A completeness guard globs `packages/*/tool-*` and fails if any package is missing from the generator's boot manifest, so a new tool cannot be silently undocumented. See [the tool-schema-catalog Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/.agents/notes/implemented/process/2026-07-02-tool-schema-catalog.md).
+This file is GENERATED and verified fresh by `pnpm run verify-tool-catalog` (part of `doc-sync`) — do not edit it by hand. Unlike the cordis catalog (a pure source-AST pass), this generator BOOTS each tool plugin on a real context and reads `ctx.tools.schemas()`, because a tool schema is not statically knowable (runtime-spread enums, concatenated descriptions, config-driven names, raw-JSON-Schema MCP tools). A completeness guard globs `packages/*/tool-*` and fails if any package is missing from the generator's boot manifest, so a new tool cannot be silently undocumented. See [the tool-schema-catalog Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/process/2026-07-02-tool-schema-catalog.md).
 
 Scope: shipped product tools under `packages/*/tool-*`, each booted with its DEFAULT config, except where a Config field is REQUIRED with no default — there the generator must choose, and the per-package note records which branch this page shows. The registered tool NAME can be a load-time config (e.g. `tool-subagent`'s `toolName`), so a deployment may expose a package under a different or additional name — a per-package note records those shipped aliases where they exist. The `examples/` demo tools (e.g. `echo`) are excluded, matching the cordis catalog's packages-only scope.
 
@@ -36,7 +36,7 @@ This table connects model-visible tool names to the plugin package and service s
 | `@deepseek-ai/dsh-tool-subagent` | `list_subagent_models`, `subagent` | `ctx.tools`, `ctx.subagents`, `ctx.systemPrompt`, `ctx.llm for model discovery and selected-route validation` | `tool/call`, `tool/result`, `child session events through the chosen provider` | `subagent`, `subagent_fork` | The registered delegation name is the load-time `toolName` config (default `subagent`); the default schema above has model selection off, while the discovery schema is shown as the fixed companion available in an enabled Session. Web presets sample the Plugins preference for each new top-level Session and preserve that decision for its child Sessions; `subagent_fork` remains fixed-route. Each instance independently controls whether it reads model-selection settings and its background behavior through `modelSelectionSettings`, `backgroundMode`, and `enableRunInBackground`. |
 | `@deepseek-ai/dsh-tool-subagent-control` | `interrupt_agent`, `list_agents`, `send_message` | `ctx.tools`, `ctx.subagents`, `ctx.agents and ctx.sessionProjections (list_agents only)` | `tool/call`, `tool/result`, `child session events through ctx.subagents` | - | The globally named control tools over continuable background subagents: provider-bound `tool-subagent` instances register distinct delegation tools, while this package registers `send_message` and `interrupt_agent` once, plus `list_agents` from its separately loaded `/list-agents` plugin (whose catalog rows use the sessionProjections and live Agent registries). |
 | `@deepseek-ai/dsh-tool-jobs` | `job_kill`, `job_list`, `job_output` | `ctx.tools`, `ctx.jobs`, `ctx.systemPrompt` | `tool/call`, `tool/result`, `user/message via agent.inject() for background completion notices` | - | The kind-agnostic background-job controller: background bash commands, PTY sends, and subagents are read, listed, and killed through the same three tools. Loading the plugin attaches the controller that arms producers' `ctx.jobs.start()`. |
-| `@deepseek-ai/dsh-experimental-tool-agent-team` | `followup_task`, `interrupt_agent`, `list_agents`, `send_message`, `spawn_teammate`, `team_task_create`, `team_task_get`, `team_task_list`, `team_task_update`, `wait_agent` | `ctx.tools`, `ctx.systemPrompt`, `ctx.agentTeams`, `an exact live Team member Agent` | `tool/call`, `team/member`, `team/message/queued`, `team/message/delivered`, `team/task`, `tool/result` | - | All ten tools are scoped to implicit Team Leads and durable teammates. The shipped dsh-base bundle keeps the package disabled; the documented Agent Teams profile patch enables it while disabling the legacy continuable-child control names. |
+| `@deepseek-ai/dsh-experimental-tool-agent-team` | `interrupt_agent`, `list_agents`, `send_message`, `spawn_teammate`, `team_task_create`, `team_task_get`, `team_task_list`, `team_task_update`, `wait_agent` | `ctx.tools`, `ctx.systemPrompt`, `ctx.agentTeams`, `an exact live Team member Agent` | `tool/call`, `team/member`, `team/message/queued`, `team/message/delivered`, `team/task`, `tool/result` | - | All nine tools are scoped to implicit Team Leads and durable teammates. The shipped dsh-base bundle keeps the package disabled; the documented Agent Teams profile patch enables it while disabling the legacy continuable-child control names. |
 | `@deepseek-ai/dsh-tool-todo` | `todo_write` | `ctx.tools`, `owning Agent session` | `tool/call`, `todo/write`, `tool/result` | - | todo_write is session-owned state; UIs render the latest todo/write event as a checklist. `allowParallelInProgress` is required with no default, so the catalog states its choice: `true`, whose description invites several `in_progress` items. A deployment choosing `false` receives the same tool with a description asking for exactly one active task. |
 | `@deepseek-ai/dsh-tool-workflow` | `workflow` | `ctx.tools`, `ctx.workflowEngine`, `ctx.systemPrompt`, `a calling Agent (exec.agent parents the script children)` | `tool/call`, `tool/result` | - | - |
 | `@deepseek-ai/dsh-tool-web` | `web_fetch`, `web_search` | `ctx.tools`, `ctx.web`, `ctx.systemPrompt` | `tool/call`, `tool/result` | - | web_search and web_fetch keep provider selection behind ctx.web so model-visible schemas stay stable across backend swaps. |
@@ -111,7 +111,7 @@ Ask the user a concise question when you need confirmation, a choice, or missing
 }
 ```
 
-Source: [`packages/interaction/tool-ask-user/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/interaction/tool-ask-user/src/index.ts)
+Source: [`packages/interaction/tool-ask-user/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/tool-ask-user/src/index.ts)
 
 ask_user_question pauses the tool call until the active UI provider returns a human answer.
 
@@ -143,7 +143,7 @@ Execute a TypeScript program against the available tools. Takes two required arg
 }
 ```
 
-Source: [`packages/core/tools/src/ptc.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/core/tools/src/ptc.ts)
+Source: [`packages/core/tools/src/ptc.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/tools/src/ptc.ts)
 
 Owned by the tool registry as a reserved transport outside filterable capability layers under `mode: ptc` / `mode: both` (see the PTC mode Agent Note). Under `ptc` it is the registry's only wire contribution; the other visible capabilities are declared in a generated SDK section in the loaded runtime's language, and a program calls them through bindings scheduled under the native concurrency contract (submission-ordered starts and policy; concurrency-safe bodies overlap up to `maxParallelSubCalls`) that re-enter the complete guarded tool pipeline and link each nested execution to this outer result.
 
@@ -170,7 +170,7 @@ Use only in plan mode. Present your plan for the user's review and, on approval,
 }
 ```
 
-Source: [`packages/plan/plan-mode/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/plan/plan-mode/src/index.ts)
+Source: [`packages/plan/plan-mode/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/plan/plan-mode/src/index.ts)
 
 exit_plan_mode stays in the model-facing schema while planning is inactive so transitions add no tool-catalog churn on top of the plan-policy change. Its execute path rejects calls outside plan mode; in plan mode it presents the plan over the user-questions seam (approve / keep planning with feedback), and approval logs plan mode inactive at the step boundary.
 
@@ -214,7 +214,7 @@ Execute a bash command (`bash -c`) and return its stdout/stderr. Each call runs 
 }
 ```
 
-Source: [`packages/shell/tool-bash/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/shell/tool-bash/src/index.ts)
+Source: [`packages/shell/tool-bash/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/shell/tool-bash/src/index.ts)
 
 The bash tool is the model-facing consumer of the bash executor seam. A `run_in_background` run registers with the generic `ctx.jobs` runtime and is collected/stopped through the `job_*` tools from `@deepseek-ai/dsh-tool-jobs`; the `enableRunInBackground` config (default true) removes the parameter entirely when disabled.
 
@@ -258,7 +258,7 @@ Execute a PowerShell command (`pwsh -Command`) and return its stdout/stderr. Eac
 }
 ```
 
-Source: [`packages/shell/tool-pwsh/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/shell/tool-pwsh/src/index.ts)
+Source: [`packages/shell/tool-pwsh/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/shell/tool-pwsh/src/index.ts)
 
 The pwsh tool is the PowerShell-dialect consumer of the bash executor seam for Windows compositions (a PowerShell executor such as `@deepseek-ai/dsh-pwsh-local` backs `ctx.shell`); it mirrors the bash tool call-for-call minus sandbox controls — `run_in_background` runs register with the generic `ctx.jobs` runtime and are collected/stopped through the `job_*` tools, and the managed `DSH_*` environment comes from `@deepseek-ai/dsh-shell-env`. Each call runs in a fresh process (no persistent PTY session), with native `C:\...` paths and `$env:NAME` variables.
 
@@ -346,7 +346,7 @@ Define an immutable Cordis Package. For a new Plugin, use kind:"new" and provide
 }
 ```
 
-Source: [`packages/extensions/tool-cordis/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/extensions/tool-cordis/src/index.ts)
+Source: [`packages/extensions/tool-cordis/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/extensions/tool-cordis/src/index.ts)
 
 ### `cordis_inspect_list`
 
@@ -359,7 +359,7 @@ List every Cordis Inspect Provider currently known to the Host, including local 
 }
 ```
 
-Source: [`packages/extensions/tool-cordis/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/extensions/tool-cordis/src/index.ts)
+Source: [`packages/extensions/tool-cordis/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/extensions/tool-cordis/src/index.ts)
 
 ### `cordis_inspect_query`
 
@@ -397,7 +397,7 @@ Run a read-only query explicitly declared by an Inspect Provider. platform, prov
 }
 ```
 
-Source: [`packages/extensions/tool-cordis/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/extensions/tool-cordis/src/index.ts)
+Source: [`packages/extensions/tool-cordis/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/extensions/tool-cordis/src/index.ts)
 
 ### `cordis_inspect_self`
 
@@ -419,7 +419,7 @@ Inspect dynamic Cordis objects owned by the current Session at increasing levels
 }
 ```
 
-Source: [`packages/extensions/tool-cordis/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/extensions/tool-cordis/src/index.ts)
+Source: [`packages/extensions/tool-cordis/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/extensions/tool-cordis/src/index.ts)
 
 ### `cordis_run`
 
@@ -454,7 +454,7 @@ Activate one exact Package of a dynamic Plugin. Use mode:"run" for the first act
 }
 ```
 
-Source: [`packages/extensions/tool-cordis/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/extensions/tool-cordis/src/index.ts)
+Source: [`packages/extensions/tool-cordis/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/extensions/tool-cordis/src/index.ts)
 
 ### `cordis_stop`
 
@@ -475,7 +475,7 @@ Stop the current Run of a dynamic Plugin and cancel unfinished approval or activ
 }
 ```
 
-Source: [`packages/extensions/tool-cordis/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/extensions/tool-cordis/src/index.ts)
+Source: [`packages/extensions/tool-cordis/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/extensions/tool-cordis/src/index.ts)
 
 ### `cordis_undefine`
 
@@ -496,7 +496,7 @@ Permanently remove a dynamic Plugin owned by the current Session. If it is runni
 }
 ```
 
-Source: [`packages/extensions/tool-cordis/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/extensions/tool-cordis/src/index.ts)
+Source: [`packages/extensions/tool-cordis/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/extensions/tool-cordis/src/index.ts)
 
 Not in any shipped tree (a deliberate opt-in — dynamic package code reaches the real runtime, see .agents/notes/implemented/feature/2026-07-08-self-referential-cordis-toolset.md). The toolset injects `ctx.dynamicCordisRunner` from `@deepseek-ai/dsh-cordis-host-runner`, which owns the definition registry and the vm sandbox; a composition missing it never activates the tools. A running package may register ADDITIONAL model-visible tools until it is stopped, undefined, or DSH restarts; a full changed request header logs those tool-set changes.
 
@@ -523,7 +523,7 @@ Run commands in a persistent bash shell. State, including the current directory 
 }
 ```
 
-Source: [`packages/shell/tool-bash-persistent/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/shell/tool-bash-persistent/src/index.ts)
+Source: [`packages/shell/tool-bash-persistent/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/shell/tool-bash-persistent/src/index.ts)
 
 One owner-isolated persistent bash tool; deployment composition supplies the PTY backend and may override the model-facing environment description.
 
@@ -550,7 +550,7 @@ Run commands in a persistent PowerShell shell. State, including the current dire
 }
 ```
 
-Source: [`packages/shell/tool-pwsh-persistent/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/shell/tool-pwsh-persistent/src/index.ts)
+Source: [`packages/shell/tool-pwsh-persistent/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/shell/tool-pwsh-persistent/src/index.ts)
 
 One owner-isolated persistent pwsh tool, the Windows counterpart of the persistent bash tool; deployment composition supplies a pwsh-dialect PTY backend and may override the model-facing environment description.
 
@@ -656,7 +656,7 @@ Notes for using the `str_replace` command:
 }
 ```
 
-Source: [`packages/fs/tool-str-replace-editor/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/fs/tool-str-replace-editor/src/index.ts)
+Source: [`packages/fs/tool-str-replace-editor/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/fs/tool-str-replace-editor/src/index.ts)
 
 Standalone view/create/unique literal replace/line insert tool over the filesystem seam; it composes with any shell or terminal API.
 
@@ -697,7 +697,7 @@ Edit an existing UTF-8 text file by replacing literal text.
 }
 ```
 
-Source: [`packages/fs/tool-fs/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/fs/tool-fs/src/index.ts)
+Source: [`packages/fs/tool-fs/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/fs/tool-fs/src/index.ts)
 
 ### `read`
 
@@ -726,7 +726,7 @@ Read a UTF-8 text file and return line-numbered content.
 }
 ```
 
-Source: [`packages/fs/tool-fs/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/fs/tool-fs/src/index.ts)
+Source: [`packages/fs/tool-fs/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/fs/tool-fs/src/index.ts)
 
 ### `read_image`
 
@@ -747,7 +747,7 @@ Read a PNG/JPEG/WebP/GIF file and return the image itself. A path without a file
 }
 ```
 
-Source: [`packages/fs/tool-fs/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/fs/tool-fs/src/index.ts)
+Source: [`packages/fs/tool-fs/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/fs/tool-fs/src/index.ts)
 
 ### `write`
 
@@ -773,7 +773,7 @@ Create or fully replace a UTF-8 text file.
 }
 ```
 
-Source: [`packages/fs/tool-fs/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/fs/tool-fs/src/index.ts)
+Source: [`packages/fs/tool-fs/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/fs/tool-fs/src/index.ts)
 
 The read-before-write/edit policy is added by `@deepseek-ai/dsh-fs-observation-policy` (an `fs/*` event-gate plugin, no schema change); a deployment that loads these tools is expected to also load it. The image tool is not registered without `ctx.attachments`; its schema is route-independent, and execution refuses unless the exact routed model declares image input.
 
@@ -804,7 +804,7 @@ Find files whose paths match a glob pattern. Returns matching file paths — nev
 }
 ```
 
-Source: [`packages/fs/tool-fs-search/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/fs/tool-fs-search/src/index.ts)
+Source: [`packages/fs/tool-fs-search/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/fs/tool-fs-search/src/index.ts)
 
 ### `grep`
 
@@ -833,7 +833,7 @@ Search file contents with a ripgrep regular expression. Returns matching lines w
 }
 ```
 
-Source: [`packages/fs/tool-fs-search/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/fs/tool-fs-search/src/index.ts)
+Source: [`packages/fs/tool-fs-search/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/fs/tool-fs-search/src/index.ts)
 
 glob and grep are unconditional discovery tools that spawn the packaged ripgrep binary (`@vscode/ripgrep`) through ctx.subprocess as ordinary foreground calls (never background jobs) — no host `rg` install and no shell layer. The catalog uses `sampleOverCapGlobResults: true`; deployments must choose that behavior explicitly. Capped results save the complete formatted list through the optional ctx.spillStore backend; returned locators are follow-up-readable/searchable when the backend exposes local paths in co-located deployments.
 
@@ -860,7 +860,7 @@ Close one persistent terminal and wait until its captured owned process tree is 
 }
 ```
 
-Source: [`packages/terminal/tool-terminal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/terminal/tool-terminal/src/index.ts)
+Source: [`packages/terminal/tool-terminal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/terminal/tool-terminal/src/index.ts)
 
 ### `terminal_list`
 
@@ -873,7 +873,7 @@ List persistent terminal sessions owned by the current agent.
 }
 ```
 
-Source: [`packages/terminal/tool-terminal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/terminal/tool-terminal/src/index.ts)
+Source: [`packages/terminal/tool-terminal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/terminal/tool-terminal/src/index.ts)
 
 ### `terminal_open`
 
@@ -902,7 +902,7 @@ Create a persistent, owner-isolated terminal session from a registered backend t
 }
 ```
 
-Source: [`packages/terminal/tool-terminal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/terminal/tool-terminal/src/index.ts)
+Source: [`packages/terminal/tool-terminal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/terminal/tool-terminal/src/index.ts)
 
 ### `terminal_read`
 
@@ -931,7 +931,7 @@ Read a bounded page of retained output from a persistent terminal without sendin
 }
 ```
 
-Source: [`packages/terminal/tool-terminal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/terminal/tool-terminal/src/index.ts)
+Source: [`packages/terminal/tool-terminal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/terminal/tool-terminal/src/index.ts)
 
 ### `terminal_send`
 
@@ -965,7 +965,7 @@ Send text to a persistent terminal. By default Enter is submitted and the call w
 }
 ```
 
-Source: [`packages/terminal/tool-terminal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/terminal/tool-terminal/src/index.ts)
+Source: [`packages/terminal/tool-terminal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/terminal/tool-terminal/src/index.ts)
 
 ### `terminal_signal`
 
@@ -998,7 +998,7 @@ Send an allowed signal to the current foreground process group of a persistent t
 }
 ```
 
-Source: [`packages/terminal/tool-terminal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/terminal/tool-terminal/src/index.ts)
+Source: [`packages/terminal/tool-terminal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/terminal/tool-terminal/src/index.ts)
 
 The six terminal tools are opt-in and complement one-shot shell/filesystem tools. `terminal_send(run_in_background: true)` registers with `ctx.jobs`; TUI, named key sequences, BEL, resize, auto-start, and cross-agent sharing are absent from the schema.
 
@@ -1029,7 +1029,7 @@ Create one persisted same-session completion goal when the current direct human 
 }
 ```
 
-Source: [`packages/goal/tool-goal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/goal/tool-goal/src/index.ts)
+Source: [`packages/goal/tool-goal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/goal/tool-goal/src/index.ts)
 
 ### `get_goal`
 
@@ -1042,7 +1042,7 @@ Read the current same-session goal, including its exact id/revision, objective, 
 }
 ```
 
-Source: [`packages/goal/tool-goal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/goal/tool-goal/src/index.ts)
+Source: [`packages/goal/tool-goal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/goal/tool-goal/src/index.ts)
 
 ### `update_goal`
 
@@ -1092,7 +1092,7 @@ Update the exact current goal revision. edit, pause, and resume require a direct
 }
 ```
 
-Source: [`packages/goal/tool-goal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/goal/tool-goal/src/index.ts)
+Source: [`packages/goal/tool-goal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/goal/tool-goal/src/index.ts)
 
 create, edit, pause, and resume require direct-human root authority; complete and blocked also accept the exact current goal round. The default blocked lower bound is three admitted rounds.
 
@@ -1155,7 +1155,7 @@ Create one reminder in the current session. Supply a non-empty prompt and exactl
 }
 ```
 
-Source: [`packages/schedule/schedule/src/tools.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/schedule/schedule/src/tools.ts)
+Source: [`packages/schedule/schedule/src/tools.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/schedule/schedule/src/tools.ts)
 
 ### `schedule_delete`
 
@@ -1176,7 +1176,7 @@ Delete one active reminder in the current session by the exact id returned by sc
 }
 ```
 
-Source: [`packages/schedule/schedule/src/tools.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/schedule/schedule/src/tools.ts)
+Source: [`packages/schedule/schedule/src/tools.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/schedule/schedule/src/tools.ts)
 
 ### `schedule_list`
 
@@ -1189,7 +1189,7 @@ List every active reminder in the current session in creation order, including i
 }
 ```
 
-Source: [`packages/schedule/schedule/src/tools.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/schedule/schedule/src/tools.ts)
+Source: [`packages/schedule/schedule/src/tools.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/schedule/schedule/src/tools.ts)
 
 Registered only inside live root Agent scopes created after the opt-in Schedule plugin loads. Version 1 accepts after_seconds, explicit absolute at, and bounded fixed-rate every_seconds, and discloses session-local delivery; management reads and mutations require the shared Session persistence barrier.
 
@@ -1237,7 +1237,7 @@ Query a language server for precise code navigation. operation is one of goToDef
 }
 ```
 
-Source: [`packages/lsp/tool-lsp/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/lsp/tool-lsp/src/index.ts)
+Source: [`packages/lsp/tool-lsp/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/lsp/tool-lsp/src/index.ts)
 
 The lsp tool keeps provider selection and language-server subprocesses behind ctx.lsp, so its model-visible schema stays stable across providers. Requires a registered provider (e.g. `@deepseek-ai/dsh-lsp-stdio`) at runtime; without one, a query returns the structured `LSP_UNAVAILABLE` error rather than changing the schema.
 
@@ -1268,7 +1268,7 @@ Run a foreground fresh-agent Ralph loop toward one immutable objective. Use only
 }
 ```
 
-Source: [`packages/workflow/tool-ralph/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/workflow/tool-ralph/src/index.ts)
+Source: [`packages/workflow/tool-ralph/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/workflow/tool-ralph/src/index.ts)
 
 A fixed foreground workflow starts one fresh structured child per round; the model selects only the immutable objective and an optional round cap.
 
@@ -1295,7 +1295,7 @@ Load the full instructions for an available skill. Call this with the exact skil
 }
 ```
 
-Source: [`packages/skill/tool-skill/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/skill/tool-skill/src/index.ts)
+Source: [`packages/skill/tool-skill/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/skill/tool-skill/src/index.ts)
 
 <a id="deepseek-aidsh-tool-session-query"></a>
 
@@ -1332,7 +1332,7 @@ Read one full unabridged event and optional neighboring raw-event summaries from
 }
 ```
 
-Source: [`packages/session-query/tool-session-query/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/session-query/tool-session-query/src/index.ts)
+Source: [`packages/session-query/tool-session-query/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session-query/tool-session-query/src/index.ts)
 
 ### `session_event_search`
 
@@ -1392,7 +1392,7 @@ Search prior events in one authorized session; the current session excludes the 
 }
 ```
 
-Source: [`packages/session-query/tool-session-query/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/session-query/tool-session-query/src/index.ts)
+Source: [`packages/session-query/tool-session-query/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session-query/tool-session-query/src/index.ts)
 
 ### `session_event_trace`
 
@@ -1417,7 +1417,7 @@ Read every direct replacement and relationship to a cited source event for one e
 }
 ```
 
-Source: [`packages/session-query/tool-session-query/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/session-query/tool-session-query/src/index.ts)
+Source: [`packages/session-query/tool-session-query/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session-query/tool-session-query/src/index.ts)
 
 ### `session_search`
 
@@ -1510,7 +1510,7 @@ Search prior sessions in the caller workspace and return the strongest matching 
 }
 ```
 
-Source: [`packages/session-query/tool-session-query/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/session-query/tool-session-query/src/index.ts)
+Source: [`packages/session-query/tool-session-query/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session-query/tool-session-query/src/index.ts)
 
 ### `session_trace`
 
@@ -1528,7 +1528,7 @@ Read the authorized session lineage around one session, including complete visib
 }
 ```
 
-Source: [`packages/session-query/tool-session-query/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/session-query/tool-session-query/src/index.ts)
+Source: [`packages/session-query/tool-session-query/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session-query/tool-session-query/src/index.ts)
 
 The five read-only tools hide provider cursors and authorize every result from the immutable calling agent session. The package is opt-in; compositions that need enforced deadlines or bounded inline output also mount the generic timeout or spill policies.
 
@@ -1556,7 +1556,7 @@ Discover LLM routes for subagents without changing the current Agent. Call with 
 }
 ```
 
-Source: [`packages/subagent/tool-subagent/src/list-models.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/subagent/tool-subagent/src/list-models.ts)
+Source: [`packages/subagent/tool-subagent/src/list-models.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/tool-subagent/src/list-models.ts)
 
 ### `subagent`
 
@@ -1586,7 +1586,7 @@ Delegate a self-contained task to a subagent (a separate agent that works in its
 }
 ```
 
-Source: [`packages/subagent/tool-subagent/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/subagent/tool-subagent/src/index.ts)
+Source: [`packages/subagent/tool-subagent/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/tool-subagent/src/index.ts)
 
 The registered delegation name is the load-time `toolName` config (default `subagent`); the default schema above has model selection off, while the discovery schema is shown as the fixed companion available in an enabled Session. Web presets sample the Plugins preference for each new top-level Session and preserve that decision for its child Sessions; `subagent_fork` remains fixed-route. Each instance independently controls whether it reads model-selection settings and its background behavior through `modelSelectionSettings`, `backgroundMode`, and `enableRunInBackground`.
 
@@ -1613,7 +1613,7 @@ Request cancellation of a background agent's current turn by its agent id. The t
 }
 ```
 
-Source: [`packages/subagent/tool-subagent-control/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/subagent/tool-subagent-control/src/index.ts)
+Source: [`packages/subagent/tool-subagent-control/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/tool-subagent-control/src/index.ts)
 
 ### `list_agents`
 
@@ -1635,7 +1635,7 @@ List your continuable background subagents by durable id and label. Use it to re
 }
 ```
 
-Source: [`packages/subagent/tool-subagent-control/src/list-agents.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/subagent/tool-subagent-control/src/list-agents.ts)
+Source: [`packages/subagent/tool-subagent-control/src/list-agents.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/tool-subagent-control/src/list-agents.ts)
 
 ### `send_message`
 
@@ -1661,7 +1661,7 @@ Send a message to a direct continuable child by its agent id. If you are a resid
 }
 ```
 
-Source: [`packages/subagent/tool-subagent-control/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/subagent/tool-subagent-control/src/index.ts)
+Source: [`packages/subagent/tool-subagent-control/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/tool-subagent-control/src/index.ts)
 
 The globally named control tools over continuable background subagents: provider-bound `tool-subagent` instances register distinct delegation tools, while this package registers `send_message` and `interrupt_agent` once, plus `list_agents` from its separately loaded `/list-agents` plugin (whose catalog rows use the sessionProjections and live Agent registries).
 
@@ -1692,7 +1692,7 @@ Request cancellation of a running background job by job id. Returns immediately;
 }
 ```
 
-Source: [`packages/jobs/tool-jobs/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/jobs/tool-jobs/src/index.ts)
+Source: [`packages/jobs/tool-jobs/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/jobs/tool-jobs/src/index.ts)
 
 ### `job_list`
 
@@ -1705,7 +1705,7 @@ List your background jobs (running and finished) with their ids, kinds, and stat
 }
 ```
 
-Source: [`packages/jobs/tool-jobs/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/jobs/tool-jobs/src/index.ts)
+Source: [`packages/jobs/tool-jobs/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/jobs/tool-jobs/src/index.ts)
 
 ### `job_output`
 
@@ -1734,39 +1734,13 @@ Read a background job. Stream jobs return only output since the previous read; f
 }
 ```
 
-Source: [`packages/jobs/tool-jobs/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/jobs/tool-jobs/src/index.ts)
+Source: [`packages/jobs/tool-jobs/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/jobs/tool-jobs/src/index.ts)
 
 The kind-agnostic background-job controller: background bash commands, PTY sends, and subagents are read, listed, and killed through the same three tools. Loading the plugin attaches the controller that arms producers' `ctx.jobs.start()`.
 
 <a id="deepseek-aidsh-experimental-tool-agent-team"></a>
 
 ## `@deepseek-ai/dsh-experimental-tool-agent-team`
-
-### `followup_task`
-
-Send a durable follow-up task to another Team member and start a turn when needed.
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "target": {
-      "type": "string",
-      "description": "Team member name, or lead."
-    },
-    "message": {
-      "type": "string",
-      "description": "Self-contained message for the target."
-    }
-  },
-  "required": [
-    "target",
-    "message"
-  ]
-}
-```
-
-Source: [`packages/experimental/tool-agent-team/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/experimental/tool-agent-team/src/index.ts)
 
 ### `interrupt_agent`
 
@@ -1787,7 +1761,7 @@ Interrupt one teammate's current turn while preserving its pending inbox. Team L
 }
 ```
 
-Source: [`packages/experimental/tool-agent-team/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/experimental/tool-agent-team/src/index.ts)
+Source: [`packages/experimental/tool-agent-team/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/experimental/tool-agent-team/src/index.ts)
 
 ### `list_agents`
 
@@ -1800,11 +1774,11 @@ List the Lead and every durable teammate with current runtime status.
 }
 ```
 
-Source: [`packages/experimental/tool-agent-team/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/experimental/tool-agent-team/src/index.ts)
+Source: [`packages/experimental/tool-agent-team/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/experimental/tool-agent-team/src/index.ts)
 
 ### `send_message`
 
-Send durable information to another Team member without starting an idle member.
+Send one durable message to another Team member. A running target receives it at the nearest step boundary; an idle target starts a turn; an inactive teammate cold-resumes.
 
 ```json
 {
@@ -1826,7 +1800,7 @@ Send durable information to another Team member without starting an idle member.
 }
 ```
 
-Source: [`packages/experimental/tool-agent-team/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/experimental/tool-agent-team/src/index.ts)
+Source: [`packages/experimental/tool-agent-team/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/experimental/tool-agent-team/src/index.ts)
 
 ### `spawn_teammate`
 
@@ -1865,7 +1839,7 @@ Create one named, durable teammate. Only the Team Lead may call this tool.
 }
 ```
 
-Source: [`packages/experimental/tool-agent-team/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/experimental/tool-agent-team/src/index.ts)
+Source: [`packages/experimental/tool-agent-team/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/experimental/tool-agent-team/src/index.ts)
 
 ### `team_task_create`
 
@@ -1905,7 +1879,7 @@ Create one unowned pending task on the shared Team task board.
 }
 ```
 
-Source: [`packages/experimental/tool-agent-team/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/experimental/tool-agent-team/src/index.ts)
+Source: [`packages/experimental/tool-agent-team/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/experimental/tool-agent-team/src/index.ts)
 
 ### `team_task_get`
 
@@ -1926,7 +1900,7 @@ Read the complete latest value of one shared task before changing or executing i
 }
 ```
 
-Source: [`packages/experimental/tool-agent-team/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/experimental/tool-agent-team/src/index.ts)
+Source: [`packages/experimental/tool-agent-team/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/experimental/tool-agent-team/src/index.ts)
 
 ### `team_task_list`
 
@@ -1965,7 +1939,7 @@ List shared tasks, including readiness, owner, revision, blockers, and write-sco
 }
 ```
 
-Source: [`packages/experimental/tool-agent-team/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/experimental/tool-agent-team/src/index.ts)
+Source: [`packages/experimental/tool-agent-team/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/experimental/tool-agent-team/src/index.ts)
 
 ### `team_task_update`
 
@@ -2032,7 +2006,7 @@ Compare-and-set a shared task action using the latest revision from team_task_ge
 }
 ```
 
-Source: [`packages/experimental/tool-agent-team/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/experimental/tool-agent-team/src/index.ts)
+Source: [`packages/experimental/tool-agent-team/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/experimental/tool-agent-team/src/index.ts)
 
 ### `wait_agent`
 
@@ -2050,9 +2024,9 @@ Wait for the next teammate status, mailbox, or shared-task change after this cal
 }
 ```
 
-Source: [`packages/experimental/tool-agent-team/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/experimental/tool-agent-team/src/index.ts)
+Source: [`packages/experimental/tool-agent-team/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/experimental/tool-agent-team/src/index.ts)
 
-All ten tools are scoped to implicit Team Leads and durable teammates. The shipped dsh-base bundle keeps the package disabled; the documented Agent Teams profile patch enables it while disabling the legacy continuable-child control names.
+All nine tools are scoped to implicit Team Leads and durable teammates. The shipped dsh-base bundle keeps the package disabled; the documented Agent Teams profile patch enables it while disabling the legacy continuable-child control names.
 
 <a id="deepseek-aidsh-tool-todo"></a>
 
@@ -2100,7 +2074,7 @@ Record and update a structured task list for the current work. Send the ENTIRE l
 }
 ```
 
-Source: [`packages/todo/tool-todo/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/todo/tool-todo/src/index.ts)
+Source: [`packages/todo/tool-todo/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/todo/tool-todo/src/index.ts)
 
 todo_write is session-owned state; UIs render the latest todo/write event as a checklist. `allowParallelInProgress` is required with no default, so the catalog states its choice: `true`, whose description invites several `in_progress` items. A deployment choosing `false` receives the same tool with a description asking for exactly one active task.
 
@@ -2197,7 +2171,7 @@ Constraints: concurrency and total-agent caps apply; no filesystem, network, tim
 }
 ```
 
-Source: [`packages/workflow/tool-workflow/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/workflow/tool-workflow/src/index.ts)
+Source: [`packages/workflow/tool-workflow/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/workflow/tool-workflow/src/index.ts)
 
 <a id="deepseek-aidsh-tool-web"></a>
 
@@ -2222,7 +2196,7 @@ Fetch the content of a specific HTTP(S) URL and return it decoded to text.
 }
 ```
 
-Source: [`packages/web/tool-web/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/web/tool-web/src/index.ts)
+Source: [`packages/web/tool-web/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/web/tool-web/src/index.ts)
 
 ### `web_search`
 
@@ -2246,6 +2220,6 @@ Search the web for current information. Provide 1–4 queries in the required qu
 }
 ```
 
-Source: [`packages/web/tool-web/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/web/tool-web/src/index.ts)
+Source: [`packages/web/tool-web/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/web/tool-web/src/index.ts)
 
 web_search and web_fetch keep provider selection behind ctx.web so model-visible schemas stay stable across backend swaps.

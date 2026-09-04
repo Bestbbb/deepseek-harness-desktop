@@ -1,8 +1,8 @@
 # User Interaction
 
-The user-questions seam of [dsh-user-questions](https://github.com/Bestbbb/deepseek-harness-desktop/tree/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/interaction/user-questions). It is the provider-neutral vocabulary a tool or permission plugin uses when it needs the human to answer before the agent can continue. Agent-scoped waterfall listeners compose the available UI surfaces, including listeners relayed to a connected client.
+The user-questions seam of [dsh-user-questions](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-questions). It is the provider-neutral vocabulary a tool or permission plugin uses when it needs the human to answer before the agent can continue. Agent-scoped waterfall listeners compose the available UI surfaces, including listeners relayed to a connected client.
 
-Source: [`packages/interaction/user-questions/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/interaction/user-questions/src/index.ts)
+Source: [`packages/interaction/user-questions/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-questions/src/index.ts)
 
 ## Question options
 
@@ -147,7 +147,7 @@ Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnp
 async ask(request: AskUserQuestionRequest): Promise<AskUserQuestionAnswer>
 ```
 
-Source: [`packages/interaction/user-questions/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/interaction/user-questions/src/index.ts)
+Source: [`packages/interaction/user-questions/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-questions/src/index.ts)
 
 <a id="user-questions-events"></a>
 
@@ -172,5 +172,5 @@ Ask composed answerers for structured user input. Return an answer to claim the 
 
 Types: [Agent](./core.md) · [Scoped](./scope.md)
 
-Source: [`packages/interaction/user-questions/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/interaction/user-questions/src/types.ts)
+Source: [`packages/interaction/user-questions/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-questions/src/types.ts)
 <!-- END GENERATED cordis-surface -->

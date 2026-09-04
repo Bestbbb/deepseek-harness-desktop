@@ -9,7 +9,7 @@
 
 子类在构造函数中调用 `super(ctx, name)`。服务会立即注册，并随所属 fiber 自动移除。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/service.ts#L11)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/service.ts#L11)
 
 ### service.name
 
@@ -20,7 +20,7 @@ public name!: string
 
 此实例注册时使用的服务名称。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/service.ts#L30)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/service.ts#L30)
 
 ## 静态成员
 
@@ -33,7 +33,7 @@ static readonly init: unique symbol
 
 构造完成后运行的实例方法所使用的符号键（类插件）。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/service.ts#L13)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/service.ts#L13)
 
 ### Service.check
 
@@ -44,7 +44,7 @@ static readonly check: unique symbol
 
 传给 `ctx.provide()` 的可用性谓词所使用的符号键。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/service.ts#L15)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/service.ts#L15)
 
 ### Service.config
 
@@ -55,7 +55,7 @@ static readonly config: unique symbol
 
 虚设拦截配置类型参数所使用的符号键。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/service.ts#L17)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/service.ts#L17)
 
 ### Service.invoke
 
@@ -66,7 +66,7 @@ static readonly invoke: unique symbol
 
 使服务可被调用的调用体所使用的符号键（例如 `ctx.logger()`）。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/service.ts#L19)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/service.ts#L19)
 
 ### Service.extend
 
@@ -77,7 +77,7 @@ static readonly extend: unique symbol
 
 用于派生扩展服务实例的辅助方法所使用的符号键。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/service.ts#L21)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/service.ts#L21)
 
 ### Service.tracker
 
@@ -88,7 +88,7 @@ static readonly tracker: unique symbol
 
 上下文追踪所用跟踪器元数据的符号键。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/service.ts#L23)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/service.ts#L23)
 
 ### Service.resolveConfig
 
@@ -99,4 +99,4 @@ static readonly resolveConfig: unique symbol
 
 下述拦截配置解析辅助方法所使用的符号键。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/service.ts#L25)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/service.ts#L25)

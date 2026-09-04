@@ -94,7 +94,7 @@ logger 会先触发：`tools/result` 在结果物化过程中发出，发生在 
 
 ## 从这里走向完整 agent（智能体）
 
-真实 agent 就是这套组合再加上更多插件：LLM（大语言模型）适配器、agent loop（智能体循环）、持久化和应用入口。对照 [base profile 层](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/bundle/base/cordis.patch.yml)与 [headless 层](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/bundle/headless/cordis.patch.yml)，你现在已经可以读懂其中各项。通过一个小型 `--patch` overlay 加入 `greet-tool.ts` 即可。
+真实 agent 就是这套组合再加上更多插件：LLM（大语言模型）适配器、agent loop（智能体循环）、持久化和应用入口。对照 [base profile 层](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/bundle/base/cordis.patch.yml)与 [headless 层](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/bundle/headless/cordis.patch.yml)，你现在已经可以读懂其中各项。通过一个小型 `--patch` overlay 加入 `greet-tool.ts` 即可。
 
 后续可以阅读：
 

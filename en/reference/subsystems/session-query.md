@@ -1,8 +1,8 @@
 # Session Query
 
-Query vocabulary over the live-preferred logical session corpus. The [Service Definition package](https://github.com/Bestbbb/deepseek-harness-desktop/tree/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/session-query/session-query) owns exact reads, source precedence, relationship tracing, semantic extraction, and provider-independent filters, while the [SQLite provider](https://github.com/Bestbbb/deepseek-harness-desktop/tree/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/session-query/session-query-sqlite) owns the concrete full-text index lifecycle.
+Query vocabulary over the live-preferred logical session corpus. The [Service Definition package](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session-query/session-query) owns exact reads, source precedence, relationship tracing, semantic extraction, and provider-independent filters, while the [SQLite provider](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session-query/session-query-sqlite) owns the concrete full-text index lifecycle.
 
-Source: [`packages/session-query/session-query/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/session-query/session-query/src/types.ts)
+Source: [`packages/session-query/session-query/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session-query/session-query/src/types.ts)
 
 ## Logical records
 
@@ -20,7 +20,7 @@ interface SessionRecord {
   header: SessionHeader
   /** Whether the id currently exists in `ctx.sessions`. */
   live: boolean
-  /** Whether the active persistence backend currently materializes the id. */
+  /** Whether the active persistence backend currently lists the id, including a created-but-unmaterialized session it already observes. */
   persisted: boolean
 }
 ```
@@ -34,7 +34,7 @@ interface SessionLogSnapshot {
   session: SessionHeader
   /** Exact number of fork-inherited events in the observed log. */
   inheritedEventCount: SessionLogOffset
-  /** Cloned contiguous raw events after persistence repair and replay validation. */
+  /** Cloned contiguous raw events after in-memory interrupted-turn balancing and replay validation. */
   events: SessionEvent[]
 }
 ```
@@ -503,5 +503,5 @@ async readEvent(request: SessionEventReadRequest, signal?: AbortSignal): Promise
 
 Types: [SessionId](./core.md) · [SessionTitleSnapshot](./session-title.md)
 
-Source: [`packages/session-query/session-query/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/session-query/session-query/src/index.ts)
+Source: [`packages/session-query/session-query/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session-query/session-query/src/index.ts)
 <!-- END GENERATED cordis-surface -->

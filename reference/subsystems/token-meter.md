@@ -2,7 +2,7 @@
 
 `@deepseek-ai/dsh-token-meter` 公开一个独立的回放快照，用于表示请求压力与按位置计算的表层定价。`logRevision` 表示生成该计量中每个字段时所消费的持久事件数量。
 
-来源：[`packages/llm/token-meter/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/llm/token-meter/src/types.ts)
+来源：[`packages/llm/token-meter/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/llm/token-meter/src/types.ts)
 
 ## `TokenMeasurement`
 
@@ -99,5 +99,5 @@ estimateMessage(message: Message): number
 
 Types: [EpochHeader](./session.md) · [Message](./llm-streaming.md) · [Session](./session.md)
 
-Source: [`packages/llm/token-meter/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/llm/token-meter/src/index.ts)
+Source: [`packages/llm/token-meter/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/llm/token-meter/src/index.ts)
 <!-- END GENERATED cordis-surface -->

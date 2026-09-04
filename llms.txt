@@ -6,8 +6,9 @@
 
 ## 简体中文
 
-- [使用 Web UI](/deepseek-harness-desktop/guide/quickstart.md): 入门
+- [开始使用](/deepseek-harness-desktop/guide/quickstart.md): 入门
 - [配置模型](/deepseek-harness-desktop/guide/providers.md): 入门
+- [网络代理](/deepseek-harness-desktop/guide/network-proxy.md): 入门
 - [Python](/deepseek-harness-desktop/guide/python-sdk.md): SDK
 - [GitHub 评审会话](/deepseek-harness-desktop/guide/github-review.md): 自动化
 - [会话内提醒](/deepseek-harness-desktop/guide/schedule.md): 自动化
@@ -99,8 +100,9 @@
 
 ## English
 
-- [Use the Web UI](/deepseek-harness-desktop/en/guide/quickstart.md): Guide
+- [Get started](/deepseek-harness-desktop/en/guide/quickstart.md): Guide
 - [Configure models](/deepseek-harness-desktop/en/guide/providers.md): Guide
+- [Network proxy](/deepseek-harness-desktop/en/guide/network-proxy.md): Guide
 - [Python](/deepseek-harness-desktop/en/guide/python-sdk.md): SDK
 - [GitHub review sessions](/deepseek-harness-desktop/en/guide/github-review.md): Automation
 - [Session reminders](/deepseek-harness-desktop/en/guide/schedule.md): Automation

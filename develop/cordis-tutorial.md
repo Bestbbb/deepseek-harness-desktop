@@ -12,7 +12,7 @@ Cordis 是 DeepSeek Harness 底层的插件框架：它是一个小型运行时�
 
 ## 准备工作
 
-你需要克隆本仓库并安装依赖；[开发指南](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/docs/development.zh.md#setup-tutorial)列出了前置条件。本教程不需要 API 密钥；所有示例均可在无密钥环境中运行。
+你需要克隆本仓库并安装依赖；[开发指南](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/development.zh.md#setup-tutorial)列出了前置条件。本教程不需要 API 密钥；所有示例均可在无密钥环境中运行。
 
 ```sh
 git clone https://github.com/deepseek-ai/deepseek-harness.git
@@ -33,7 +33,7 @@ cd tmp/cordis-tutorial
 node --import tsx ../../vendor/cordis/bin.js
 ```
 
-这个单文件启动器（见 [vendor/cordis/bin.js](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/bin.js)）会创建根 `Context`、挂载 Loader 插件，并让它从当前目录加载 `./cordis.yml`。其余所有内容，包括有哪些插件以及如何配置它们，都来自你稍后将编写的 YAML 文件。`--import tsx` 标志让 Node 无需构建步骤即可运行配置所指向的 TypeScript 文件。
+这个单文件启动器（见 [vendor/cordis/bin.js](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/bin.js)）会创建根 `Context`、挂载 Loader 插件，并让它从当前目录加载 `./cordis.yml`。其余所有内容，包括有哪些插件以及如何配置它们，都来自你稍后将编写的 YAML 文件。`--import tsx` 标志让 Node 无需构建步骤即可运行配置所指向的 TypeScript 文件。
 
 ## 章节
 

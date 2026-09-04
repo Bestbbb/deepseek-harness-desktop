@@ -1,6 +1,6 @@
 # 连接第三方记忆 MCP 服务
 
-这三份**默认关闭的参考配置**通过 [`@deepseek-ai/dsh-mcp-client`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/mcp/mcp-client/README.zh.md) 将一个记忆系统连接到 DSH。请选择其中一份，或复制相同的通用 MCP 配置项来连接其他服务器。
+这三份**默认关闭的参考配置**通过 [`@deepseek-ai/dsh-mcp-client`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/mcp/mcp-client/README.zh.md) 将一个记忆系统连接到 DSH。请选择其中一份，或复制相同的通用 MCP 配置项来连接其他服务器。
 
 这些第三方配置仅作为互操作参考；收录不代表 DeepSeek 的认可、推荐、合作关系或持续支持承诺。
 

@@ -40,7 +40,7 @@ Harness 负责 agent 运行时，Tauri 提供原生窗口和操作系统集成�
 
 系统 WebView、原生菜单、快捷键、运行时监管和诊断导出。不内置 Electron 或 Chromium。
 
-[桌面架构](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/apps/desktop/README.zh.md)
+[桌面架构](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/apps/desktop/README.zh.md)
 
 </div><div>
 
@@ -78,6 +78,6 @@ Harness 负责 agent 运行时，Tauri 提供原生窗口和操作系统集成�
 
 [上游 Harness](https://github.com/deepseek-ai/deepseek-harness)
 
-[MIT 许可证](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/LICENSE)
+[MIT 许可证](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/LICENSE)
 
 </footer></main>

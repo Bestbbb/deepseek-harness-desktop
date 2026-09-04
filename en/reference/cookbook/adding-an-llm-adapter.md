@@ -34,8 +34,8 @@ Provider-specific thinking-mode toggles remain in the adapter's Config. Exact mo
 
 ## Implementation structure
 
-Keep wire types, request serialization, transport parsing, chunk translation, and the adapter class as separate responsibilities; [`llm-deepseek`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/llm/llm-deepseek/README.md) is the reference layout.
+Keep wire types, request serialization, transport parsing, chunk translation, and the adapter class as separate responsibilities; [`llm-deepseek`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/llm/llm-deepseek/README.md) is the reference layout.
 
 ## Verification
 
-Follow the [repository testing policy](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/docs/testing.md), which owns adapter coverage, real-provider checks, and published-entry requirements.
+Follow the [repository testing policy](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/testing.md), which owns adapter coverage, real-provider checks, and published-entry requirements.

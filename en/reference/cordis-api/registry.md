@@ -30,7 +30,7 @@ Shorthand for `ctx.plugin({ inject, apply: callback })`: the callback is unloade
 
 **Returns** the fiber; awaiting it settles once loading finished.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/registry.ts#L176)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/registry.ts#L176)
 
 ### ctx.plugin(plugin, ...args)
 
@@ -53,7 +53,7 @@ Load a plugin in the current context.
 
 **Returns** the fiber; awaiting it settles once loading finished (rejecting on config or startup errors).
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/registry.ts#L185)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/registry.ts#L185)
 
 ## Plugin
 
@@ -118,7 +118,7 @@ namespace Plugin {
 }
 ```
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/registry.ts#L92)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/registry.ts#L92)
 
 ## Inject
 
@@ -149,4 +149,4 @@ namespace Inject {
 }
 ```
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/registry.ts#L19)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/registry.ts#L19)

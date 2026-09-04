@@ -40,7 +40,7 @@ Harness owns the agent runtime. Tauri supplies the native window and operating-s
 
 System WebView, native menus, keyboard shortcuts, runtime supervision, and diagnostic export. No bundled Electron or Chromium.
 
-[Desktop architecture](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/apps/desktop/README.md)
+[Desktop architecture](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/apps/desktop/README.md)
 
 </div><div>
 
@@ -78,6 +78,6 @@ Local execution is not offline inference. Plugins and external agents run code; 
 
 [Upstream Harness](https://github.com/deepseek-ai/deepseek-harness)
 
-[MIT license](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/LICENSE)
+[MIT license](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/LICENSE)
 
 </footer></main>

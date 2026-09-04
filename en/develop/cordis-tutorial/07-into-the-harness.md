@@ -94,7 +94,7 @@ The logger fired first: `tools/result` is emitted as part of result materializat
 
 ## From here to a full agent
 
-A real agent is this composition plus more plugins: an LLM adapter, the agent loop, persistence, and an application entry. Compare the [base profile layer](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/bundle/base/cordis.patch.yml) and [headless layer](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/bundle/headless/cordis.patch.yml) — you can read their entries now. Add your `greet-tool.ts` through a small `--patch` overlay.
+A real agent is this composition plus more plugins: an LLM adapter, the agent loop, persistence, and an application entry. Compare the [base profile layer](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/bundle/base/cordis.patch.yml) and [headless layer](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/bundle/headless/cordis.patch.yml) — you can read their entries now. Add your `greet-tool.ts` through a small `--patch` overlay.
 
 Where to go next:
 

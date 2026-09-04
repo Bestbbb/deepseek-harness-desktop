@@ -34,7 +34,7 @@ effect(execute: () => Effect, label?: string): AsyncDisposable<Promise<void>>
 
 **返回**一个用于撤销该作用的清理函数，并在清理完成后结算。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L415)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L415)
 
 ### ctx.fiber
 
@@ -45,7 +45,7 @@ fiber: Fiber
 
 拥有此上下文的 fiber（插件运行时实例）。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L12)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L12)
 
 ## Fiber 类
 
@@ -53,7 +53,7 @@ fiber: Fiber
 
 fiber 会跟踪 `ctx.plugin()` 返回的插件上下文所对应的依赖状态、经过校验的配置、生命周期作用和清理操作。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L184)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L184)
 
 ### fiber.uid
 
@@ -64,7 +64,7 @@ public uid: number | null
 
 在注册表中的唯一 id；根 fiber 的 id 为 0，dispose 后为 `null`。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L186)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L186)
 
 ### fiber.ctx
 
@@ -75,7 +75,7 @@ public readonly ctx: Context
 
 此 fiber 的插件运行所在的上下文（扩展自父上下文）。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L188)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L188)
 
 ### fiber.config
 
@@ -86,7 +86,7 @@ public config: any
 
 经过校验的插件配置（由 `update()` 更新）。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L190)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L190)
 
 ### fiber.state
 
@@ -97,7 +97,7 @@ public state
 
 当前生命周期状态；状态转换会发出 `internal/status`。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L194)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L194)
 
 ### fiber.dispose
 
@@ -108,7 +108,7 @@ public readonly dispose: () => Promise<void>
 
 dispose 此 fiber：卸载插件，并在清理完成后结算。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L196)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L196)
 
 ### fiber.store
 
@@ -119,7 +119,7 @@ public store: Dict<Impl> | undefined
 
 加载期间所需服务实现的快照；其他情况下为 `undefined`。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L198)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L198)
 
 ### fiber.inertia
 
@@ -130,7 +130,7 @@ public inertia: Promise<void> | undefined
 
 当前正在进行的加载或卸载转换；如果没有此类转换，则为 undefined。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L200)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L200)
 
 ### fiber.name
 
@@ -141,7 +141,7 @@ get name()
 
 插件的显示名称，继承自最近的具名祖先；如果不存在，则为 `'root'`。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L336)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L336)
 
 ### fiber.assertActive()
 
@@ -159,7 +159,7 @@ assertActive()
 
 **返回**：fiber 仍处于活动状态时不返回任何内容。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L351)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L351)
 
 ### fiber.effect(execute, label?)
 
@@ -190,7 +190,7 @@ effect(execute: () => Effect, label?: string): AsyncDisposable<Promise<void>>
 
 **返回**一个用于撤销该作用的清理函数，并在清理完成后结算。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L415)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L415)
 
 ### fiber.getEffects()
 
@@ -207,7 +207,7 @@ getEffects()
 
 **返回**：每个带标签的活动作用对应一棵 `EffectMeta` 树。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L568)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L568)
 
 ### fiber.await()
 
@@ -225,7 +225,7 @@ async await()
 
 **返回**：进入稳定状态后的此 fiber。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L704)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L704)
 
 ### fiber.restart()
 
@@ -243,7 +243,7 @@ dispose 此插件，并立即使用其当前配置重新加载。
 
 **返回**一个在重新加载完成后兑现的 promise。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L718)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L718)
 
 ### fiber.update(config, noSave?)
 
@@ -271,7 +271,7 @@ update(config: any, noSave = false)
 
 **返回**更新 waterfall 的结果；默认的重新启动操作返回一个 promise。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L736)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L736)
 
 ## Effect
 
@@ -292,7 +292,7 @@ type Effect<T = any> =
   | AsyncEffect<T>
 ```
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L83)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L83)
 
 ## Disposable
 
@@ -310,7 +310,7 @@ type Effect<T = any> =
 type Disposable<T = any> = () => T
 ```
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L74)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L74)
 
 ## EffectMeta
 
@@ -326,7 +326,7 @@ interface EffectMeta {
 }
 ```
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L96)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L96)
 
 ## CordisError
 
@@ -352,7 +352,7 @@ namespace CordisError {
 }
 ```
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L157)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L157)
 
 ## ValidationError
 
@@ -372,4 +372,4 @@ class ValidationError extends TypeError {
 }
 ```
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/fiber.ts#L19)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/fiber.ts#L19)

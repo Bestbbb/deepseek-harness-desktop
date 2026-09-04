@@ -1,8 +1,8 @@
 # Session References
 
-Host-backed file discovery plus structured cross-session reference requests and prepared message contexts. The [file-reference contract](https://github.com/Bestbbb/deepseek-harness-desktop/tree/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/context/file-reference) owns path-only completion records and grammar; the [session-reference contract](https://github.com/Bestbbb/deepseek-harness-desktop/tree/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/context/session-reference) defines canonical URIs, current-surface projection, tag-safe JSON and byte retention, stable errors, and the untrusted model prompt. Host adapters use these types instead of passing their UI mention syntax into the agent core.
+Host-backed file discovery plus structured cross-session reference requests and prepared message contexts. The [file-reference contract](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/context/file-reference) owns path-only completion records and grammar; the [session-reference contract](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/context/session-reference) defines canonical URIs, current-surface projection, tag-safe JSON and byte retention, stable errors, and the untrusted model prompt. Host adapters use these types instead of passing their UI mention syntax into the agent core.
 
-Sources: [`packages/context/file-reference/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/context/file-reference/src/types.ts) · [`packages/context/session-reference/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/context/session-reference/src/types.ts)
+Sources: [`packages/context/file-reference/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/context/file-reference/src/types.ts) · [`packages/context/session-reference/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/context/session-reference/src/types.ts)
 
 ## File candidates
 
@@ -66,7 +66,31 @@ interface SessionReferenceMentionCandidate extends SessionReferenceCandidate {
 
 ## Prepared messages
 
-Preparation preserves readable current-message content and returns at most one aggregated context.
+Preparation preserves readable current-message content and returns at most one aggregated context. Its durable source records keep `capturedThroughSeq` as a coordinate in the referenced Session's original generation; they never reinterpret it as a seq in the containing Session. `capturedFormatVersion` records that generation, with absence meaning released format v0.
+
+```ts type-equiv
+/** Durable source session, cited event seqs, and snapshot facts for prepared cross-session context. */
+interface SessionReferenceSource {
+  kind: 'session-reference'
+  /** Material lifted out of another session's log (`recall` context form). */
+  form: 'recall'
+  version: 1
+  references: {
+    sessionId: string
+    label: string
+    /** Source Session format generation; absence identifies version 0. */
+    capturedFormatVersion?: number
+    capturedThroughSeq: OptionalSessionSeq
+    compacted: boolean
+    originalMessages: number
+    retainedMessages: number
+    omittedMessages: number
+    omittedBytes: number
+    truncated: boolean
+    inputIndex: number
+  }[]
+}
+```
 
 ```ts type-equiv
 /** Direct message content and optional referenced-session context. */
@@ -121,7 +145,7 @@ abstract list( agent: Agent, query: string, signal: AbortSignal, ): Promise<File
 
 Types: [Agent](./core.md)
 
-Source: [`packages/context/file-reference/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/context/file-reference/src/index.ts)
+Source: [`packages/context/file-reference/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/context/file-reference/src/index.ts)
 
 <a id="ctxsessionfilereferences--sessionfilereferences"></a>
 
@@ -142,7 +166,7 @@ Host Remote adapter over the composed file-reference provider.
 
 Types: [Agent](./core.md)
 
-Source: [`packages/api/session-controller/src/file-references.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/api/session-controller/src/file-references.ts)
+Source: [`packages/api/session-controller/src/file-references.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/session-controller/src/file-references.ts)
 
 <a id="ctxsessionreferenceresolver--sessionreferenceresolver"></a>
 
@@ -189,5 +213,5 @@ async prepare( agent: Agent, content: ContentBlock[], references: SessionReferen
 
 Types: [Agent](./core.md) · [ContentBlock](./llm-streaming.md)
 
-Source: [`packages/context/session-reference/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/context/session-reference/src/index.ts)
+Source: [`packages/context/session-reference/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/context/session-reference/src/index.ts)
 <!-- END GENERATED cordis-surface -->

@@ -1,8 +1,8 @@
 # SessionTelemetryBackend
 
-Outbound session reporting is split as a [capability seam](../capability-seams.md): the Service Definition and capture coordinator ([dsh-session-telemetry](https://github.com/Bestbbb/deepseek-harness-desktop/tree/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/session/session-telemetry), `ctx.sessionTelemetry`) own the capture points, fixed chunk projection, `session-telemetry/record` redaction waterfall, handoff cursor, and minimal backend contract; the Service Provider a deployment loads ([dsh-session-telemetry-otel](https://github.com/Bestbbb/deepseek-harness-desktop/tree/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/session/session-telemetry-otel)) is the OpenTelemetry JS SDK's log pipeline configured verbatim. It is one optional capability, not part of the agent-loop spine, and nothing here reaches a model request. The boundary axiom — the harness's aspect ends at `emit()`; batching, retry, queueing, and loss policy belong to the reporting SDK — and the rejected alternatives are pinned in the [revival Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/.agents/notes/implemented/feature/2026-07-23-session-telemetry-otel-revival.md); the capture points, cursor, and projection contracts live in the [Service Definition README](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/session/session-telemetry/README.md).
+Outbound session reporting is split as a [capability seam](../capability-seams.md): the Service Definition and capture coordinator ([dsh-session-telemetry](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-telemetry), `ctx.sessionTelemetry`) own complete canonical-event capture, the `session-telemetry/record` redaction waterfall, the handoff cursor, and the minimal backend contract; the Service Provider a deployment loads ([dsh-session-telemetry-otel](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-telemetry-otel)) is the OpenTelemetry JS SDK's log pipeline configured verbatim. It is one optional capability, not part of the agent-loop spine, and nothing here reaches a model request. The boundary axiom — the harness's aspect ends at `emit()`; batching, retry, queueing, and loss policy belong to the reporting SDK — and the rejected alternatives are pinned in the [revival Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/feature/2026-07-23-session-telemetry-otel-revival.md); the capture and cursor contracts live in the [Service Definition README](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-telemetry/README.md).
 
-Source: [`packages/session/session-telemetry/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/session/session-telemetry/src/index.ts)
+Source: [`packages/session/session-telemetry/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-telemetry/src/index.ts)
 
 ## The logical record
 
@@ -35,8 +35,9 @@ interface SessionTelemetryRecord {
   severity: SessionTelemetrySeverity
   /**
    * Identity attributes, deliberately minimal: ledger records carry
-   * `session.id`, `event.type`, `event.seq`, plus `session.cwd` /
-   * `session.parent_id` / `session.seed_length` when the header has them;
+   * `session.id`, `session.format_version`, `event.type`, `event.seq`, plus optional
+   * `session.cwd` / `session.parent_id`; a seeded Session also carries
+   * `session.seed_length` from its exact inherited event count;
    * ops records carry `telemetry.op`, `session.id`, and (for `agent-error`)
    * `agent.id`, `turn`, `step`, `error.name`. Anything recoverable from the
    * body is intentionally NOT duplicated here.
@@ -52,11 +53,11 @@ interface SessionTelemetryRecord {
 }
 ```
 
-Only the first `assistant/chunk` of each `(turn, step)` ships — the stream-started signal; the rest drop at capture, so `seq` gaps are routine on the wire and never a loss signal. Every other [session event](./session.md) type, including plugin-merged ones the seam never heard of, passes through whole. Delivery is best-effort: the cursor marks handed-off, not delivered, records can be lost (crash, reload window) and duplicated (cursor-less re-adoption, SDK retries), so receivers dedupe ledger records on `(session.id, event.seq)`; ops records deliberately omit that identity — they are signals to alert on, not entries to sum, and tolerate duplicates instead.
+Every canonical [session event](./session.md), including each `assistant/message` or `assistant/attempt` with its complete compact stream and every plugin-merged type the seam never heard of, passes through whole as one ordered ledger record. Process-local `agent/assistant-stream` frames do not enter this durable feed. A new Session object replays its complete log from seq 0, including constructor seed history; re-adopting the same object resumes after its handoff cursor. Delivery is best-effort: the cursor marks handed-off, not delivered, and records can be lost (crash, reload window) or duplicated (new-object replay, SDK retries), so receivers dedupe ledger records on `(session.id, session.format_version, event.seq)`; ops records deliberately omit that identity — they are signals to alert on, not entries to sum, and tolerate duplicates instead.
 
 ## The sharing disclosure
 
-The seam's acknowledgement contract (owned by the [Service Definition README's sharing-disclosure section](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/session/session-telemetry/README.md#the-sharing-disclosure)): every backend discloses its deployment-selected sharing policy through the required abstract `sharing` member on `ctx.sessionTelemetry`, and consumers render "not configured" only when no telemetry service is mounted. The disclosure states the current policy, never delivery or retention — handoff is the non-blocking enqueue, and batching, retry, and loss policy stay the reporting SDK's.
+The seam's acknowledgement contract (owned by the [Service Definition README's sharing-disclosure section](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-telemetry/README.md#the-sharing-disclosure)): every backend discloses its deployment-selected sharing policy through the required abstract `sharing` member on `ctx.sessionTelemetry`, and consumers render "not configured" only when no telemetry service is mounted. The disclosure states the current policy, never delivery or retention — handoff is the non-blocking enqueue, and batching, retry, and loss policy stay the reporting SDK's.
 
 ```ts type-equiv
 /**
@@ -120,7 +121,7 @@ interface SessionTelemetrySink {
 
 ## The redact waterfall: `session-telemetry/record`
 
-Every record passes the `session-telemetry/record` [waterfall](../cordis-primer.md#cordis-waterfall-semantics) between projection and `emit()` ([event entry](#session-telemetryrecord--waterfall)). The seam ships NO rules of its own: with no listener mounted, records reach the backend exactly as captured, so exported data is precisely as clean as the rules a deployment mounts. Listeners stack by transforming `next()`'s return value; returning without `next()` replaces everything beneath; a throwing listener withholds that one record fail-closed inside the coordinator's containment. Redaction applies to the exported copy only — the canonical session log is never rewritten.
+Every record passes the `session-telemetry/record` [waterfall](../cordis-primer.md#cordis-waterfall-semantics) between the canonical-event copy and `emit()` ([event entry](#session-telemetryrecord--waterfall)). The seam ships NO rules of its own: with no listener mounted, records reach the backend exactly as captured, so exported data is precisely as clean as the rules a deployment mounts. Listeners stack by transforming `next()`'s return value; returning without `next()` replaces everything beneath; a throwing listener withholds that one record fail-closed inside the coordinator's containment. Redaction applies to the exported copy only — the canonical session log is never rewritten.
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 
@@ -153,7 +154,7 @@ flush?(): void
 abstract shutdown(): Promise<void>
 ```
 
-Source: [`packages/session/session-telemetry/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/session/session-telemetry/src/index.ts)
+Source: [`packages/session/session-telemetry/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-telemetry/src/index.ts)
 
 <a id="session-telemetry-events"></a>
 
@@ -187,5 +188,5 @@ Transform one outbound record before it reaches the backend. This waterfall is t
 'session-telemetry/record'(record: SessionTelemetryRecord, next: () => SessionTelemetryRecord): SessionTelemetryRecord
 ```
 
-Source: [`packages/session/session-telemetry/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/session/session-telemetry/src/index.ts)
+Source: [`packages/session/session-telemetry/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-telemetry/src/index.ts)
 <!-- END GENERATED cordis-surface -->

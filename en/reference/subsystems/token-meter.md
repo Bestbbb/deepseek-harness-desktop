@@ -2,7 +2,7 @@
 
 `@deepseek-ai/dsh-token-meter` exposes one detached replay snapshot for request pressure and positional surface pricing. `logRevision` is the number of durable events consumed for every field in the measurement.
 
-Source: [`packages/llm/token-meter/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/llm/token-meter/src/types.ts)
+Source: [`packages/llm/token-meter/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/llm/token-meter/src/types.ts)
 
 ## `TokenMeasurement`
 
@@ -99,5 +99,5 @@ estimateMessage(message: Message): number
 
 Types: [EpochHeader](./session.md) · [Message](./llm-streaming.md) · [Session](./session.md)
 
-Source: [`packages/llm/token-meter/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/llm/token-meter/src/index.ts)
+Source: [`packages/llm/token-meter/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/llm/token-meter/src/index.ts)
 <!-- END GENERATED cordis-surface -->

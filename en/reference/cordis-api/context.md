@@ -9,7 +9,7 @@ Root and child dependency containers for Cordis plugins.
 
 A context is a proxy: normal property reads go through the service resolver, while `extend()`, `isolate()`, and `intercept()` create scoped child contexts without mutating their parent.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/context.ts#L42)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/context.ts#L42)
 
 ### ctx.extend(meta?)
 
@@ -34,7 +34,7 @@ The child prototypally inherits every property of this context; own properties o
 
 **Returns** a child context inheriting from this one.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/context.ts#L99)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/context.ts#L99)
 
 ### ctx.isolate(name, label?)
 
@@ -63,7 +63,7 @@ Below the returned context, reads and writes of the service `name` resolve again
 
 **Returns** a child context whose `name` service resolves in the new scope.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/context.ts#L121)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/context.ts#L121)
 
 ### ctx.intercept(name, config)
 
@@ -93,7 +93,7 @@ Plugins loaded under the returned context see `config` merged into the service's
 
 **Returns** a child context carrying the additional intercept entry.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/context.ts#L139)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/context.ts#L139)
 
 ### ctx.root
 
@@ -104,7 +104,7 @@ root: this
 
 The root context of the application (every child context shares it). @experimental
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/context.ts#L22)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/context.ts#L22)
 
 ### ctx.baseUrl
 
@@ -115,7 +115,7 @@ baseUrl?: string
 
 Base URL used to resolve relative plugin/module specifiers, if the runtime sets one.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/context.ts#L24)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/context.ts#L24)
 
 ### ctx.events
 
@@ -126,7 +126,7 @@ events: EventsService
 
 The event bus. Its methods are also mixed onto `ctx` (`ctx.on`, `ctx.emit`, ...).
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/context.ts#L26)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/context.ts#L26)
 
 ### ctx.logger
 
@@ -137,7 +137,7 @@ logger: LoggerService
 
 The logging service. Call `ctx.logger(name)` for a named logger.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/context.ts#L28)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/context.ts#L28)
 
 ### ctx.reflect
 
@@ -148,7 +148,7 @@ reflect: ReflectService
 
 The reflection layer backing the context proxy (`ctx.get`, `ctx.provide`, ...).
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/context.ts#L30)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/context.ts#L30)
 
 ### ctx.registry
 
@@ -159,7 +159,7 @@ registry: RegistryService
 
 The plugin registry. Its methods are mixed onto `ctx` (`ctx.plugin`, `ctx.inject`).
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/context.ts#L32)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/context.ts#L32)
 
 ## Static members
 
@@ -172,7 +172,7 @@ static readonly effect: unique symbol
 
 Symbol key under which a disposer exposes its EffectMeta diagnostics tree.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/context.ts#L44)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/context.ts#L44)
 
 ### Context.filter
 
@@ -183,7 +183,7 @@ static readonly filter: unique symbol
 
 Symbol key for a context's listener filter, consulted on every event dispatch.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/context.ts#L46)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/context.ts#L46)
 
 ### Context.isolate
 
@@ -194,7 +194,7 @@ static readonly isolate: unique symbol
 
 Symbol key of the isolation map (see the `Context[symbols.isolate]` property).
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/context.ts#L48)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/context.ts#L48)
 
 ### Context.intercept
 
@@ -205,7 +205,7 @@ static readonly intercept: unique symbol
 
 Symbol key of the intercept map (see the `Context[symbols.intercept]` property).
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/context.ts#L50)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/context.ts#L50)
 
 ### Context.is(value)
 
@@ -230,7 +230,7 @@ Works across realms and across multiple copies of cordis, because the brand is k
 
 **Returns** `true` if `value` is a Cordis context, narrowing its type.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/context.ts#L61)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/context.ts#L61)
 
 ## Service store and mixins
 
@@ -256,7 +256,7 @@ Read a service from the store without the inject requirement.
 
 **Returns** the service value, or `undefined` when not (yet) provided.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/reflect.ts#L17)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/reflect.ts#L17)
 
 ### ctx.set(name, value)
 
@@ -281,7 +281,7 @@ Only the fiber that provided the service may set it; setting an unprovided name 
 - `name` — the service name.
 - `value` — the new service value.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/reflect.ts#L29)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/reflect.ts#L29)
 
 ### ctx.provide(name, value)
 
@@ -311,7 +311,7 @@ The service becomes visible to dependents in the same isolation scope once the f
 
 **Returns** a disposer that unregisters the service.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/reflect.ts#L44)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/reflect.ts#L44)
 
 ### ctx.accessor(name, options)
 
@@ -335,7 +335,7 @@ The accessor is removed when the current fiber unloads. Throws if the name is al
 - `name` — the context property name.
 - `options` — the `get` hook and optional `set` hook.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/reflect.ts#L56)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/reflect.ts#L56)
 
 ### ctx.mixin(name, mixins)
 
@@ -361,4 +361,4 @@ Each mixed-in key becomes an accessor that forwards to the service (binding meth
 - `name` — the context property holding the source service.
 - `mixins` — keys to forward, or a source-key → ctx-key map.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/vendor/cordis/src/reflect.ts#L67)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/reflect.ts#L67)

@@ -1,6 +1,6 @@
 # Typert remote calls
 
-Types shared by generated Remote artifacts, the Host Gateway, and consumer API assemblies. The [Typert Gateway Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/.agents/notes/implemented/architecture/2026-08-02-typert-remote-method-calls.md) owns the architecture and transport decisions; this page records the literal public contracts from [`dsh-typert-protocol`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/typert/protocol/src/types.ts) and [`dsh-api-gateway`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/api/gateway/src/types.ts).
+Types shared by generated Remote artifacts, the Host Gateway, and consumer API assemblies. The [Typert Gateway Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/architecture/2026-08-02-typert-remote-method-calls.md) owns the architecture and transport decisions; this page records the literal public contracts from [`dsh-typert-protocol`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/typert/protocol/src/types.ts) and [`dsh-api-gateway`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/gateway/src/types.ts).
 
 ## Lookup and Context declarations
 
@@ -304,7 +304,7 @@ toJSONSchema(key: string, params?: z.core.ToJSONSchemaParams): z.core.JSONSchema
 
 Types: [TypertContribution](./invariants.md) · [TypertFace](./invariants.md) · [TypertPackageFilter](./invariants.md) · [TypertPackageRecord](./invariants.md) · [TypertSchemaFilter](./invariants.md) · [TypertSchemaRecord](./invariants.md)
 
-Source: [`packages/typert/registry/src/service.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/typert/registry/src/service.ts)
+Source: [`packages/typert/registry/src/service.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/typert/registry/src/service.ts)
 
 <a id="ctxtypertgateway--typertgatewayservice"></a>
 
@@ -337,5 +337,5 @@ async invoke(request: InvokeRemoteRequest): Promise<unknown>
 async stream(request: InvokeRemoteRequest): Promise<AsyncIterable<unknown>>
 ```
 
-Source: [`packages/api/gateway/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/api/gateway/src/index.ts)
+Source: [`packages/api/gateway/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/gateway/src/index.ts)
 <!-- END GENERATED cordis-surface -->

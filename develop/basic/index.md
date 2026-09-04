@@ -1,6 +1,6 @@
 # 第一个插件
 
-本教程会创建一个最小的 Harness 插件，并将其加载到 Web UI 中。请从已完成[从源码运行路径](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/README.zh.md#run-from-source)的仓库检出开始。
+本教程会创建一个最小的 Harness 插件，并将其加载到 Web UI 中。请从已完成[从源码运行路径](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/README.zh.md#run-from-source)的仓库检出开始。
 
 ## 创建本地项目
 

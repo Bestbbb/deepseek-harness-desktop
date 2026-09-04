@@ -1,8 +1,8 @@
 # 用户凭据
 
-[dsh-credentials](https://github.com/Bestbbb/deepseek-harness-desktop/tree/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/credentials/credentials) 的凭据 seam 把机密挡在配置之外：settings 分节与 `cordis.yml` 条目携带的是*引用*（环境变量名），值归 [dsh-credentials-local](https://github.com/Bestbbb/deepseek-harness-desktop/tree/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/credentials/credentials-local) 这类提供方所有，消费方每个操作解析一次引用——LLM（大语言模型）适配器每次模型请求解析一次，因此轮换后的凭据无需任何重启即可作用于紧随其后的下一次请求。一条 seam 级规则约束每个提供方：空的存储值在任何地方都视为不存在。
+[dsh-credentials](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/credentials/credentials) 的凭据 seam 把机密挡在配置之外：settings 分节与 `cordis.yml` 条目携带的是*引用*（环境变量名），值归 [dsh-credentials-local](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/credentials/credentials-local) 这类提供方所有，消费方每个操作解析一次引用——LLM（大语言模型）适配器每次模型请求解析一次，因此轮换后的凭据无需任何重启即可作用于紧随其后的下一次请求。一条 seam 级规则约束每个提供方：空的存储值在任何地方都视为不存在。
 
-来源：[`packages/credentials/credentials/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/credentials/credentials/src/index.ts)
+来源：[`packages/credentials/credentials/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/credentials/credentials/src/index.ts)
 
 ## 标识
 
@@ -118,7 +118,7 @@ cancel(key: CredentialKey): void
 async begin(request: AuthorizationRequest): Promise<AuthorizationOutcome>
 ```
 
-Source: [`packages/credentials/authorization/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/credentials/authorization/src/index.ts)
+Source: [`packages/credentials/authorization/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/credentials/authorization/src/index.ts)
 
 <a id="ctxcredentials--credentialprovider-abstract-seam"></a>
 
@@ -212,7 +212,7 @@ abstract modifyRecord( key: CredentialKey, mutate: (current: CredentialRecord | 
 abstract deleteRecord(key: CredentialKey): Promise<void>
 ```
 
-Source: [`packages/credentials/credentials/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/credentials/credentials/src/index.ts)
+Source: [`packages/credentials/credentials/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/credentials/credentials/src/index.ts)
 
 <a id="ctxcredentialscontroller--credentialscontroller"></a>
 
@@ -249,7 +249,7 @@ Host service backing the generated `ctx.remote.credentials` namespace. It carrie
 @Remote async unset(ref: string): Promise<void>
 ```
 
-Source: [`packages/api/settings-controller/src/credentials.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/api/settings-controller/src/credentials.ts)
+Source: [`packages/api/settings-controller/src/credentials.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/settings-controller/src/credentials.ts)
 
 <a id="authorization-events"></a>
 
@@ -273,7 +273,7 @@ One authorization attempt has finished and released its key. Fires for every ter
 'authorization/settled'(key: CredentialKey, settlement: AuthorizationSettlement): void
 ```
 
-Source: [`packages/credentials/authorization/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/credentials/authorization/src/index.ts)
+Source: [`packages/credentials/authorization/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/credentials/authorization/src/index.ts)
 
 <a id="credentials-events"></a>
 
@@ -299,7 +299,7 @@ Committed change to a stored credential record: a `modifyRecord` that wrote, a `
 'credentials/record-updated'(key: CredentialKey): void
 ```
 
-Source: [`packages/credentials/credentials/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/credentials/credentials/src/types.ts)
+Source: [`packages/credentials/credentials/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/credentials/credentials/src/types.ts)
 
 <a id="credentialsreference-updated--emit"></a>
 
@@ -323,5 +323,5 @@ Committed change to a provider-managed credential source: a `set`, an `unset`, o
 'credentials/reference-updated'(ref: CredentialRef): void
 ```
 
-Source: [`packages/credentials/credentials/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/credentials/credentials/src/types.ts)
+Source: [`packages/credentials/credentials/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/credentials/credentials/src/types.ts)
 <!-- END GENERATED cordis-surface -->

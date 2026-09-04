@@ -1,8 +1,8 @@
 # User Approval
 
-The user-approval seam of [dsh-user-approval](https://github.com/Bestbbb/deepseek-harness-desktop/tree/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/interaction/user-approval) answers one question: may this specific action proceed? It owns the shared request/outcome vocabulary, the `ctx.approval` dispatch service, the `approval/request` answerer waterfall, the log-only audit pair, and the per-session `ask`/`never` policy. UI channels may provide human answerers; the [ACP automation bridge](https://github.com/Bestbbb/deepseek-harness-desktop/tree/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/acp/acp) provides one-shot machine decisions for its own agents. Callers such as [dsh-tools](https://github.com/Bestbbb/deepseek-harness-desktop/tree/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/core/tools) and [dsh-tool-bash](https://github.com/Bestbbb/deepseek-harness-desktop/tree/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/shell/tool-bash) consume the closed outcome and fail closed unless it is `allowed-once`.
+The user-approval seam of [dsh-user-approval](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-approval) answers one question: may this specific action proceed? It owns the shared request/outcome vocabulary, the `ctx.approval` dispatch service, the `approval/request` answerer waterfall, the log-only audit pair, and the per-session `ask`/`never` policy. UI channels may provide human answerers; the [ACP automation bridge](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/acp/acp) provides one-shot machine decisions for its own agents. Callers such as [dsh-tools](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/tools) and [dsh-tool-bash](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/shell/tool-bash) consume the closed outcome and fail closed unless it is `allowed-once`.
 
-Source: [`packages/interaction/user-approval/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/interaction/user-approval/src/index.ts)
+Source: [`packages/interaction/user-approval/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-approval/src/index.ts)
 
 ## Identity and outcome
 
@@ -139,7 +139,7 @@ overrideOf(session: Session): ApprovalPolicy | undefined
 
 Types: [Agent](./core.md) · [Session](./session.md)
 
-Source: [`packages/interaction/user-approval/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/interaction/user-approval/src/index.ts)
+Source: [`packages/interaction/user-approval/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-approval/src/index.ts)
 
 <a id="approval-events"></a>
 
@@ -164,5 +164,5 @@ Ask composed answerers for one decision. Return an outcome to claim the request 
 
 Types: [Agent](./core.md) · [Scoped](./scope.md)
 
-Source: [`packages/interaction/user-approval/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/interaction/user-approval/src/types.ts)
+Source: [`packages/interaction/user-approval/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-approval/src/types.ts)
 <!-- END GENERATED cordis-surface -->

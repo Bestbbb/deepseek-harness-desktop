@@ -34,8 +34,8 @@ export function apply(ctx: Context, config: Config) {
 
 ## 实现结构
 
-让协议格式（wire format）类型、请求序列化、传输解析、分片转换和适配器类分别承担独立职责；[`llm-deepseek`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/packages/llm/llm-deepseek/README.zh.md) 是参考布局。
+让协议格式（wire format）类型、请求序列化、传输解析、分片转换和适配器类分别承担独立职责；[`llm-deepseek`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/llm/llm-deepseek/README.zh.md) 是参考布局。
 
 ## 验证
 
-遵循[仓库测试策略](https://github.com/Bestbbb/deepseek-harness-desktop/blob/c5ef947d98383a25f1481671f55bfda8e92b1a82/docs/testing.zh.md)，该策略负责适配器覆盖、真实提供方检查和已发布入口要求。
+遵循[仓库测试策略](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/testing.zh.md)，该策略负责适配器覆盖、真实提供方检查和已发布入口要求。
