@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { load } from 'js-yaml'
 import { describe, expect, it } from 'vitest'
+import { checkWorkspaceManifest, type PackageManifest } from './check-workspace-constraints.ts'
 import { verifyDesktopRelease, verifyDesktopVersions } from './verify-desktop-release.ts'
 
 const root = resolve(import.meta.dirname, '..')
@@ -16,7 +17,7 @@ function record(value: unknown): Record<string, unknown> {
 
 describe('desktop release', () => {
   it('packs only desktop source inputs rather than native build outputs', () => {
-    const manifest = record(JSON.parse(readFileSync(resolve(root, 'apps/desktop/package.json'), 'utf8')))
+    const manifest = JSON.parse(readFileSync(resolve(root, 'apps/desktop/package.json'), 'utf8')) as PackageManifest
     expect(manifest.files).toEqual([
       'loading', 'runtime', 'scripts',
       'src-tauri/src', 'src-tauri/capabilities', 'src-tauri/icons',
@@ -24,6 +25,7 @@ describe('desktop release', () => {
       'src-tauri/entitlements.node.plist', 'src-tauri/tauri.conf.json', 'src-tauri/tauri.windows.conf.json',
       'README.md', 'README.zh.md',
     ])
+    expect(checkWorkspaceManifest({ dir: 'apps/desktop', manifest })).toEqual([])
   })
 
   it('aligns the actual native and JavaScript manifests', () => {

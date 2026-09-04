@@ -1,9 +1,11 @@
-/** Experimental-package publication and dependency constraints. */
+/** Workspace publication and experimental dependency constraints. */
 
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
   checkExperimentalDependencyIsolation,
   checkExperimentalManifest,
+  checkWorkspaceManifest,
   expectedDshPackageFiles,
   type WorkspaceManifest,
 } from './check-workspace-constraints.ts'
@@ -85,6 +87,41 @@ describe('package payload constraints', () => {
       'lib/index.js',
       'cordis.patch.yml',
       'lib/types/**/*.d.ts',
+    ])
+  })
+})
+
+describe('desktop package payload constraints', () => {
+  const desktop: WorkspaceManifest = {
+    dir: 'apps/desktop',
+    manifest: JSON.parse(readFileSync(new URL('../apps/desktop/package.json', import.meta.url), 'utf8')) as WorkspaceManifest['manifest'],
+  }
+
+  it('accepts the shipped source-only application manifest', () => {
+    expect(checkWorkspaceManifest(desktop)).toEqual([])
+  })
+
+  it.each(['src-tauri', 'src-tauri/target', 'src-tauri/resources', 'src-tauri/gen'])(
+    'rejects a payload expanded to %s',
+    (directory) => {
+      expect(checkWorkspaceManifest({
+        ...desktop,
+        manifest: { ...desktop.manifest, files: [...desktop.manifest.files!, directory] },
+      })).toEqual([
+        `apps/desktop/package.json: @deepseek-ai/dsh-desktop-app: package.json files must be ${JSON.stringify(desktop.manifest.files)}`,
+      ])
+    },
+  )
+
+  it('rejects a payload missing the native build configuration', () => {
+    expect(checkWorkspaceManifest({
+      ...desktop,
+      manifest: {
+        ...desktop.manifest,
+        files: desktop.manifest.files!.filter(file => file !== 'src-tauri/tauri.conf.json'),
+      },
+    })).toEqual([
+      `apps/desktop/package.json: @deepseek-ai/dsh-desktop-app: package.json files must be ${JSON.stringify(desktop.manifest.files)}`,
     ])
   })
 })
