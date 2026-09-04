@@ -2,7 +2,7 @@
 
 use std::{
     io,
-    mem::{size_of, zeroed},
+    mem::{offset_of, size_of, zeroed},
     os::windows::{
         io::{AsRawHandle, FromRawHandle, OwnedHandle},
         process::CommandExt,
@@ -12,19 +12,26 @@ use std::{
     time::Instant,
 };
 use windows_sys::Win32::{
-    Foundation::{ERROR_NO_MORE_FILES, HANDLE, INVALID_HANDLE_VALUE},
+    Foundation::{
+        ERROR_INVALID_PARAMETER, ERROR_MORE_DATA, ERROR_NO_MORE_FILES, HANDLE,
+        INVALID_HANDLE_VALUE, WAIT_OBJECT_0, WAIT_TIMEOUT,
+    },
     System::{
         Diagnostics::ToolHelp::{
             CreateToolhelp32Snapshot, Thread32First, Thread32Next, TH32CS_SNAPTHREAD, THREADENTRY32,
         },
         JobObjects::{
-            AssignProcessToJobObject, CreateJobObjectW, JobObjectBasicAccountingInformation,
+            AssignProcessToJobObject, CreateJobObjectW, IsProcessInJob,
+            JobObjectBasicAccountingInformation, JobObjectBasicProcessIdList,
             JobObjectExtendedLimitInformation, QueryInformationJobObject, SetInformationJobObject,
             TerminateJobObject, JOBOBJECT_BASIC_ACCOUNTING_INFORMATION,
-            JOBOBJECT_EXTENDED_LIMIT_INFORMATION, JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
+            JOBOBJECT_BASIC_PROCESS_ID_LIST, JOBOBJECT_EXTENDED_LIMIT_INFORMATION,
+            JOB_OBJECT_LIMIT_ACTIVE_PROCESS, JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
         },
         Threading::{
-            OpenThread, ResumeThread, CREATE_NO_WINDOW, CREATE_SUSPENDED, THREAD_SUSPEND_RESUME,
+            OpenProcess, OpenThread, ResumeThread, WaitForSingleObject, CREATE_NO_WINDOW,
+            CREATE_SUSPENDED, PROCESS_QUERY_LIMITED_INFORMATION, PROCESS_SYNCHRONIZE,
+            THREAD_SUSPEND_RESUME,
         },
     },
 };
@@ -87,6 +94,10 @@ impl ManagedChild {
         if self.stopped {
             return Ok(());
         }
+        let seal_result = self.job.seal();
+        // Keep handles before termination: a zero Job count is not a wait on
+        // each process's exit signal. Sealing prevents new members escaping this snapshot.
+        let members = self.job.members();
         let job_result = self.job.terminate();
         // Assignment may have failed: the root is not necessarily in this Job.
         let child_result = self
@@ -95,11 +106,18 @@ impl ManagedChild {
             .and_then(|()| self.child.wait())
             .map(|_| ())
             .map_err(|error| format!("Could not reap runtime process: {error}"));
+        let member_result = members.and_then(|members| wait_members(&members));
         let drain_result = self.job.wait_empty();
-        let errors: Vec<_> = [job_result, child_result, drain_result]
-            .into_iter()
-            .filter_map(Result::err)
-            .collect();
+        let errors: Vec<_> = [
+            seal_result,
+            job_result,
+            child_result,
+            member_result,
+            drain_result,
+        ]
+        .into_iter()
+        .filter_map(Result::err)
+        .collect();
         if errors.is_empty() {
             self.stopped = true;
             Ok(())
@@ -158,6 +176,94 @@ impl Job {
         Ok(())
     }
 
+    fn seal(&self) -> Result<(), String> {
+        let mut limits: JOBOBJECT_EXTENDED_LIMIT_INFORMATION = unsafe { zeroed() };
+        limits.BasicLimitInformation.LimitFlags =
+            JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE | JOB_OBJECT_LIMIT_ACTIVE_PROCESS;
+        limits.BasicLimitInformation.ActiveProcessLimit = 0;
+        if unsafe {
+            SetInformationJobObject(
+                self.raw(),
+                JobObjectExtendedLimitInformation,
+                (&limits as *const JOBOBJECT_EXTENDED_LIMIT_INFORMATION).cast(),
+                size_of::<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>() as u32,
+            )
+        } == 0
+        {
+            return Err(last_error(
+                "SetInformationJobObject (close process admission)",
+            ));
+        }
+        Ok(())
+    }
+
+    fn members(&self) -> Result<Vec<OwnedHandle>, String> {
+        let deadline = Instant::now() + SHUTDOWN_GRACE;
+        let mut capacity = 1;
+        let ids = loop {
+            let byte_length = offset_of!(JOBOBJECT_BASIC_PROCESS_ID_LIST, ProcessIdList)
+                + capacity * size_of::<usize>();
+            let length = u32::try_from(byte_length)
+                .map_err(|_| "Windows runtime Job process list exceeds the API size limit")?;
+            // The flexible array contains ULONG_PTR values and needs pointer alignment.
+            let mut buffer = vec![0usize; byte_length.div_ceil(size_of::<usize>())];
+            let result = unsafe {
+                QueryInformationJobObject(
+                    self.raw(),
+                    JobObjectBasicProcessIdList,
+                    buffer.as_mut_ptr().cast(),
+                    length,
+                    std::ptr::null_mut(),
+                )
+            };
+            let error = io::Error::last_os_error();
+            let list = unsafe { &*buffer.as_ptr().cast::<JOBOBJECT_BASIC_PROCESS_ID_LIST>() };
+            if result == 0 && error.raw_os_error() != Some(ERROR_MORE_DATA as i32) {
+                return Err(format!(
+                    "Could not list Windows runtime Job processes: {error}"
+                ));
+            }
+            if result != 0 && list.NumberOfProcessIdsInList == list.NumberOfAssignedProcesses {
+                let offset =
+                    offset_of!(JOBOBJECT_BASIC_PROCESS_ID_LIST, ProcessIdList) / size_of::<usize>();
+                break buffer[offset..offset + list.NumberOfProcessIdsInList as usize].to_vec();
+            }
+            if Instant::now() >= deadline {
+                return Err("Windows runtime Job process list did not settle".to_owned());
+            }
+            capacity = (list.NumberOfAssignedProcesses as usize).max(capacity * 2);
+        };
+        let mut members = Vec::with_capacity(ids.len());
+        for pid in ids {
+            let raw = unsafe {
+                OpenProcess(
+                    PROCESS_SYNCHRONIZE | PROCESS_QUERY_LIMITED_INFORMATION,
+                    0,
+                    pid as u32,
+                )
+            };
+            if raw.is_null() {
+                let error = io::Error::last_os_error();
+                if error.raw_os_error() == Some(ERROR_INVALID_PARAMETER as i32) {
+                    continue; // The process exited and its PID no longer exists.
+                }
+                return Err(format!(
+                    "Could not observe Windows runtime process {pid}: {error}"
+                ));
+            }
+            let handle = unsafe { OwnedHandle::from_raw_handle(raw) };
+            let mut in_job = 0;
+            if unsafe { IsProcessInJob(handle.as_raw_handle(), self.raw(), &mut in_job) } == 0 {
+                return Err(last_error("IsProcessInJob"));
+            }
+            // A PID can be recycled between enumeration and OpenProcess.
+            if in_job != 0 {
+                members.push(handle);
+            }
+        }
+        Ok(members)
+    }
+
     fn wait_empty(&self) -> Result<(), String> {
         let deadline = Instant::now() + SHUTDOWN_GRACE;
         loop {
@@ -186,6 +292,22 @@ impl Job {
             thread::sleep(POLL_INTERVAL);
         }
     }
+}
+
+fn wait_members(members: &[OwnedHandle]) -> Result<(), String> {
+    let deadline = Instant::now() + SHUTDOWN_GRACE;
+    for member in members {
+        let remaining = deadline.saturating_duration_since(Instant::now());
+        let timeout = remaining.as_millis().min(u32::MAX as u128 - 1) as u32;
+        match unsafe { WaitForSingleObject(member.as_raw_handle(), timeout) } {
+            WAIT_OBJECT_0 => {}
+            WAIT_TIMEOUT => {
+                return Err("Windows runtime process did not finish termination".to_owned());
+            }
+            _ => return Err(last_error("WaitForSingleObject")),
+        }
+    }
+    Ok(())
 }
 
 fn last_error(api: &str) -> String {
@@ -250,13 +372,10 @@ mod tests {
         time::Duration,
     };
     use windows_sys::Win32::{
-        Foundation::{DuplicateHandle, WAIT_OBJECT_0, WAIT_TIMEOUT},
+        Foundation::DuplicateHandle,
         System::{
-            SystemServices::{JOB_OBJECT_QUERY, JOB_OBJECT_TERMINATE},
-            Threading::{
-                GetCurrentProcess, OpenProcess, TerminateProcess, WaitForSingleObject,
-                PROCESS_SYNCHRONIZE, PROCESS_TERMINATE,
-            },
+            SystemServices::{JOB_OBJECT_QUERY, JOB_OBJECT_SET_ATTRIBUTES, JOB_OBJECT_TERMINATE},
+            Threading::{GetCurrentProcess, TerminateProcess, PROCESS_TERMINATE},
         },
     };
 
@@ -308,6 +427,7 @@ mod tests {
                 "runtime::windows::tests::process_fixture",
                 "--ignored",
                 "--nocapture",
+                "--test-threads=1",
             ])
             .env_clear()
             .env("DSH_DESKTOP_FIXTURE_KIND", kind)
@@ -381,7 +501,7 @@ mod tests {
                     job.raw(),
                     GetCurrentProcess(),
                     &mut restricted,
-                    JOB_OBJECT_QUERY | JOB_OBJECT_TERMINATE,
+                    JOB_OBJECT_QUERY | JOB_OBJECT_SET_ATTRIBUTES | JOB_OBJECT_TERMINATE,
                     0,
                     0,
                 )
@@ -395,6 +515,7 @@ mod tests {
             .err()
             .expect("assignment error");
         assert!(error.contains("AssignProcessToJobObject"), "{error}");
+        assert!(!error.contains("cleanup failed"), "{error}");
         assert_eq!(
             probe.state(),
             WAIT_OBJECT_0,
@@ -413,6 +534,7 @@ mod tests {
             .err()
             .expect("resume error");
         assert!(error.contains("ResumeThread"), "{error}");
+        assert!(!error.contains("cleanup failed"), "{error}");
         assert_eq!(
             probe.state(),
             WAIT_OBJECT_0,
@@ -428,6 +550,14 @@ mod tests {
         let leaf = descendant(&mut managed);
         assert_eq!(root.state(), WAIT_TIMEOUT);
         assert_eq!(leaf.state(), WAIT_TIMEOUT);
+        assert_eq!(
+            managed
+                .job
+                .members()
+                .expect("root and descendant handles")
+                .len(),
+            2
+        );
         drop(managed);
         assert_eq!(root.state(), WAIT_OBJECT_0, "root survived owner drop");
         assert_eq!(
@@ -444,7 +574,7 @@ mod tests {
         let leaf = descendant(&mut managed);
         assert!(managed.child.wait().expect("root exit").success());
         assert_eq!(leaf.state(), WAIT_TIMEOUT);
-        managed.terminate();
+        managed.stop().expect("runtime cleanup");
         assert_eq!(
             leaf.state(),
             WAIT_OBJECT_0,
@@ -453,11 +583,33 @@ mod tests {
     }
 
     #[test]
+    fn sealed_job_rejects_new_processes_before_termination() {
+        let mut managed =
+            ManagedChild::spawn(&mut fixture_command("root")).expect("runtime startup");
+        let leaf = descendant(&mut managed);
+        managed.job.seal().expect("close process admission");
+        {
+            let child = suspended_child();
+            let probe = ProcessProbe::child(&child);
+            assert!(
+                managed.job.assign(&child).is_err(),
+                "sealed Job admitted a process"
+            );
+            // A rejected process counts against the limit until its handles close.
+            wait_members(&[probe.0.try_clone().expect("probe handle")])
+                .expect("rejected child exit");
+            assert_eq!(probe.state(), WAIT_OBJECT_0);
+        }
+        managed.stop().expect("runtime cleanup");
+        assert_eq!(leaf.state(), WAIT_OBJECT_0);
+    }
+
+    #[test]
     #[ignore = "subprocess fixture selected only by the owning lifecycle tests"]
     fn process_fixture() {
         let kind = std::env::var("DSH_DESKTOP_FIXTURE_KIND").expect("fixture mode");
         if kind == "leaf" {
-            println!("DSH_FIXTURE_READY");
+            println!("\nDSH_FIXTURE_READY");
             io::stdout().flush().unwrap();
         } else {
             let mut leaf = fixture_command("leaf").spawn().expect("fixture descendant");
@@ -466,7 +618,7 @@ mod tests {
                 .lines()
                 .map_while(Result::ok)
                 .any(|line| line == "DSH_FIXTURE_READY"));
-            println!("DSH_DESCENDANT_PID:{}", leaf.id());
+            println!("\nDSH_DESCENDANT_PID:{}", leaf.id());
             io::stdout().flush().unwrap();
             if kind == "root-exit" {
                 std::process::exit(0);

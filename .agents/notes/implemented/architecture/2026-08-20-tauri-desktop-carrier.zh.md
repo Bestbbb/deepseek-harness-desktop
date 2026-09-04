@@ -16,9 +16,11 @@ DeepSeek Harness 需要可安装的 macOS 和 Windows 应用，但不应把 Elec
 
 Rust supervisor 使用生成的 patch 和独立应用数据 `DSH_HOME` 启动 `dsh web`。CLI 提前打印的 `dsh web:` 只代表已分配地址；supervisor 必须等 TCP 真实监听后才导航。运行时意外退出会在稳定端口重启，保留 WebView 和未发送的界面状态。退出时，Unix 通过进程组、Windows 通过 Job Object 管理并终止所有后代进程。
 
-[Windows 进程所有者](../../../../apps/desktop/src-tauri/src/runtime_windows.rs)先创建并配置关闭时终止进程的 Job，再以 `CREATE_SUSPENDED | CREATE_NO_WINDOW` 创建运行时。在分配 Job 或恢复线程可能失败之前，子进程已由清理守卫持有。稳定版 Rust 不暴露初始线程句柄，因此通过 Tool Help 找到暂停的子进程线程，再调用 `ResumeThread`。失败清理会终止 Job 和根进程，等待根进程退出，并检查 Job 的活动进程数；启动错误与清理错误会分别保留。只有运行时管理成功后才启动管道读取线程。如果在创建进程到分配 Job 之间强行终止宿主，仍可能留下暂停的子进程：该设计不声称 Job 分配具有原子性。
+[Windows 进程所有者](../../../../apps/desktop/src-tauri/src/runtime_windows.rs)先创建并配置关闭时终止进程的 Job，再以 `CREATE_SUSPENDED | CREATE_NO_WINDOW` 创建运行时。在分配 Job 或恢复线程可能失败之前，子进程已由清理守卫持有。稳定版 Rust 不暴露初始线程句柄，因此通过 Tool Help 找到暂停的子进程线程，再调用 `ResumeThread`。只有运行时管理成功后才启动管道读取线程。如果在创建进程到分配 Job 之间强行终止宿主，仍可能留下暂停的子进程：该设计不声称 Job 分配具有原子性。
 
-目标平台原生生命周期测试通过独立进程句柄，观察分配失败、恢复失败、所有者释放，以及根进程退出后的后代终止。Windows 测试夹具是清理过环境变量的测试可执行文件子进程，在后代就绪后才公布其 PID。Unix 所有者也会在释放时清理，进程组回归测试依据实际退出状态完成观察。[Desktop 工作流](../../../../.github/workflows/desktop.yml)在各自原生操作系统执行这些测试；仅通过交叉编译检查不能证明 Windows 生命周期行为。这些仅涉及进程所有权的变更不改变模型轨迹或会话格式。
+退出时会先将 Job 的活动进程上限设为零，再枚举成员句柄，防止清理期间新增成员。通过 PID 获取进程后会验证其 Job 归属，排除已被回收复用的标识。清理会终止 Job 和根进程，回收根进程，等待已持有进程句柄的退出信号，并检查 Job 的活动进程数。Windows [进程终止是异步操作](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminateprocess)：仅观察 Job 计数归零不等于等待后代退出信号。启动错误与清理错误分别保留；禁止新增成员或收集句柄失败也不会跳过终止操作。
+
+目标平台原生生命周期测试通过独立进程句柄，观察分配失败、恢复失败、所有者释放、退出期间拒绝新增 Job 成员，以及根进程退出后的后代终止。Windows 测试夹具是清理过环境变量的测试可执行文件子进程，在后代就绪后才公布其 PID。Unix 所有者也会在释放时清理，进程组回归测试依据实际退出状态完成观察。[Desktop 工作流](../../../../.github/workflows/desktop.yml)在各自原生操作系统执行这些测试；仅通过交叉编译检查不能证明 Windows 生命周期行为。这些仅涉及进程所有权的变更不改变模型轨迹或会话格式。
 
 回环地址不是权限边界。WebView 打开上游启动 URL，用其中的随机 token 换取 HttpOnly、SameSite=Strict cookie。上游 Connection host 在分发 HTTP 和 WebSocket 请求前校验浏览器认证，桌面覆盖层不替换该协议。TypeScript 到 Rust 的私有 bridge 使用每次启动单独生成的随机 token，允许的操作仅为状态、显示、通知和开机启动。桌面日志会脱敏启动 URL 中的 token。
 
