@@ -36,7 +36,7 @@ The desktop overlay disables the Web bundle's source-checkout guidance and URL e
 
 The bundled-runtime smoke checks released-format upgrades through the same authenticated history RPC used by the desktop. Physical v0/v1 compressed fixtures remain independent of the current writer, so packaging that omits migration support fails this check. The verifier compares all migrated records and embedded Assistant streams against an independent expectation, retains the source bytes, and checks committed-generation reuse after restart. It neither reads user data nor requests model inference; native GUI and representative user-data upgrade acceptance remain separate.
 
-The [community CI](../../../../.github/workflows/ci.yml) runs the desktop composition replay in Chromium after its artifact build, with read-only `DSH_SNAPSHOT=replay`. It also executes the workflow policy tests, which require that replay and keep upstream-only credentials out of the community issue-policy stub. Local-only replay would not detect a broken desktop overlay during later upstream synchronization; neither check substitutes for native WebView acceptance.
+The [community CI](../../../../.github/workflows/ci.yml) runs the desktop composition replay in Chromium after its artifact build, with read-only `DSH_SNAPSHOT=replay`. Browser installation runs in the Web frontend workspace that declares Playwright; the root workspace does not provide that binary. CI also executes the workflow policy tests, which require that replay and keep upstream-only credentials out of the community issue-policy stub. Local-only replay would not detect a broken desktop overlay during later upstream synchronization; neither check substitutes for native WebView acceptance.
 
 ## Alternatives considered
 

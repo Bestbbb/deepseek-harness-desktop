@@ -23,7 +23,9 @@ function expectPortableCommunityChecks(validation: Record<string, unknown>): voi
   const browser: unknown = steps.find(step => isRecord(step) && step.name === 'Install desktop replay browser')
   const replay: unknown = steps.find(step => isRecord(step) && step.name === 'Replay desktop Web composition')
   expect(policy).toMatchObject({ run: 'pnpm exec vitest run scripts/ci-workflow.spec.ts' })
-  expect(browser).toMatchObject({ run: 'pnpm exec playwright install --with-deps chromium' })
+  expect(browser).toMatchObject({
+    run: 'pnpm --filter @deepseek-ai/dsh-web-frontend exec playwright install --with-deps chromium',
+  })
   expect(replay).toMatchObject({
     env: { DSH_SNAPSHOT: 'replay' },
     run: 'pnpm exec vitest run --config vitest.web.config.ts apps/web/tests/desktop-context.e2e.ts',
