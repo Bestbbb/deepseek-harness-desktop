@@ -73,14 +73,43 @@ describe('desktop native build', () => {
             postinstall: 'node -p "JSON.stringify({stage:3})"',
           },
         }));
-        process.env.npm_config_node_gyp = join(root, 'missing-builder.js');
+        delete process.env.npm_config_node_gyp;
+        process.env.NPM_CONFIG_NODE_GYP = join(root, 'missing-builder.js');
         await rebuildNativePackage(root, '22.22.0', process.arch);
       } finally {
         rmSync(root, { recursive: true, force: true });
       }
     `, 20_000)
-    expect(result.status).toBe(0)
+    expect(result.status, String(result.stderr).slice(-4096)).toBe(0)
     expect(String(result.stdout)).toMatch(/\{"stage":1\}[\s\S]*\nv12\.4\.0\s*[\s\S]*\{"stage":3\}/)
+  })
+
+  it('overrides inherited build fields in every casing while preserving unrelated values', () => {
+    const result = evaluate(`
+      const before = {
+        NPM_CONFIG_NODE_GYP: 'missing-builder.js',
+        Npm_Config_Target: '24.14.1',
+        NPM_CONFIG_ARCH: 'x64',
+        NPM_PACKAGE_CONFIG_NODE_GYP_TARGET: '24.14.1',
+        Npm_Package_Config_Node_Gyp_Arch: 'x64',
+        Path: 'build-tools', npm_config_registry: 'https://registry.example.test',
+      };
+      const after = nativeBuildEnvironment('22.22.0', 'arm64', before);
+      console.log(JSON.stringify({ before, after }));
+    `)
+    expect(result.status, String(result.stderr).slice(-4096)).toBe(0)
+    const value = JSON.parse(String(result.stdout)) as { before: Record<string, string>; after: Record<string, string> }
+    const expected: Record<string, string> = {
+      npm_config_node_gyp: desktopRequire.resolve('node-gyp/bin/node-gyp.js'),
+      npm_config_target: '22.22.0', npm_config_arch: 'arm64',
+      npm_package_config_node_gyp_target: '22.22.0', npm_package_config_node_gyp_arch: 'arm64',
+    }
+    expect(value.before.NPM_CONFIG_NODE_GYP).toBe('missing-builder.js')
+    expect(value.before.Npm_Config_Target).toBe('24.14.1')
+    expect(value.after).toMatchObject(expected)
+    for (const [name, original] of Object.entries(value.before)) {
+      expect(value.after[name], name).toBe(expected[name.toLowerCase()] ?? original)
+    }
   })
 
   it('rejects an install failure without running postinstall', () => {

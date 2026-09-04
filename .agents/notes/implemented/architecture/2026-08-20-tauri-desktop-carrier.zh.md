@@ -18,6 +18,8 @@ Rust supervisor 使用生成的 patch 和独立应用数据 `DSH_HOME` 启动 `d
 
 原生依赖重建通过 npm 生命周期执行器处理显式批准的包列表。旧式 pnpm 部署保留 workspace importer 标识和空的根 importer，因此在部署根运行 `pnpm rebuild` 无法遍历到这些依赖。桌面项目将生命周期执行器与 `node-gyp` 固定为开发依赖，并向每个 preinstall、install 和 postinstall 操作显式传入编译器；任一脚本失败都会终止该序列。这避免了 `npm rebuild` 选择自身内置、却不支持构建器所需 Visual Studio 的编译器。Node-gyp 显式接收内置 Node 版本与架构，而不是继承构建器的 ABI；准备步骤再用内置可执行文件验证原生模块加载。这涵盖会话锁使用的 ABI 相关 `fs-ext` 绑定。部署流程没有跨平台原生扩展构建路径，因此在替换输出前拒绝与当前机器不同的运行时目标。
 
+构建环境会把固定的编译器、Node 版本和架构写入其管理的 npm 字段的每一种继承大小写形式。生命周期执行器会再次合并宿主环境，因此保留这些拼写并赋予一致的值，可以防止 Windows 不区分大小写的查找选中陈旧的编译器或 ABI 目标。无关环境字段保持不变。
+
 [导航状态](../../../../apps/desktop/src-tauri/src/navigation.rs)记录请求的源和 WebView 无查询参数根页面的加载完成事件，而不是会轮换的启动 token。同一已加载源的运行时再次就绪时不会重新导航；未完成的首次加载和不同源仍允许导航。上游浏览器 cookie 的签名密钥持久化在桌面 home 中，因此重启后的运行时无需再次交换 token 就能接受已有 cookie。原生策略测试拒绝 token 轮换引起的重载，[内置运行时冒烟测试](../../../../apps/desktop/scripts/smoke-runtime.mjs)会强制终止私有运行时，再检查基于原有 cookie 的 RPC 与 WebSocket 重连。这些检查不能替代目标平台原生输入和附件验收。
 
 [Windows 进程所有者](../../../../apps/desktop/src-tauri/src/runtime_windows.rs)先创建并配置关闭时终止进程的 Job，再以 `CREATE_SUSPENDED | CREATE_NO_WINDOW` 创建运行时。在分配 Job 或恢复线程可能失败之前，子进程已由清理守卫持有。稳定版 Rust 不暴露初始线程句柄，因此通过 Tool Help 找到暂停的子进程线程，再调用 `ResumeThread`。只有运行时管理成功后才启动管道读取线程。如果在创建进程到分配 Job 之间强行终止宿主，仍可能留下暂停的子进程：该设计不声称 Job 分配具有原子性。

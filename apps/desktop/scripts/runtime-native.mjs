@@ -24,13 +24,20 @@ export function assertNativeBuildHost(platform, arch) {
  * @returns {NodeJS.ProcessEnv} Environment for the approved dependency rebuild.
  */
 export function nativeBuildEnvironment(version, arch, environment = process.env) {
-  return {
-    ...environment,
+  const build = {
     npm_config_node_gyp: desktopRequire.resolve('node-gyp/bin/node-gyp.js'),
     npm_config_target: version,
     npm_config_arch: arch,
     npm_package_config_node_gyp_target: version,
     npm_package_config_node_gyp_arch: arch,
+  }
+  // npm's runner merges process.env again; preserve its key spellings with the
+  // pinned values so Windows cannot select an inherited case variant instead.
+  return {
+    ...Object.fromEntries(Object.entries(environment).map(([name, value]) => [
+      name, Object.hasOwn(build, name.toLowerCase()) ? build[name.toLowerCase()] : value,
+    ])),
+    ...build,
   }
 }
 
