@@ -25,9 +25,11 @@ The main window disables Tauri's native drag-and-drop handler so the upstream at
 
 Desktop data lives under Tauri's application-data directory in a dedicated `harness` home. It does not mutate the user's CLI profile. Sessions, settings, and write-only credential storage therefore survive app updates while remaining isolated from a separately installed CLI.
 
+<a id="development"></a>
+
 ## Development
 
-Requirements: Node.js 22, pnpm 11.7, Rust stable, and the platform prerequisites from Tauri 2.
+Requirements: Node.js 22.19 or later in the 22.x line, or Node.js 24 or later; npm; pnpm 11.7; Rust stable; and the platform prerequisites from Tauri 2. Runtime preparation runs on its target operating system and architecture.
 
 ```sh
 pnpm install --frozen-lockfile
@@ -37,6 +39,8 @@ pnpm run desktop:dev
 ```
 
 `desktop:prepare` checks the desktop dependency manifest, builds Harness, deploys the production workspace graph, downloads the matching official Node.js 22.22.0 distribution, verifies its SHA-256 checksum, and materializes the Tauri resource directory. `desktop:smoke` launches that exact bundled runtime and checks rejected anonymous access, cookie login, model and session RPC, the multiplexed WebSocket event stream, and authenticated reconnects after a forced process restart.
+
+Preparation rebuilds the approved native dependencies against the bundled Node headers, including the Session lock's `fs-ext` addon. It then loads `fs-ext`, `node-pty`, `koffi`, and `sharp` with the bundled executable. A successful TypeScript build alone does not verify this native ABI compatibility.
 
 Preparation replaces only an empty directory or a generated Harness Desktop runtime. `DSH_DESKTOP_RUNTIME_OUTPUT` may select another output, but files, directory links, unrelated nonempty directories, and paths containing the repository or user home are rejected before cleanup. Choose an empty directory when a previous output cannot prove its ownership; do not place personal files in generated runtime directories.
 
@@ -48,16 +52,7 @@ pnpm run desktop:build
 
 macOS produces an `.app` and `.dmg`; Windows produces a per-user NSIS `.exe` installer. The dependency tree contains many files, so the Windows profile avoids WiX/MSI's file-table limits. The [Desktop workflow](../../.github/workflows/desktop.yml) owns target-native preparation, smoke tests, Rust tests, and packaging on macOS arm64 and Windows x64 runners; a local macOS build does not verify Windows behavior.
 
-Tauri's `cargo-xwin` fallback can also produce the Windows x64 NSIS installer from macOS or Linux. Install `cargo-xwin`, LLVM/LLD, and `makensis`, then prepare a Windows dependency closure before invoking Tauri.
-
-```sh
-DSH_DESKTOP_TARGET_PLATFORM=win32 DSH_DESKTOP_TARGET_ARCH=x64 \
-  pnpm --filter @deepseek-ai/dsh-desktop-app run prepare-runtime
-PATH="/opt/homebrew/opt/llvm/bin:$PATH" \
-  pnpm --filter @deepseek-ai/dsh-desktop-app exec tauri build \
-  --runner cargo-xwin --target x86_64-pc-windows-msvc \
-  --config '{"bundle":{"targets":["nsis"]}}' --ci
-```
+Cross-compiling the Rust host does not prepare its native Node addons. Runtime preparation rejects a foreign operating system or architecture before replacing its output. Use the target-native workflow for complete installers; a Rust cross-compilation check is only source-compatibility evidence.
 
 ## Release gates
 

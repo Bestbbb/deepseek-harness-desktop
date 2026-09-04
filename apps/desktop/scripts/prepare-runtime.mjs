@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url'
 import { spawn } from 'node:child_process'
 import { pipeline } from 'node:stream/promises'
 import { prepareRuntimeOutput } from './runtime-output.mjs'
+import { assertNativeBuildHost, nativeBuildEnvironment } from './runtime-native.mjs'
 
 const desktopDir = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const repoRoot = resolve(desktopDir, '../..')
@@ -43,9 +44,9 @@ const nodeDistributions = {
   },
 }
 
-async function run(command, args, cwd, shell = false) {
+async function run(command, args, cwd, shell = false, env = process.env) {
   await new Promise((resolveRun, reject) => {
-    const child = spawn(command, args, { cwd, stdio: 'inherit', shell })
+    const child = spawn(command, args, { cwd, stdio: 'inherit', shell, env })
     child.once('error', reject)
     child.once('exit', (code, signal) => {
       if (code === 0) resolveRun()
@@ -169,6 +170,9 @@ async function assertRuntimeTarget() {
     }
   }
   await assertNoLinks(join(appOutput, 'node_modules'))
+  await run(nodeOutput, [
+    '-e', "for (const name of ['fs-ext', 'node-pty', 'koffi', 'sharp']) require(name)",
+  ], appOutput)
 }
 
 async function pruneForeignNodePtyPrebuilds() {
@@ -242,17 +246,21 @@ async function deployRuntime() {
 }
 
 async function rebuildProductionScripts() {
+  // Legacy deploy retains workspace importer ids, so pnpm rebuild at the
+  // deployment root traverses an empty importer. npm reads the installed tree.
   await run(
-    process.platform === 'win32' ? 'corepack.cmd' : 'corepack',
+    process.platform === 'win32' ? 'npm.cmd' : 'npm',
     [
-      'pnpm', '--dir', appOutput, '--ignore-workspace', '--config.node-linker=hoisted',
-      'rebuild', 'esbuild', 'node-pty', 'koffi', '@deepseek-ai/dsh-subprocess-local',
+      'rebuild', 'esbuild', 'node-pty', 'koffi', 'fs-ext', '@deepseek-ai/dsh-subprocess-local',
+      '--foreground-scripts', '--ignore-scripts=false',
     ],
     appOutput,
     process.platform === 'win32',
+    nativeBuildEnvironment(nodeVersion, targetArch),
   )
 }
 
+assertNativeBuildHost(targetPlatform, targetArch)
 await prepareRuntimeOutput(output, [repoRoot, homedir()])
 await mkdir(dirname(nodeOutput), { recursive: true })
 await deployRuntime()

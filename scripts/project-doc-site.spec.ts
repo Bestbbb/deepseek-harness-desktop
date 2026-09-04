@@ -352,6 +352,25 @@ describe('rewriteMarkdown', () => {
 })
 
 describe('docsPages locale routes', () => {
+  it('connects the desktop quickstart to public installers and model setup in both locales', () => {
+    for (const locale of ['en', 'root'] as const) {
+      const page = docsPages.find(candidate => candidate.locale === locale
+        && candidate.route === `${locale === 'en' ? 'en/' : ''}guide/quickstart.md`)
+      expect(page, locale).toBeDefined()
+      if (page === undefined) throw new Error(`missing ${locale} quickstart`)
+      expect(page.label).toBe(locale === 'en' ? 'Get started' : '开始使用')
+      const projected = rewriteMarkdown(readFileSync(resolve(repositoryRoot, page.source), 'utf8'), {
+        locale, sourcePath: page.source, route: page.route, pages: docsPages,
+        repoRoot: repositoryRoot, repositoryRef: 'test-ref',
+      })
+      expect(projected).toContain('](https://github.com/Bestbbb/deepseek-harness-desktop/releases)')
+      expect(projected).toContain('](./providers.md)')
+      expect(projected).toContain('](./providers.md#provider-troubleshooting)')
+      expect(projected).not.toContain('started `dsh`')
+      expect(projected).not.toContain('启动 `dsh` 时')
+    }
+  })
+
   it('publishes the desktop landing page at both existing locale roots', () => {
     const homes = docsPages.filter(page => page.sidebar === null)
     expect(homes.map(page => page.route).sort()).toEqual(['en/index.md', 'index.md'])

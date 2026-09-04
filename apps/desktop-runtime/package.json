@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-desktop-runtime",
   "description": "Production dependency root materialized into the desktop application bundle",
-  "version": "0.1.2-rc.1",
+  "version": "0.1.3-alpha.1",
   "publishConfig": {
     "access": "public"
   },
@@ -48,6 +48,7 @@
     "@deepseek-ai/dsh-bash-sandbox": "workspace:^",
     "@deepseek-ai/dsh-brand": "workspace:^",
     "@deepseek-ai/dsh-client-connection": "workspace:^",
+    "@deepseek-ai/dsh-client-file-upload": "workspace:^",
     "@deepseek-ai/dsh-client-hmr": "workspace:^",
     "@deepseek-ai/dsh-client-locale": "workspace:^",
     "@deepseek-ai/dsh-client-modules": "workspace:^",
@@ -126,6 +127,7 @@
     "@deepseek-ai/dsh-host-frontend-static": "workspace:^",
     "@deepseek-ai/dsh-host-plugin-inventory": "workspace:^",
     "@deepseek-ai/dsh-host-webserver": "workspace:^",
+    "@deepseek-ai/dsh-http-proxy": "workspace:^",
     "@deepseek-ai/dsh-invariants": "workspace:^",
     "@deepseek-ai/dsh-jobs": "workspace:^",
     "@deepseek-ai/dsh-jobs-local": "workspace:^",
@@ -157,6 +159,10 @@
     "@deepseek-ai/dsh-sdk-protocol": "workspace:^",
     "@deepseek-ai/dsh-session": "workspace:^",
     "@deepseek-ai/dsh-session-checkpoint-policy": "workspace:^",
+    "@deepseek-ai/dsh-session-format": "workspace:^",
+    "@deepseek-ai/dsh-session-format-catalog": "workspace:^",
+    "@deepseek-ai/dsh-session-format-v0-to-v1": "workspace:^",
+    "@deepseek-ai/dsh-session-format-v1-to-v2": "workspace:^",
     "@deepseek-ai/dsh-session-log-deepseek": "workspace:^",
     "@deepseek-ai/dsh-session-log-export": "workspace:^",
     "@deepseek-ai/dsh-session-persistence": "workspace:^",

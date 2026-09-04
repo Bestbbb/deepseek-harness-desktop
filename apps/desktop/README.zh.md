@@ -25,9 +25,11 @@ File 菜单提供 **New Session**，macOS 上的快捷键为 **Cmd+N**。应用�
 
 桌面数据位于 Tauri 应用数据目录下独立的 `harness` home，不会修改用户的 CLI profile。会话、设置和只写凭证存储可以跨应用更新保留，同时与单独安装的 CLI 隔离。
 
+<a id="development"></a>
+
 ## 开发
 
-环境要求：Node.js 22、pnpm 11.7、Rust stable，以及 Tauri 2 对应平台的系统依赖。
+环境要求：Node.js 22.x 中的 22.19 或更高版本，或 Node.js 24 及以上；npm；pnpm 11.7；Rust stable；以及 Tauri 2 对应平台的系统依赖。运行时准备在目标操作系统和架构上执行。
 
 ```sh
 pnpm install --frozen-lockfile
@@ -37,6 +39,8 @@ pnpm run desktop:dev
 ```
 
 `desktop:prepare` 检查桌面依赖清单、构建 Harness、部署生产 workspace 依赖图、下载对应平台的官方 Node.js 22.22.0 发行包、校验 SHA-256，并生成 Tauri resource 目录。`desktop:smoke` 启动这份真实的打包运行时，检查匿名访问拒绝、cookie 登录、模型与会话 RPC、多路复用 WebSocket 事件流，以及强制重启进程后的认证重连。
+
+准备步骤按内置 Node 的头文件重建已批准的原生依赖，包括会话锁使用的 `fs-ext` 扩展，然后使用内置可执行文件加载 `fs-ext`、`node-pty`、`koffi` 和 `sharp`。仅通过 TypeScript 构建不能证明这些原生模块的 ABI 兼容性。
 
 准备步骤只替换空目录或已生成的 Harness Desktop 运行时目录。`DSH_DESKTOP_RUNTIME_OUTPUT` 可以指定其他输出位置，但普通文件、目录链接、无关的非空目录，以及包含仓库或用户主目录的路径，都会在清理前被拒绝。旧输出无法证明归属时，请选择空目录；不要在生成的运行时目录中存放个人文件。
 
@@ -48,16 +52,7 @@ pnpm run desktop:build
 
 macOS 产出 `.app` 和 `.dmg`；Windows 产出用户级 NSIS `.exe` 安装包。依赖树文件较多，因此 Windows profile 避开 WiX/MSI 的文件表限制。[Desktop 工作流](../../.github/workflows/desktop.yml) 负责 macOS arm64 与 Windows x64 runner 上的目标平台原生准备、冒烟测试、Rust 测试和打包；本地 macOS 构建不能验证 Windows 行为。
 
-也可以按 Tauri 的 `cargo-xwin` 备用方案，在 macOS 或 Linux 上交叉构建 Windows x64 NSIS 安装器。安装 `cargo-xwin`、LLVM/LLD 和 `makensis` 后，先准备 Windows 依赖闭包，再调用 Tauri。
-
-```sh
-DSH_DESKTOP_TARGET_PLATFORM=win32 DSH_DESKTOP_TARGET_ARCH=x64 \
-  pnpm --filter @deepseek-ai/dsh-desktop-app run prepare-runtime
-PATH="/opt/homebrew/opt/llvm/bin:$PATH" \
-  pnpm --filter @deepseek-ai/dsh-desktop-app exec tauri build \
-  --runner cargo-xwin --target x86_64-pc-windows-msvc \
-  --config '{"bundle":{"targets":["nsis"]}}' --ci
-```
+交叉编译 Rust 宿主不能同时准备其原生 Node 扩展。运行时准备在替换输出前拒绝与当前机器不同的目标操作系统或架构。完整安装包使用目标平台原生工作流构建；Rust 交叉编译检查仅提供源码兼容性证据。
 
 ## 发布门槛
 

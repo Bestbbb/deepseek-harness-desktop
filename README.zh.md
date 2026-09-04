@@ -14,7 +14,7 @@ description: "下载、配置并参与基于 Tauri 的 DeepSeek Harness 社区�
 
 ![Harness Desktop 工作区和会话输入区](docs/assets/desktop/harness-desktop-main.png)
 
-> 非官方社区项目，与 DeepSeek 无隶属关系，也未获得其背书。当前源码跟随上游 `dsh-v0.1.2-rc.1`；各安装包内置版本以对应发布说明为准。预览版本可能包含破坏性变更。
+> 非官方社区项目，与 DeepSeek 无隶属关系，也未获得其背书。当前源码跟随上游 `dsh-v0.1.3-alpha.1`；各安装包内置版本以对应发布说明为准。预览版本可能包含破坏性变更。
 
 <a id="run"></a>
 
@@ -74,7 +74,7 @@ WebView 将上游启动 token 交换为 HttpOnly cookie。Node 到 Rust 的原�
 
 ## 从源码构建
 
-安装 Node.js 22、pnpm 11.7、Rust stable 以及 [Tauri 平台依赖](https://v2.tauri.app/start/prerequisites/)。在本仓库中执行：
+安装[桌面构建依赖](apps/desktop/README.zh.md#development)，包括目标平台的原生编译器。在本仓库中执行：
 
 ```sh
 pnpm install --frozen-lockfile

@@ -37,9 +37,9 @@ describe('desktop runtime dependencies', () => {
 
   it('resolves workspace packages declared with vendored semver ranges', () => {
     expect(desktopRuntimeDependencies([
-      { name: 'app', dependencies: { cordis: '^4.0.0' } }, { name: 'cordis' },
+      { name: 'app', dependencies: { '@deepseek-ai/cordis': '^4.0.0' } }, { name: '@deepseek-ai/cordis' },
     ], ['app'])).toEqual({
-      dependencies: { app: 'workspace:^', cordis: 'workspace:^' }, optionalDependencies: {},
+      dependencies: { '@deepseek-ai/cordis': 'workspace:^', app: 'workspace:^' }, optionalDependencies: {},
     })
   })
 

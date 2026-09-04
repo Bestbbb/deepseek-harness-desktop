@@ -14,7 +14,7 @@ An open-source macOS and Windows app built on [DeepSeek Harness](https://github.
 
 ![Harness Desktop workspace and conversation composer](docs/assets/desktop/harness-desktop-main.png)
 
-> Unofficial community project. Not affiliated with or endorsed by DeepSeek. This source tree tracks upstream `dsh-v0.1.2-rc.1`; check each download's release notes for its bundled version. Preview releases can contain breaking changes.
+> Unofficial community project. Not affiliated with or endorsed by DeepSeek. This source tree tracks upstream `dsh-v0.1.3-alpha.1`; check each download's release notes for its bundled version. Preview releases can contain breaking changes.
 
 <a id="run"></a>
 
@@ -74,7 +74,7 @@ The WebView exchanges the upstream launch token for an HttpOnly cookie. The Node
 
 ## Build from source
 
-Install Node.js 22, pnpm 11.7, Rust stable, and the [Tauri platform prerequisites](https://v2.tauri.app/start/prerequisites/). From this checkout:
+Install the [desktop build prerequisites](apps/desktop/README.md#development), including a native compiler for your target platform. From this checkout:
 
 ```sh
 pnpm install --frozen-lockfile
