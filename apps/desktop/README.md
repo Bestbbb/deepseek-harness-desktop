@@ -42,6 +42,8 @@ pnpm run desktop:dev
 
 `desktop:prepare` checks the desktop dependency manifest, builds Harness, deploys the production workspace graph, downloads the matching official Node.js 22.22.0 distribution, verifies its SHA-256 checksum, and materializes the Tauri resource directory. `desktop:smoke` launches that exact bundled runtime and checks rejected anonymous access, cookie login, model and session RPC, the multiplexed WebSocket event stream, and authenticated reconnects after a forced process restart.
 
+The smoke also reads compressed v0 and v1 fixture Sessions through authenticated history RPC. It verifies the complete migrated v2 records, including embedded Assistant streams, byte-identical historical sources, and unchanged current-generation files after restart. These private, keyless fixtures do not replace native GUI or representative user-data upgrade acceptance.
+
 Preparation rebuilds the approved native dependencies against the bundled Node headers, including the Session lock's `fs-ext` addon. The desktop's development dependencies pin `node-gyp` and npm's lifecycle runner; the runner receives that compiler explicitly instead of selecting npm's bundled version. It then loads `fs-ext`, `node-pty`, `koffi`, and `sharp` with the bundled executable. A successful TypeScript build alone does not verify this native ABI compatibility.
 
 Preparation replaces only an empty directory or a generated Harness Desktop runtime. `DSH_DESKTOP_RUNTIME_OUTPUT` may select another output, but files, directory links, unrelated nonempty directories, and paths containing the repository or user home are rejected before cleanup. Choose an empty directory when a previous output cannot prove its ownership; do not place personal files in generated runtime directories.

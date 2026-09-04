@@ -34,6 +34,8 @@ Desktop data is isolated from the CLI rather than silently sharing mutable profi
 
 The desktop overlay disables the Web bundle's source-checkout guidance and URL environment contribution. The native provider registers installed-app orientation through `systemPrompt`, so the existing `request/header` event records the exact model-visible text without a second logging path. The registration follows the provider's lifetime and respects a preset's complete persona. The desktop replay scenario exercises the shipped overlay, persisted request header, and absence of private bridge credentials; retaining Web watcher instructions would misidentify an installed application as a development server.
 
+The bundled-runtime smoke checks released-format upgrades through the same authenticated history RPC used by the desktop. Physical v0/v1 compressed fixtures remain independent of the current writer, so packaging that omits migration support fails this check. The verifier compares all migrated records and embedded Assistant streams against an independent expectation, retains the source bytes, and checks committed-generation reuse after restart. It neither reads user data nor requests model inference; native GUI and representative user-data upgrade acceptance remain separate.
+
 ## Alternatives considered
 
 - **Electron**: rejected for this carrier because Harness does not require a bundled Chromium or Node-in-renderer surface; the native system WebView plus a supervised Node sidecar preserves the same product with materially less shell overhead.

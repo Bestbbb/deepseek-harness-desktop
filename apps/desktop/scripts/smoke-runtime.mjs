@@ -1,14 +1,15 @@
-/** Verify the packaged Web profile, browser authentication, Remote RPC, and event stream without provider keys. */
+/** Verify the packaged Web profile, authentication, Session upgrades, and reconnects without provider keys. */
 
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 import { once } from 'node:events'
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { createInterface } from 'node:readline'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { constants, zstdCompressSync, zstdDecompressSync } from 'node:zlib'
 
 const desktopDir = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const runtime = resolve(process.env.DSH_DESKTOP_RUNTIME_OUTPUT ?? join(desktopDir, 'resources/runtime'))
@@ -168,12 +169,81 @@ async function stopRuntime(signal = 'SIGTERM') {
   stderr?.close()
 }
 
+// Physical released-format records are independent of the installed writer.
+// Encoding them with the current persistence API would skip the upgrade path.
+async function seedLegacySession(version) {
+  const id = 'desktop-upgrade-v' + version
+  // This historical workspace is metadata only; the smoke never runs a task there.
+  const cwd = process.platform === 'win32' ? 'C:\\dsh-desktop-upgrade-fixture' : '/dsh-desktop-upgrade-fixture'
+  const project = process.platform === 'win32' ? '--C-dsh-desktop-upgrade-fixture--' : '--dsh-desktop-upgrade-fixture--'
+  const dir = join(home, 'sessions', project, id)
+  const header = { type: 'session', version, id, createdAt: 1, cwd, delegationDepth: 0 }
+  const question = { id: id + '-user', role: 'user', content: [{ type: 'text', text: 'Retain this question.' }], source: { kind: 'user' } }
+  const answer = { id: id + '-assistant', role: 'assistant', content: [{ type: 'text', text: 'Retained answer.' }], source: { kind: 'model', provider: 'fixture', model: 'fixture' } }
+  const events = [
+    { type: 'turn/start', data: { turn: 1 } },
+    { type: 'step/start', data: { turn: 1, step: 1 } },
+    { type: 'user/message', data: question, surfaceOp: 'append' },
+    { type: 'assistant/chunk', data: { turn: 1, step: 1, chunk: { type: 'text-delta', index: 0, text: 'Retained answer.' } } },
+    { type: 'assistant/chunk', data: { turn: 1, step: 1, chunk: { type: 'finish', reason: { kind: 'stop' } } } },
+    { type: 'assistant/message', data: { turn: 1, step: 1, message: answer }, sourceEventSeqs: [3, 4], surfaceOp: 'append' },
+    { type: 'step/end', data: { turn: 1, step: 1 } },
+    { type: 'turn/end', data: { turn: 1, reason: { kind: 'completed' } } },
+  ].map((event, seq) => ({ ...event, seq, time: 100 + seq }))
+  const expected = events.filter(event => event.type !== 'assistant/chunk').map((event, seq) => {
+    if (event.type !== 'assistant/message') return { ...event, seq }
+    return {
+      type: event.type, seq, time: event.time, surfaceOp: 'append',
+      data: {
+        turn: 1, step: 1, message: answer,
+        stream: [
+          { type: 'text-chunks', time0: 103, index: 0, dt: [], texts: ['Retained answer.'] },
+          { type: 'chunk', time: 104, chunk: { type: 'finish', reason: { kind: 'stop' } } },
+        ],
+      },
+    }
+  })
+  const encode = rows => zstdCompressSync(rows.map(row => JSON.stringify(row) + '\n').join(''), {
+    params: { [constants.ZSTD_c_checksumFlag]: 1 },
+  })
+  const source = Buffer.concat([encode([header]), encode(events)])
+  const sourcePath = join(dir, version === 0 ? 'session.jsonl.zstd' : 'session.v1.jsonl.zstd')
+  await mkdir(dir, { recursive: true })
+  await writeFile(sourcePath, source, { flag: 'wx' })
+  return { id, dir, header, sourcePath, source, expected }
+}
+
+async function verifyLegacySession(origin, cookie, fixture) {
+  const response = await rpc(origin, 'session/page', cookie, {
+    request: { address: { kind: 'session', sessionId: fixture.id }, throughSeq: fixture.expected.length - 1, maxMessages: 20 },
+  })
+  assert.equal(response.status, 200, fixture.id)
+  const body = await response.json()
+  assert.equal(body.result?.ok, true, fixture.id + ': ' + JSON.stringify(body.result))
+  assert.equal(body.result.value.hasMore, false)
+  assert.deepEqual(body.result.value.records, fixture.expected.map(event => ({ type: 'event', event })))
+  assert.deepEqual(await readFile(fixture.sourcePath), fixture.source, 'released Session source must remain byte-identical')
+  const current = await readFile(join(fixture.dir, 'session.v2.jsonl.zstd'))
+  const frames = []
+  for (let offset = 0; offset < current.length;) {
+    // Node's decoder consumes one frame; the log contains a header plus append frames.
+    const { buffer, engine } = zstdDecompressSync(current.subarray(offset), { info: true })
+    assert.ok(engine.bytesWritten > 0 && engine.bytesWritten <= current.length - offset)
+    frames.push(buffer)
+    offset += engine.bytesWritten
+  }
+  const rows = Buffer.concat(frames).toString('utf8').trimEnd().split('\n').map(line => JSON.parse(line))
+  assert.deepEqual(rows, [{ ...fixture.header, version: 2, isSeeded: false }, ...fixture.expected])
+  return current
+}
+
 try {
   const patch = (await readFile(join(runtime, 'desktop.cordis.yml'), 'utf8')).replaceAll(
     '__DSH_DESKTOP_NATIVE_ENTRY__',
     JSON.stringify(pathToFileURL(join(runtime, 'app/node_modules/@deepseek-ai/dsh-desktop-native/lib/index.js')).href),
   )
   await writeFile(renderedPatch, patch)
+  const legacy = await Promise.all([0, 1].map(seedLegacySession))
   startRuntime(0)
   const url = await readyUrl()
   assert.match(url.searchParams.get('token') ?? '', /^[A-Za-z0-9_-]{43}$/u)
@@ -201,6 +271,8 @@ try {
     assert.equal(body.result?.ok, true, endpoint + ': ' + JSON.stringify(body.result))
   }
   await verifyStream(url.origin, cookie)
+  const migrated = []
+  for (const fixture of legacy) migrated.push(await verifyLegacySession(url.origin, cookie, fixture))
   await stopRuntime('SIGKILL')
   startRuntime(url.port)
   const restarted = await readyUrl()
@@ -211,7 +283,10 @@ try {
   assert.equal(resumed.status, 200, 'the existing cookie must survive runtime restart')
   assert.equal((await resumed.json()).result?.ok, true)
   await verifyStream(restarted.origin, cookie)
-  console.log('desktop runtime smoke passed: ' + url.origin + ' (cookie login, RPC, models, sessions, event stream, restart reconnect)')
+  for (const [index, fixture] of legacy.entries()) {
+    assert.deepEqual(await verifyLegacySession(restarted.origin, cookie, fixture), migrated[index], 'reopening must reuse the committed current generation')
+  }
+  console.log('desktop runtime smoke passed: ' + url.origin + ' (cookie login, RPC, models, v0/v1 Session upgrades, event stream, restart reconnect)')
 } finally {
   for (const socket of sockets) socket.terminate()
   await stopRuntime()
