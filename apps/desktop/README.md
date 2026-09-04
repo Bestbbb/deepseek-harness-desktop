@@ -15,6 +15,8 @@ Browser access and native operations use independent credentials:
 
 The Rust supervisor owns the complete child process tree. It uses a Unix process group on macOS and a Job Object on Windows, restarts an unexpected runtime exit on the same port, and terminates descendants on application exit. Window state, single-instance activation, standard window/edit shortcuts, the native menu, tray behavior, notifications, autostart, and updater plumbing are native Tauri capabilities. The application menu can export a bounded diagnostic text file; the exporter never reads sessions, configuration, credentials, or user files, and redacts desktop tokens, bearer credentials, API-key fields, and the home-directory prefix before writing.
 
+The File menu exposes **New Session**, with **Cmd+N** on macOS. The application menu exposes **Settings** and diagnostic export.
+
 Desktop data lives under Tauri's application-data directory in a dedicated `harness` home. It does not mutate the user's CLI profile. Sessions, settings, and write-only credential storage therefore survive app updates while remaining isolated from a separately installed CLI.
 
 ## Development

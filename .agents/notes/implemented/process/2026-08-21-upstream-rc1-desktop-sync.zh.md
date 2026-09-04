@@ -14,6 +14,8 @@ Harness Desktop 最初基于 `dsh-v0.1.0-rc.8`，而上游 `dsh-v0.1.1-rc.1` 已
 
 桌面运行时启动上游 `web` Profile，只把 `desktop.cordis.yml` 作为最终启动覆盖层应用。运行时依赖根跟随当前 Web 生产闭包，其中包含插件清单、授权、提供方和客户端 package。桌面端不 fork agent loop、LLM 适配抽象、Profile loader 或插件管理器。[依赖生成](../../../../scripts/sync-desktop-runtime.ts)和[发布校验](../../../../scripts/verify-desktop-release.ts)会在打包前拒绝陈旧的包清单，以及不一致的原生组件和运行时版本。
 
+原生菜单栏由带类型约束的 `Submenu` 切片组装，因为 macOS 不显示普通的顶层菜单项。New Session 位于 File 子菜单；向根列表插入 `MenuItem` 会使 Rust 编译失败。macOS 原生验收检查实际显示的 File 菜单、已启用的 New Session 菜单项和 Cmd+N 绑定；[侧栏测试](../../../../packages/client/ui-sidebar/tests/sidebar-root.client.spec.tsx)覆盖桌面新建会话事件的传递。
+
 依赖生成器把仅通过可选路径到达的包保留在部署根的 `optionalDependencies` 中，其中也包括可选依赖边之下的必需下游依赖。必需路径会把相应子树提升到 `dependencies`。如果将所有依赖边都展平为必需依赖，npm 就会在其他平台以 `EBADPLATFORM` 拒绝安装打包运行时，例如 x64 runner 无法安装 Linux ARM64 Landlock 载荷。[生成器测试](../../../../scripts/sync-desktop-runtime.spec.ts)覆盖可选子树、循环依赖、必需路径提升和重叠的直接声明；打包安装工作流保留真实 npm 消费方验证。
 
 桌面应用的 npm 载荷只选择 Rust 源码、能力配置、图标和具名原生构建输入，而不是整个 `src-tauri` 目录。npm 显式选择目录时可能遍历已忽略的 Rust 构建输出，包括嵌入的运行时副本和已有安装包。[桌面发布测试](../../../../scripts/desktop-release.spec.ts)固定这份仅含源码的选择清单；各目标平台的原生安装包构建仍独立组装其资源。

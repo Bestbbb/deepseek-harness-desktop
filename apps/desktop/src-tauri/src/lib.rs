@@ -13,7 +13,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 use tauri::{
-    menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder},
+    menu::{MenuBuilder, MenuItemBuilder, PredefinedMenuItem, Submenu, SubmenuBuilder},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     AppHandle, Manager, RunEvent, WebviewUrl, WebviewWindowBuilder,
 };
@@ -201,6 +201,9 @@ fn install_menu(app: &AppHandle) -> tauri::Result<()> {
         .separator()
         .item(&PredefinedMenuItem::quit(app, None)?)
         .build()?;
+    let file = SubmenuBuilder::new(app, "File")
+        .item(&new_session)
+        .build()?;
     let edit = SubmenuBuilder::new(app, "Edit")
         .item(&PredefinedMenuItem::undo(app, None)?)
         .item(&PredefinedMenuItem::redo(app, None)?)
@@ -216,13 +219,13 @@ fn install_menu(app: &AppHandle) -> tauri::Result<()> {
         .separator()
         .item(&PredefinedMenuItem::close_window(app, None)?)
         .build()?;
-    let menu = MenuBuilder::new(app)
-        .item(&app_menu)
-        .item(&new_session)
-        .item(&edit)
-        .item(&window)
-        .build()?;
-    app.set_menu(menu)?;
+    // macOS menu bars accept only submenus; keep that restriction type-checked.
+    let submenus: &[&Submenu<_>] = &[&app_menu, &file, &edit, &window];
+    let mut menu = MenuBuilder::new(app);
+    for submenu in submenus {
+        menu = menu.item(*submenu);
+    }
+    app.set_menu(menu.build()?)?;
     app.on_menu_event(|app, event| match event.id().as_ref() {
         "show" => {
             let _ = show_main_window(app);
