@@ -15,6 +15,17 @@ function record(value: unknown): Record<string, unknown> {
 }
 
 describe('desktop release', () => {
+  it('packs only desktop source inputs rather than native build outputs', () => {
+    const manifest = record(JSON.parse(readFileSync(resolve(root, 'apps/desktop/package.json'), 'utf8')))
+    expect(manifest.files).toEqual([
+      'loading', 'runtime', 'scripts',
+      'src-tauri/src', 'src-tauri/capabilities', 'src-tauri/icons',
+      'src-tauri/Cargo.toml', 'src-tauri/Cargo.lock', 'src-tauri/build.rs',
+      'src-tauri/entitlements.node.plist', 'src-tauri/tauri.conf.json', 'src-tauri/tauri.windows.conf.json',
+      'README.md', 'README.zh.md',
+    ])
+  })
+
   it('aligns the actual native and JavaScript manifests', () => {
     expect(() => {
       verifyDesktopRelease(root)

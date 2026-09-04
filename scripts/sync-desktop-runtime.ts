@@ -21,39 +21,50 @@ const DESKTOP_ROOTS = [
 
 /**
  * Resolve required peer edges as well as production dependencies, excluding development-only packages.
+ * Optional-only paths remain optional; any required path promotes the package and its required descendants.
  * @param manifests - workspace manifests discovered by the package-manager workspace patterns.
  * @param roots - entry packages that the desktop launches or mounts directly.
- * @returns sorted workspace dependency declarations for the desktop deploy manifest.
+ * @returns sorted required and optional workspace declarations for the desktop deploy manifest.
  * @throws when a root, required workspace edge, or unique package name cannot be resolved.
  */
 export function desktopRuntimeDependencies(
   manifests: readonly Manifest[],
   roots: readonly string[] = DESKTOP_ROOTS,
-): Record<string, string> {
+): { dependencies: Record<string, string>; optionalDependencies: Record<string, string> } {
   const workspace = new Map<string, Manifest>()
   for (const manifest of manifests) {
     if (workspace.has(manifest.name)) throw new Error(`desktop runtime: duplicate workspace package ${manifest.name}`)
     workspace.set(manifest.name, manifest)
   }
   if (roots.length === 0) throw new Error('desktop runtime: at least one application root is required')
-  const visited = new Set<string>()
-  const queue = [...roots]
-  for (const name of queue) {
-    if (visited.has(name)) continue
+  const requiredByName = new Map<string, boolean>()
+  const queue = roots.map(name => ({ name, required: true }))
+  for (const { name, required } of queue) {
+    const previous = requiredByName.get(name)
+    if (previous === true || previous === required) continue
     const manifest = workspace.get(name)
     if (manifest === undefined) throw new Error(`desktop runtime: missing workspace package ${name}`)
-    visited.add(name)
+    requiredByName.set(name, required)
     const requiredPeers = Object.fromEntries(Object.entries(manifest.peerDependencies ?? {})
       .filter(([peer]) => manifest.peerDependenciesMeta?.[peer]?.optional !== true))
-    const edges = { ...requiredPeers, ...manifest.optionalDependencies, ...manifest.dependencies }
+    const edges = { ...requiredPeers, ...manifest.dependencies, ...manifest.optionalDependencies }
     for (const [dependency, range] of Object.entries(edges)) {
-      if (workspace.has(dependency)) queue.push(dependency)
+      if (workspace.has(dependency)) {
+        queue.push({
+          name: dependency,
+          required: required && manifest.optionalDependencies?.[dependency] === undefined,
+        })
+      }
       else if (range.startsWith('workspace:')) {
         throw new Error(`desktop runtime: ${name} requires missing workspace package ${dependency}`)
       }
     }
   }
-  return Object.fromEntries([...visited].sort().map(name => [name, 'workspace:^']))
+  const declarations = (required: boolean): Record<string, string> => Object.fromEntries(
+    [...requiredByName].filter(([, value]) => value === required)
+      .map(([name]) => name).sort().map(name => [name, 'workspace:^']),
+  )
+  return { dependencies: declarations(true), optionalDependencies: declarations(false) }
 }
 
 if (import.meta.main) {
@@ -64,11 +75,12 @@ if (import.meta.main) {
   const manifests = paths.map(path => JSON.parse(readFileSync(resolve(root, path), 'utf8')) as Manifest)
   const path = resolve(root, 'apps/desktop-runtime/package.json')
   const manifest = JSON.parse(readFileSync(path, 'utf8')) as Manifest
-  const dependencies = desktopRuntimeDependencies(manifests)
+  const declarations = desktopRuntimeDependencies(manifests)
   if (values.write) {
-    writeFileSync(path, `${JSON.stringify({ ...manifest, dependencies }, null, 2)}\n`)
-  } else if (JSON.stringify(manifest.dependencies) !== JSON.stringify(dependencies)) {
+    writeFileSync(path, `${JSON.stringify({ ...manifest, ...declarations }, null, 2)}\n`)
+  } else if (JSON.stringify(manifest.dependencies) !== JSON.stringify(declarations.dependencies)
+    || JSON.stringify(manifest.optionalDependencies ?? {}) !== JSON.stringify(declarations.optionalDependencies)) {
     throw new Error('desktop runtime: dependency manifest is stale; run pnpm run desktop:sync, then pnpm install')
   }
-  console.log(`desktop runtime: ${Object.keys(dependencies).length} workspace dependencies ${values.write ? 'recorded' : 'verified'}`)
+  console.log(`desktop runtime: ${Object.keys(declarations.dependencies).length} required and ${Object.keys(declarations.optionalDependencies).length} optional workspace dependencies ${values.write ? 'recorded' : 'verified'}`)
 }
