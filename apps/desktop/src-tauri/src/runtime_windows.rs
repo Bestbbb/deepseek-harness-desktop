@@ -375,7 +375,7 @@ mod tests {
         Foundation::DuplicateHandle,
         System::{
             SystemServices::{JOB_OBJECT_QUERY, JOB_OBJECT_SET_ATTRIBUTES, JOB_OBJECT_TERMINATE},
-            Threading::{GetCurrentProcess, TerminateProcess, PROCESS_TERMINATE},
+            Threading::{GetCurrentProcess, GetProcessId, TerminateProcess, PROCESS_TERMINATE},
         },
     };
 
@@ -394,7 +394,13 @@ mod tests {
         }
 
         fn open(pid: u32) -> Self {
-            let raw = unsafe { OpenProcess(PROCESS_SYNCHRONIZE | PROCESS_TERMINATE, 0, pid) };
+            let raw = unsafe {
+                OpenProcess(
+                    PROCESS_SYNCHRONIZE | PROCESS_TERMINATE | PROCESS_QUERY_LIMITED_INFORMATION,
+                    0,
+                    pid,
+                )
+            };
             assert!(
                 !raw.is_null(),
                 "could not observe descendant: {}",
@@ -405,6 +411,12 @@ mod tests {
 
         fn state(&self) -> u32 {
             unsafe { WaitForSingleObject(self.0.as_raw_handle(), 0) }
+        }
+
+        fn id(&self) -> u32 {
+            let id = unsafe { GetProcessId(self.0.as_raw_handle()) };
+            assert_ne!(id, 0, "probe process id");
+            id
         }
     }
 
@@ -550,13 +562,18 @@ mod tests {
         let leaf = descendant(&mut managed);
         assert_eq!(root.state(), WAIT_TIMEOUT);
         assert_eq!(leaf.state(), WAIT_TIMEOUT);
-        assert_eq!(
-            managed
-                .job
-                .members()
-                .expect("root and descendant handles")
-                .len(),
-            2
+        let members = managed.job.members().expect("root and descendant handles");
+        let pids: Vec<_> = members
+            .iter()
+            .map(|member| unsafe { GetProcessId(member.as_raw_handle()) })
+            .collect();
+        assert!(
+            pids.contains(&root.id()),
+            "Job must contain the fixture root"
+        );
+        assert!(
+            pids.contains(&leaf.id()),
+            "Job must contain the fixture descendant"
         );
         drop(managed);
         assert_eq!(root.state(), WAIT_OBJECT_0, "root survived owner drop");
@@ -565,6 +582,13 @@ mod tests {
             WAIT_OBJECT_0,
             "descendant survived owner drop"
         );
+        for member in &members {
+            assert_eq!(
+                unsafe { WaitForSingleObject(member.as_raw_handle(), 0) },
+                WAIT_OBJECT_0,
+                "a Job member survived owner drop"
+            );
+        }
     }
 
     #[test]
@@ -587,17 +611,35 @@ mod tests {
         let mut managed =
             ManagedChild::spawn(&mut fixture_command("root")).expect("runtime startup");
         let leaf = descendant(&mut managed);
+        {
+            let mut child = suspended_child();
+            let probe = ProcessProbe::child(&child);
+            managed
+                .job
+                .assign(&child)
+                .expect("unsealed Job admits another process");
+            child.kill().expect("stop admission control child");
+            child.wait().expect("reap admission control child");
+            assert_eq!(probe.state(), WAIT_OBJECT_0);
+        }
         managed.job.seal().expect("close process admission");
         {
-            let child = suspended_child();
+            let mut child = suspended_child();
             let probe = ProcessProbe::child(&child);
             assert!(
                 managed.job.assign(&child).is_err(),
                 "sealed Job admitted a process"
             );
-            // A rejected process counts against the limit until its handles close.
-            wait_members(&[probe.0.try_clone().expect("probe handle")])
-                .expect("rejected child exit");
+            let members = managed.job.members().expect("sealed Job members");
+            assert!(
+                !members.iter().any(|member| {
+                    (unsafe { GetProcessId(member.as_raw_handle()) }) == probe.id()
+                }),
+                "rejected child entered the Job"
+            );
+            // A rejected assignment has no Job owner; the caller still owns cleanup.
+            child.kill().expect("stop rejected child");
+            child.wait().expect("reap rejected child");
             assert_eq!(probe.state(), WAIT_OBJECT_0);
         }
         managed.stop().expect("runtime cleanup");
