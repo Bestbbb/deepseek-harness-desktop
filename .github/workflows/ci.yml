@@ -53,6 +53,9 @@ jobs:
       - name: Prepare bubblewrap
         run: bash scripts/prepare-ci-bubblewrap.sh
 
+      - name: Verify community workflow policy
+        run: pnpm exec vitest run scripts/ci-workflow.spec.ts
+
       - name: Run portable keyless checks
         env:
           DSH_ARCHIVE_BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before || github.sha }}
@@ -61,3 +64,11 @@ jobs:
           pnpm run check:ci:artifacts
           pnpm run check:ci:lint:contracts-ready
           pnpm run check:node-compat
+
+      - name: Install desktop replay browser
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Replay desktop Web composition
+        env:
+          DSH_SNAPSHOT: replay
+        run: pnpm exec vitest run --config vitest.web.config.ts apps/web/tests/desktop-context.e2e.ts

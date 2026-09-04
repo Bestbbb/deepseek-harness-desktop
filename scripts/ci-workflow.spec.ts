@@ -18,6 +18,23 @@ function expectPortableCommunityChecks(validation: Record<string, unknown>): voi
   expect(portable.run).toContain('pnpm run check:ci:artifacts')
   expect(portable.run).toContain('pnpm run check:ci:lint:contracts-ready')
   expect(portable.run).toContain('pnpm run check:node-compat')
+
+  const policy: unknown = steps.find(step => isRecord(step) && step.name === 'Verify community workflow policy')
+  const browser: unknown = steps.find(step => isRecord(step) && step.name === 'Install desktop replay browser')
+  const replay: unknown = steps.find(step => isRecord(step) && step.name === 'Replay desktop Web composition')
+  expect(policy).toMatchObject({ run: 'pnpm exec vitest run scripts/ci-workflow.spec.ts' })
+  expect(browser).toMatchObject({ run: 'pnpm exec playwright install --with-deps chromium' })
+  expect(replay).toMatchObject({
+    env: { DSH_SNAPSHOT: 'replay' },
+    run: 'pnpm exec vitest run --config vitest.web.config.ts apps/web/tests/desktop-context.e2e.ts',
+  })
+  expect(steps.indexOf(policy)).toBeLessThan(steps.indexOf(portable))
+  expect(steps.indexOf(portable)).toBeLessThan(steps.indexOf(browser))
+  expect(steps.indexOf(browser)).toBeLessThan(steps.indexOf(replay))
+  for (const step of [policy, browser, replay]) {
+    expect(step).not.toHaveProperty('if')
+    expect(step).not.toHaveProperty('continue-on-error')
+  }
 }
 
 describe('CI workflow', () => {
@@ -758,8 +775,17 @@ describe('Dependabot configuration', () => {
     }
   })
 
-  it('uses a read-only Project token only for human pull request policy metadata', () => {
+  it('omits community Project credentials or restricts upstream tokens to human pull request metadata', () => {
     const policy = loadWorkflow('.github/workflows/issue-policy.yml')
+    const ci = loadWorkflow('.github/workflows/ci.yml')
+    if (isRecord(ci.jobs) && isRecord(ci.jobs.validation)) {
+      expect(policy.on).toEqual({ workflow_dispatch: null })
+      expect(policy.permissions).toEqual({ contents: 'read' })
+      if (!isRecord(policy.jobs)) throw new TypeError('Issue policy workflow must define jobs')
+      expect(Object.keys(policy.jobs)).toEqual(['disabled'])
+      expect(JSON.stringify(policy)).not.toMatch(/secrets\.|create-github-app-token|PROJECT_TOKEN/)
+      return
+    }
     const policyJob = workflowJob(policy, 'policy')
     if (!Array.isArray(policyJob.steps)) throw new TypeError('Issue policy job must define steps')
     const steps = policyJob.steps.filter(isRecord)
