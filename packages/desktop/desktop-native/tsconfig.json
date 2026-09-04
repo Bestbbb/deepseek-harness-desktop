@@ -9,6 +9,7 @@
   "references": [
     { "path": "../../../vendor/cordis" },
     { "path": "../../../vendor/schemastery" },
-    { "path": "../desktop" }
+    { "path": "../desktop" },
+    { "path": "../../core/system-prompt" }
   ]
 }

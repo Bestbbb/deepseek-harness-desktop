@@ -1,3 +1,9 @@
+- id: web-runtime
+  config:
+    openBrowser: !!js ctx.webStartup.openBrowser
+    printUrl: true
+    surfaceContext: false
+    trustedHosts: !!js ctx.webStartup.trustedHosts
 - insert:
     - id: desktop-native
       name: __DSH_DESKTOP_NATIVE_ENTRY__

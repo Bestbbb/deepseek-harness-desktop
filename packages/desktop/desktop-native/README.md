@@ -53,11 +53,31 @@ Nothing directly. `NativeDesktopHost.notify()` carries a consumer request and re
 
 #### Token effect
 
-The provider adds no prompt, message, schema, or tool result.
+Native operations add no prompt, message, schema, or tool result.
 
 #### KV Cache effect
 
 Native bridge traffic is outside model requests and preserves every reusable prefix.
+
+### Installed desktop context
+
+#### What the model sees
+
+When `systemPrompt` is mounted, the provider registers the desktop orientation below. The desktop overlay disables the Web development context and its `DSH_WEB_URL` shell variable. Normal prompt assembly records the resulting text in `request/header`; a preset's complete persona still replaces the assembled system prompt. Unloading the provider removes its section. Bridge endpoints and credentials never enter this text.
+
+##### Desktop orientation
+
+```markdown
+You are interacting with the user through Harness Desktop, a desktop application built on DeepSeek Harness. References to "this app" or "this interface" mean this desktop application unless the user names another target. The interface provides no implicit screenshot, DOM, or route context. The app manages its bundled runtime. Starting a separate web server or rebuilding a workspace does not update this installed app. Do not modify installed application resources or restart the desktop app unless the user explicitly asks. Work in the selected session workspace; it is separate from the app installation.
+```
+
+#### Token effect
+
+The fixed section contributes system-prompt tokens while active; native calls add none. It contains no per-launch values.
+
+#### KV Cache effect
+
+The text remains a stable request prefix across turns. Changing or removing the section replaces earlier prompt tokens and can invalidate their reuse; provider cache availability remains external.
 
 ## Known Limitations and Deferred Work
 

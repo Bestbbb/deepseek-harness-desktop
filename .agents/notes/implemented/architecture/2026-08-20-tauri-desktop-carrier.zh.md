@@ -32,6 +32,8 @@ Rust supervisor 使用生成的 patch 和独立应用数据 `DSH_HOME` 启动 `d
 
 桌面数据默认与 CLI 隔离，不会静默共享可变 profile。本版继续在 `credentials` Service 后使用现有只写本地凭证；后续可替换为 Keychain/Credential Manager provider，不改调用方。凭证缺失、格式错误或认证拒绝只显示安全文案，错误行提供直接恢复操作；即使跳过 onboarding，侧栏仍保留持久警告。
 
+桌面覆盖层禁用 Web 组合包提供的源代码目录指导和 URL 环境变量。原生提供方通过 `systemPrompt` 注册已安装应用的环境说明，由现有 `request/header` 事件记录模型可见的准确文本，无需另一条日志路径。注册随提供方生命周期释放，并遵循预设的完整 persona。桌面回放场景验证实际发布的覆盖层、持久化请求头，以及私有 bridge 凭据未被写入；保留 Web watcher 指令会把已安装应用误识别为开发服务器。
+
 ## 考虑过的替代方案
 
 - **Electron**：Harness 不需要额外捆绑 Chromium，也不需要 Node-in-renderer；系统 WebView 加受控 Node sidecar 可以保留同一个产品，并显著减少壳层开销，因此未采用。

@@ -1,13 +1,22 @@
 /**
  * Authenticated loopback Service Provider for the Tauri native desktop host.
+ * Registers installed-app orientation when the system-prompt service is mounted.
  * @module @deepseek-ai/dsh-desktop-native
  */
 
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import { DesktopHost, type DesktopNotification, type DesktopStatus } from '@deepseek-ai/dsh-desktop'
+import type {} from '@deepseek-ai/dsh-system-prompt'
 
 const TOKEN_HEADER = 'x-dsh-desktop-bridge-token'
+
+const DESKTOP_CONTEXT = 'You are interacting with the user through Harness Desktop, a desktop application built on DeepSeek Harness. '
+  + 'References to "this app" or "this interface" mean this desktop application unless the user names another target. '
+  + 'The interface provides no implicit screenshot, DOM, or route context. '
+  + 'The app manages its bundled runtime. Starting a separate web server or rebuilding a workspace does not update this installed app. '
+  + 'Do not modify installed application resources or restart the desktop app unless the user explicitly asks. '
+  + 'Work in the selected session workspace; it is separate from the app installation.'
 
 /** Private native-bridge connection parameters injected by the desktop supervisor. */
 export interface Config {
@@ -64,6 +73,13 @@ export class NativeDesktopHost extends DesktopHost {
   constructor(ctx: Context, config: Config) {
     super(ctx)
     this.config = resolveConfig(config)
+    ctx.inject(['systemPrompt'], (promptCtx) => {
+      promptCtx.systemPrompt.section({
+        name: 'app:desktop-surface',
+        order: promptCtx.systemPrompt.getSectionOrder('WEB_SURFACE'),
+        text: DESKTOP_CONTEXT,
+      })
+    })
   }
 
   /**

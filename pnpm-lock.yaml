@@ -5271,6 +5271,9 @@ importers:
       '@deepseek-ai/dsh-desktop':
         specifier: workspace:^
         version: link:../desktop
+      '@deepseek-ai/dsh-system-prompt':
+        specifier: workspace:^
+        version: link:../../core/system-prompt
 
   packages/e2b/e2b:
     dependencies:

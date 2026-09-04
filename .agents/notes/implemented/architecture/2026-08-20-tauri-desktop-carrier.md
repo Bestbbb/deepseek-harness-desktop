@@ -32,6 +32,8 @@ Loopback is not an authority boundary. The WebView opens the upstream launch URL
 
 Desktop data is isolated from the CLI rather than silently sharing mutable profiles. Existing write-only local credentials remain behind the `credentials` Service for this release; Keychain/Credential Manager can replace the provider later without changing callers. Missing, malformed, and rejected credentials use safe display copy, retain an inline recovery action, and keep a persistent sidebar warning after onboarding is dismissed.
 
+The desktop overlay disables the Web bundle's source-checkout guidance and URL environment contribution. The native provider registers installed-app orientation through `systemPrompt`, so the existing `request/header` event records the exact model-visible text without a second logging path. The registration follows the provider's lifetime and respects a preset's complete persona. The desktop replay scenario exercises the shipped overlay, persisted request header, and absence of private bridge credentials; retaining Web watcher instructions would misidentify an installed application as a development server.
+
 ## Alternatives considered
 
 - **Electron**: rejected for this carrier because Harness does not require a bundled Chromium or Node-in-renderer surface; the native system WebView plus a supervised Node sidecar preserves the same product with materially less shell overhead.

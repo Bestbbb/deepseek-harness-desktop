@@ -509,7 +509,7 @@ export interface Config {
 }
 ```
 
-Source: [`packages/desktop/desktop-native/src/index.ts:13`](../packages/desktop/desktop-native/src/index.ts)
+Source: [`packages/desktop/desktop-native/src/index.ts:22`](../packages/desktop/desktop-native/src/index.ts)
 
 <a id="deepseek-aidsh-e2b"></a>
 

@@ -1,0 +1,8 @@
+version: 1
+scenario: desktop-context
+profile: web
+composition: desktop-web
+recording: authored
+header:
+  class: desktop-web
+  pin: true
