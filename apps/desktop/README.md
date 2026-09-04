@@ -15,6 +15,8 @@ Browser access and native operations use independent credentials:
 
 The Rust supervisor owns the complete child process tree. It uses a Unix process group on macOS and a Job Object on Windows, restarts an unexpected runtime exit on the same port, and terminates descendants on application exit. Window state, single-instance activation, standard window/edit shortcuts, the native menu, tray behavior, notifications, autostart, and updater plumbing are native Tauri capabilities. The application menu can export a bounded diagnostic text file; the exporter never reads sessions, configuration, credentials, or user files, and redacts desktop tokens, bearer credentials, API-key fields, and the home-directory prefix before writing.
 
+A runtime restart does not navigate an already loaded WebView at the same origin when the launch token changes. The existing cookie authenticates reconnects; an unfinished initial page load remains eligible for navigation. This preserves the browser document rather than relying on text-draft persistence to recover transient input and attachment state.
+
 Windows starts the runtime suspended and without a console window, then resumes it after Job assignment. Reported startup failures terminate and reap the child before retry. Shutdown closes Job process admission, retains member handles, and waits for their exit signals and an empty Job; cleanup errors are logged. Abrupt host termination between process creation and Job assignment can still leave a suspended child; this sequence is not atomic process creation. The [desktop lifecycle decision](../../.agents/notes/implemented/architecture/2026-08-20-tauri-desktop-carrier.md) records the platform verification requirements.
 
 The File menu exposes **New Session**, with **Cmd+N** on macOS. The application menu exposes **Settings** and diagnostic export.
@@ -34,7 +36,7 @@ pnpm run desktop:smoke
 pnpm run desktop:dev
 ```
 
-`desktop:prepare` checks the desktop dependency manifest, builds Harness, deploys the production workspace graph, downloads the matching official Node.js 22.22.0 distribution, verifies its SHA-256 checksum, and materializes the Tauri resource directory. `desktop:smoke` launches that exact bundled runtime and checks rejected anonymous access, cookie login, model and session RPC, and the multiplexed WebSocket event stream.
+`desktop:prepare` checks the desktop dependency manifest, builds Harness, deploys the production workspace graph, downloads the matching official Node.js 22.22.0 distribution, verifies its SHA-256 checksum, and materializes the Tauri resource directory. `desktop:smoke` launches that exact bundled runtime and checks rejected anonymous access, cookie login, model and session RPC, the multiplexed WebSocket event stream, and authenticated reconnects after a forced process restart.
 
 Preparation replaces only an empty directory or a generated Harness Desktop runtime. `DSH_DESKTOP_RUNTIME_OUTPUT` may select another output, but files, directory links, unrelated nonempty directories, and paths containing the repository or user home are rejected before cleanup. Choose an empty directory when a previous output cannot prove its ownership; do not place personal files in generated runtime directories.
 

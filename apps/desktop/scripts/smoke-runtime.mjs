@@ -136,14 +136,9 @@ function verifyStream(origin, cookie) {
   })
 }
 
-try {
-  const patch = (await readFile(join(runtime, 'desktop.cordis.yml'), 'utf8')).replaceAll(
-    '__DSH_DESKTOP_NATIVE_ENTRY__',
-    JSON.stringify(pathToFileURL(join(runtime, 'app/node_modules/@deepseek-ai/dsh-desktop-native/lib/index.js')).href),
-  )
-  await writeFile(renderedPatch, patch)
+function startRuntime(port) {
   const env = Object.fromEntries(Object.entries(process.env).filter(([name]) => !/KEY|SECRET|TOKEN|PASSWORD/iu.test(name)))
-  child = spawn(node, [entry, 'web', '--patch', renderedPatch, '--port', '0', '--no-open'], {
+  child = spawn(node, [entry, 'web', '--patch', renderedPatch, '--port', String(port), '--no-open'], {
     cwd: join(runtime, 'app'),
     env: {
       ...env, DSH_HOME: home,
@@ -155,6 +150,31 @@ try {
   })
   stdout = readLines(child.stdout)
   stderr = readLines(child.stderr)
+}
+
+async function stopRuntime(signal = 'SIGTERM') {
+  if (child !== undefined && child.exitCode === null && child.signalCode === null) {
+    const stopping = child
+    const exited = once(stopping, 'exit')
+    stopping.kill(signal)
+    const forced = setTimeout(() => stopping.kill('SIGKILL'), 5_000)
+    try {
+      await exited
+    } finally {
+      clearTimeout(forced)
+    }
+  }
+  stdout?.close()
+  stderr?.close()
+}
+
+try {
+  const patch = (await readFile(join(runtime, 'desktop.cordis.yml'), 'utf8')).replaceAll(
+    '__DSH_DESKTOP_NATIVE_ENTRY__',
+    JSON.stringify(pathToFileURL(join(runtime, 'app/node_modules/@deepseek-ai/dsh-desktop-native/lib/index.js')).href),
+  )
+  await writeFile(renderedPatch, patch)
+  startRuntime(0)
   const url = await readyUrl()
   assert.match(url.searchParams.get('token') ?? '', /^[A-Za-z0-9_-]{43}$/u)
   assert.equal((await fetchWhenListening(url.origin)).status, 401)
@@ -181,17 +201,19 @@ try {
     assert.equal(body.result?.ok, true, endpoint + ': ' + JSON.stringify(body.result))
   }
   await verifyStream(url.origin, cookie)
-  console.log('desktop runtime smoke passed: ' + url.origin + ' (cookie login, RPC, models, sessions, event stream)')
+  await stopRuntime('SIGKILL')
+  startRuntime(url.port)
+  const restarted = await readyUrl()
+  assert.equal(restarted.origin, url.origin)
+  assert.ok(restarted.searchParams.get('token') !== url.searchParams.get('token'), 'restart must rotate the launch token')
+  assert.equal((await fetchWhenListening(restarted.origin)).status, 401)
+  const resumed = await rpc(restarted.origin, 'settings/describe', cookie)
+  assert.equal(resumed.status, 200, 'the existing cookie must survive runtime restart')
+  assert.equal((await resumed.json()).result?.ok, true)
+  await verifyStream(restarted.origin, cookie)
+  console.log('desktop runtime smoke passed: ' + url.origin + ' (cookie login, RPC, models, sessions, event stream, restart reconnect)')
 } finally {
   for (const socket of sockets) socket.terminate()
-  if (child !== undefined && child.exitCode === null && child.signalCode === null) {
-    const exited = once(child, 'exit')
-    child.kill('SIGTERM')
-    const forced = setTimeout(() => child.kill('SIGKILL'), 5_000)
-    await exited
-    clearTimeout(forced)
-  }
-  stdout?.close()
-  stderr?.close()
+  await stopRuntime()
   await rm(home, { recursive: true, force: true })
 }

@@ -15,6 +15,8 @@
 
 Rust supervisor 拥有完整子进程树：macOS 使用 Unix 进程组，Windows 使用 Job Object；运行时意外退出会在同一端口重启，应用退出时会终止所有后代进程。窗口状态、单实例激活、标准窗口与编辑快捷键、原生菜单、托盘、通知、开机启动和更新器基础能力都由 Tauri 原生实现。应用菜单可以导出有大小上限的诊断文本；导出器不会读取会话、配置、凭证或用户文件，并会在写盘前脱敏桌面 token、Bearer 凭证、API key 字段和用户主目录前缀。
 
+运行时重启导致启动 token 改变时，不会重新导航已经加载完成的同源 WebView。重连使用已有 cookie 认证；尚未完成的首次页面加载仍允许重新导航。这会保留浏览器文档，而不是依靠文本草稿持久化来恢复临时输入和附件状态。
+
 Windows 以暂停且不显示控制台窗口的方式创建运行时，在分配到 Job 后才恢复执行。启动过程报告失败时，会先终止并回收子进程再重试。退出时会禁止 Job 接纳新进程，保留成员句柄，并等待其退出信号及 Job 清空；清理错误会写入日志。如果在创建进程到分配 Job 之间强行终止宿主，仍可能留下暂停的子进程；这段启动过程不是原子进程创建。[桌面生命周期决策](../../.agents/notes/implemented/architecture/2026-08-20-tauri-desktop-carrier.zh.md)记录了各平台的验证要求。
 
 File 菜单提供 **New Session**，macOS 上的快捷键为 **Cmd+N**。应用菜单提供 **Settings** 和诊断导出。
@@ -34,7 +36,7 @@ pnpm run desktop:smoke
 pnpm run desktop:dev
 ```
 
-`desktop:prepare` 检查桌面依赖清单、构建 Harness、部署生产 workspace 依赖图、下载对应平台的官方 Node.js 22.22.0 发行包、校验 SHA-256，并生成 Tauri resource 目录。`desktop:smoke` 启动这份真实的打包运行时，检查匿名访问拒绝、cookie 登录、模型与会话 RPC，以及多路复用 WebSocket 事件流。
+`desktop:prepare` 检查桌面依赖清单、构建 Harness、部署生产 workspace 依赖图、下载对应平台的官方 Node.js 22.22.0 发行包、校验 SHA-256，并生成 Tauri resource 目录。`desktop:smoke` 启动这份真实的打包运行时，检查匿名访问拒绝、cookie 登录、模型与会话 RPC、多路复用 WebSocket 事件流，以及强制重启进程后的认证重连。
 
 准备步骤只替换空目录或已生成的 Harness Desktop 运行时目录。`DSH_DESKTOP_RUNTIME_OUTPUT` 可以指定其他输出位置，但普通文件、目录链接、无关的非空目录，以及包含仓库或用户主目录的路径，都会在清理前被拒绝。旧输出无法证明归属时，请选择空目录；不要在生成的运行时目录中存放个人文件。
 

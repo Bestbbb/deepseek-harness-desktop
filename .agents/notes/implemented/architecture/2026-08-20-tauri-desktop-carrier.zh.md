@@ -16,6 +16,8 @@ DeepSeek Harness 需要可安装的 macOS 和 Windows 应用，但不应把 Elec
 
 Rust supervisor 使用生成的 patch 和独立应用数据 `DSH_HOME` 启动 `dsh web`。CLI 提前打印的 `dsh web:` 只代表已分配地址；supervisor 必须等 TCP 真实监听后才导航。运行时意外退出会在稳定端口重启，保留 WebView 和未发送的界面状态。退出时，Unix 通过进程组、Windows 通过 Job Object 管理并终止所有后代进程。
 
+[导航状态](../../../../apps/desktop/src-tauri/src/navigation.rs)记录请求的源和 WebView 无查询参数根页面的加载完成事件，而不是会轮换的启动 token。同一已加载源的运行时再次就绪时不会重新导航；未完成的首次加载和不同源仍允许导航。上游浏览器 cookie 的签名密钥持久化在桌面 home 中，因此重启后的运行时无需再次交换 token 就能接受已有 cookie。原生策略测试拒绝 token 轮换引起的重载，[内置运行时冒烟测试](../../../../apps/desktop/scripts/smoke-runtime.mjs)会强制终止私有运行时，再检查基于原有 cookie 的 RPC 与 WebSocket 重连。这些检查不能替代目标平台原生输入和附件验收。
+
 [Windows 进程所有者](../../../../apps/desktop/src-tauri/src/runtime_windows.rs)先创建并配置关闭时终止进程的 Job，再以 `CREATE_SUSPENDED | CREATE_NO_WINDOW` 创建运行时。在分配 Job 或恢复线程可能失败之前，子进程已由清理守卫持有。稳定版 Rust 不暴露初始线程句柄，因此通过 Tool Help 找到暂停的子进程线程，再调用 `ResumeThread`。只有运行时管理成功后才启动管道读取线程。如果在创建进程到分配 Job 之间强行终止宿主，仍可能留下暂停的子进程：该设计不声称 Job 分配具有原子性。
 
 退出时会先将 Job 的活动进程上限设为零，再枚举成员句柄，防止清理期间新增成员。通过 PID 获取进程后会验证其 Job 归属，排除已被回收复用的标识。清理会终止 Job 和根进程，回收根进程，等待已持有进程句柄的退出信号，并检查 Job 的活动进程数。Windows [进程终止是异步操作](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-terminateprocess)：仅观察 Job 计数归零不等于等待后代退出信号。启动错误与清理错误分别保留；禁止新增成员或收集句柄失败也不会跳过终止操作。

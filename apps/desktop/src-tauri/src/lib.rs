@@ -2,10 +2,12 @@
 
 mod bridge;
 mod diagnostics;
+mod navigation;
 mod runtime;
 
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use bridge::DesktopBridge;
+use navigation::RuntimeNavigation;
 use rand::RngCore;
 use runtime::{RuntimeConfig, RuntimeEvent, RuntimeSupervisor};
 use std::{
@@ -81,7 +83,15 @@ fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         .iter()
         .find(|config| config.label == "main")
         .ok_or("the desktop configuration must declare the main window")?;
-    let window = WebviewWindowBuilder::from_config(app, window_config)?.build()?;
+    let navigation = Arc::new(Mutex::new(RuntimeNavigation::default()));
+    let page_navigation = navigation.clone();
+    let window = WebviewWindowBuilder::from_config(app, window_config)?
+        .on_page_load(move |_, payload| {
+            if let Ok(mut state) = page_navigation.lock() {
+                state.page_load(payload.event(), payload.url());
+            }
+        })
+        .build()?;
     let close_window = window.clone();
     window.on_window_event(move |event| {
         if let tauri::WindowEvent::CloseRequested { api, .. } = event {
@@ -96,26 +106,22 @@ fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let dsh_home = app.path().app_data_dir()?.join("harness");
     std::fs::create_dir_all(&dsh_home)?;
     let app_handle = app.handle().clone();
-    let navigated_url = Arc::new(Mutex::new(None));
-    let published_url = navigated_url.clone();
     let publish: Arc<dyn Fn(RuntimeEvent) + Send + Sync> = Arc::new(move |event| match event {
         RuntimeEvent::Ready(url) => {
-            let should_navigate = published_url
+            let should_navigate = navigation
                 .lock()
-                .map(|mut current| {
-                    if current.as_ref() == Some(&url) {
-                        false
-                    } else {
-                        *current = Some(url.clone());
-                        true
-                    }
-                })
+                .map(|mut state| state.runtime_ready(&url))
                 .unwrap_or(true);
             if !should_navigate {
                 return;
             }
             if let Some(window) = app_handle.get_webview_window("main") {
-                let _ = window.navigate(url);
+                if window.navigate(url).is_err() {
+                    if let Ok(mut state) = navigation.lock() {
+                        state.navigation_failed();
+                    }
+                    log::error!(target: "dsh_runtime", "Could not navigate to the Harness runtime");
+                }
             }
         }
         RuntimeEvent::Error(message) => {
