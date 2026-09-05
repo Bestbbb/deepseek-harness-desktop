@@ -1,8 +1,8 @@
 # Session Projections
 
-The session-projection seam — a [capability seam](../capability-seams.md) through which domain host plugins serve whole current values of log-derived per-session state to client carriers: the Service Definition and registry ([dsh-session-projection](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-projection), `ctx.sessionProjections`), domain contributors (each registering one pure unit), and carriers ([dsh-session-controller](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/session-controller)'s history tail page and `session/projection` push frame). It is one optional capability, not part of the agent-loop spine. The framework drives, the domain computes: the registry subscribes to `session/event` once and folds every committed event through every unit; domains hold no subscriptions and clients never fold domain events — they receive finished values. Design authority: the [session-projection RFC](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/proposed/architecture/2026-07-27-session-projection-and-command-log.md); drive/cache/feed contracts: the [package README](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-projection/README.md).
+The session-projection seam — a [capability seam](../capability-seams.md) through which domain host plugins serve whole current values of log-derived per-session state to client carriers: the Service Definition and registry ([dsh-session-projection](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/session/session-projection), `ctx.sessionProjections`), domain contributors (each registering one pure unit), and carriers ([dsh-session-controller](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/api/session-controller)'s history tail page and `session/projection` push frame). It is one optional capability, not part of the agent-loop spine. The framework drives, the domain computes: the registry subscribes to `session/event` once and folds every committed event through every unit; domains hold no subscriptions and clients never fold domain events — they receive finished values. Design authority: the [session-projection RFC](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/.agents/notes/proposed/architecture/2026-07-27-session-projection-and-command-log.md); drive/cache/feed contracts: the [package README](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/session/session-projection/README.md).
 
-Source: [`packages/session/session-projection/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-projection/src/index.ts)
+Source: [`packages/session/session-projection/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/session/session-projection/src/index.ts)
 
 ## The unit
 
@@ -194,7 +194,7 @@ coldSnapshot( meta: SessionHeader, inheritedEventCount: SessionLogOffset, events
 
 Types: [Session](./session.md) · [SessionEvent](./session.md) · [SessionHeader](./persistence.md) · [SessionLogOffset](./session.md)
 
-Source: [`packages/session/session-projection-cache/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-projection-cache/src/index.ts)
+Source: [`packages/session/session-projection-cache/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/session/session-projection-cache/src/index.ts)
 
 <a id="ctxsessionprojections--sessionprojectionregistry"></a>
 
@@ -348,5 +348,5 @@ hydrate( session: Session, checkpoint: ProjectionCheckpoint, events: readonly Se
 
 Types: [Session](./session.md) · [SessionEvent](./session.md) · [SessionHeader](./persistence.md) · [SessionLogOffset](./session.md)
 
-Source: [`packages/session/session-projection/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-projection/src/index.ts)
+Source: [`packages/session/session-projection/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/session/session-projection/src/index.ts)
 <!-- END GENERATED cordis-surface -->

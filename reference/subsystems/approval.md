@@ -1,8 +1,8 @@
 # 用户审批
 
-[dsh-user-approval](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-approval) 的用户审批 seam 回答一个问题：这个具体操作是否可以继续？它拥有共享的请求/结果词汇、`ctx.approval` 分发服务、`approval/request` 应答者 waterfall（瀑布式事件）、仅记录日志的审计事件对，以及按会话的 `ask`/`never` 策略。UI 通道可以提供人类应答者；[ACP（Agent Client Protocol）自动化桥接层](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/acp/acp)为其拥有的 agent（智能体）提供一次性机器决策。调用方如 [dsh-tools](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/tools) 和 [dsh-tool-bash](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/shell/tool-bash) 消费闭合的结果，除非结果为 `allowed-once`，否则一律拒绝。
+[dsh-user-approval](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/interaction/user-approval) 的用户审批 seam 回答一个问题：这个具体操作是否可以继续？它拥有共享的请求/结果词汇、`ctx.approval` 分发服务、`approval/request` 应答者 waterfall（瀑布式事件）、仅记录日志的审计事件对，以及按会话的 `ask`/`never` 策略。UI 通道可以提供人类应答者；[ACP（Agent Client Protocol）自动化桥接层](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/acp/acp)为其拥有的 agent（智能体）提供一次性机器决策。调用方如 [dsh-tools](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/core/tools) 和 [dsh-tool-bash](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/shell/tool-bash) 消费闭合的结果，除非结果为 `allowed-once`，否则一律拒绝。
 
-源码：[`packages/interaction/user-approval/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-approval/src/index.ts)
+源码：[`packages/interaction/user-approval/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/user-approval/src/index.ts)
 
 ## 标识与结果
 
@@ -139,7 +139,7 @@ overrideOf(session: Session): ApprovalPolicy | undefined
 
 Types: [Agent](./core.md) · [Session](./session.md)
 
-Source: [`packages/interaction/user-approval/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-approval/src/index.ts)
+Source: [`packages/interaction/user-approval/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/user-approval/src/index.ts)
 
 <a id="approval-events"></a>
 
@@ -164,5 +164,5 @@ Ask composed answerers for one decision. Return an outcome to claim the request 
 
 Types: [Agent](./core.md) · [Scoped](./scope.md)
 
-Source: [`packages/interaction/user-approval/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-approval/src/types.ts)
+Source: [`packages/interaction/user-approval/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/user-approval/src/types.ts)
 <!-- END GENERATED cordis-surface -->

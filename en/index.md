@@ -6,7 +6,7 @@ Work in your local projects with your choice of models and a plugin-based agent.
 
 <div class="dsh-actions">
 
-[Download](https://github.com/Bestbbb/deepseek-harness-desktop/releases) [Read the guide](./guide/quickstart.md)
+[Download](https://github.com/Bestbbb/deepseek-harness-desktop/releases/tag/desktop-v0.1.3-alpha.1) [Read the guide](./guide/quickstart.md)
 
 </div></div><div class="dsh-hero-preview">
 
@@ -40,7 +40,7 @@ Harness owns the agent runtime. Tauri supplies the native window and operating-s
 
 System WebView, native menus, keyboard shortcuts, runtime supervision, and diagnostic export. No bundled Electron or Chromium.
 
-[Desktop architecture](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/apps/desktop/README.md)
+[Desktop architecture](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/apps/desktop/README.md)
 
 </div><div>
 
@@ -68,7 +68,7 @@ This is a community preview, not an official DeepSeek product. macOS previews ar
 
 Local execution is not offline inference. Plugins and external agents run code; review permissions before granting workspace access. Automatic updates are not configured.
 
-[Download](https://github.com/Bestbbb/deepseek-harness-desktop/releases)
+[Download](https://github.com/Bestbbb/deepseek-harness-desktop/releases/tag/desktop-v0.1.3-alpha.1)
 
 </div></section>
 
@@ -78,6 +78,6 @@ Local execution is not offline inference. Plugins and external agents run code; 
 
 [Upstream Harness](https://github.com/deepseek-ai/deepseek-harness)
 
-[MIT license](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/LICENSE)
+[MIT license](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/LICENSE)
 
 </footer></main>

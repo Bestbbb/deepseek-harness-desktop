@@ -1,6 +1,6 @@
 # Persistent PTY Sessions
 
-Types shared by PTY backends, `ctx.terminals`, and the model-facing consumer. The [persistent PTY Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/feature/2026-07-16-persistent-pty-sessions.md) owns the rationale; this page records the cross-package vocabulary from [`packages/terminal/terminal/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/terminal/terminal/src/types.ts).
+Types shared by PTY backends, `ctx.terminals`, and the model-facing consumer. The [persistent PTY Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/.agents/notes/implemented/feature/2026-07-16-persistent-pty-sessions.md) owns the rationale; this page records the cross-package vocabulary from [`packages/terminal/terminal/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/terminal/terminal/src/types.ts).
 
 ## Identity and readiness
 
@@ -178,5 +178,5 @@ list(owner: Agent): TerminalSessionSnapshot[]
 
 Types: [Agent](./core.md)
 
-Source: [`packages/terminal/terminal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/terminal/terminal/src/index.ts)
+Source: [`packages/terminal/terminal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/terminal/terminal/src/index.ts)
 <!-- END GENERATED cordis-surface -->

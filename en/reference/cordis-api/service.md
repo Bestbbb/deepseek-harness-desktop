@@ -9,7 +9,7 @@ Base class for services that expose a named API on `ctx`.
 
 Subclasses call `super(ctx, name)` from their constructor. The service is registered immediately and is automatically removed with the owning fiber.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/service.ts#L11)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/vendor/cordis/src/service.ts#L11)
 
 ### service.name
 
@@ -20,7 +20,7 @@ public name!: string
 
 The service name this instance is registered under.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/service.ts#L30)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/vendor/cordis/src/service.ts#L30)
 
 ## Static members
 
@@ -33,7 +33,7 @@ static readonly init: unique symbol
 
 Symbol key of an instance method run after construction (class plugins).
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/service.ts#L13)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/vendor/cordis/src/service.ts#L13)
 
 ### Service.check
 
@@ -44,7 +44,7 @@ static readonly check: unique symbol
 
 Symbol key of the availability predicate passed to `ctx.provide()`.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/service.ts#L15)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/vendor/cordis/src/service.ts#L15)
 
 ### Service.config
 
@@ -55,7 +55,7 @@ static readonly config: unique symbol
 
 Symbol key of the phantom intercept-config type parameter.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/service.ts#L17)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/vendor/cordis/src/service.ts#L17)
 
 ### Service.invoke
 
@@ -66,7 +66,7 @@ static readonly invoke: unique symbol
 
 Symbol key of the call body making a service callable (e.g. `ctx.logger()`).
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/service.ts#L19)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/vendor/cordis/src/service.ts#L19)
 
 ### Service.extend
 
@@ -77,7 +77,7 @@ static readonly extend: unique symbol
 
 Symbol key of the helper deriving an extended service instance.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/service.ts#L21)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/vendor/cordis/src/service.ts#L21)
 
 ### Service.tracker
 
@@ -88,7 +88,7 @@ static readonly tracker: unique symbol
 
 Symbol key of the tracker metadata used for context tracing.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/service.ts#L23)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/vendor/cordis/src/service.ts#L23)
 
 ### Service.resolveConfig
 
@@ -99,4 +99,4 @@ static readonly resolveConfig: unique symbol
 
 Symbol key of the intercept-config resolution helper below.
 
-[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/service.ts#L25)
+[Source](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/vendor/cordis/src/service.ts#L25)

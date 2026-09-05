@@ -1,8 +1,8 @@
 # 用户设置
 
-[dsh-settings](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/settings/settings) 的用户设置 seam 持有一份按 namespace 分节的用户文档，并把每个已注册 namespace 解析为：schema 默认值，然后注册方的组合 `base`，最后用户分节。[dsh-settings-file](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/settings/settings-file) 这类提供方存储原始文档并推送外部编辑；消费方插件注册 schema 后读取或观察解析值。组合配置仍留在 `cordis.yml`——namespace 只承载用户可编辑子集。
+[dsh-settings](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/settings/settings) 的用户设置 seam 持有一份按 namespace 分节的用户文档，并把每个已注册 namespace 解析为：schema 默认值，然后注册方的组合 `base`，最后用户分节。[dsh-settings-file](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/settings/settings-file) 这类提供方存储原始文档并推送外部编辑；消费方插件注册 schema 后读取或观察解析值。组合配置仍留在 `cordis.yml`——namespace 只承载用户可编辑子集。
 
-来源：[`packages/settings/settings/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/settings/settings/src/index.ts)
+来源：[`packages/settings/settings/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/settings/settings/src/index.ts)
 
 ## 标识
 
@@ -272,7 +272,7 @@ async replace<const Namespace extends string>( ns: Namespace & SettingsNamespace
 async mutate<const Namespace extends string>( ns: Namespace & SettingsNamespaceInput<Namespace>, ops: readonly SettingsPathOp[], expectedRevision?: number, ): Promise<void>
 ```
 
-Source: [`packages/settings/settings/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/settings/settings/src/index.ts)
+Source: [`packages/settings/settings/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/settings/settings/src/index.ts)
 
 <a id="ctxsettingscontroller--settingscontroller"></a>
 
@@ -345,7 +345,7 @@ Host service backing the generated `ctx.remote.settings` namespace. Every remote
 @Remote async openAgentPresetDirectory( agentPreset: string, signal: AbortSignal, ): Promise<AgentPresetDirectoryOpenValue>
 ```
 
-Source: [`packages/api/settings-controller/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/settings-controller/src/index.ts)
+Source: [`packages/api/settings-controller/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/api/settings-controller/src/index.ts)
 
 <a id="settings-events"></a>
 
@@ -372,7 +372,7 @@ One registered namespace's RAW user section changed, whether or not the resolved
 'settings/document-updated'(ns: SettingsNamespace, revision: number): void
 ```
 
-Source: [`packages/settings/settings/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/settings/settings/src/types.ts)
+Source: [`packages/settings/settings/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/settings/settings/src/types.ts)
 
 <a id="settingsupdated--emit"></a>
 
@@ -399,5 +399,5 @@ Committed change to one registered namespace's resolved value. Emitted after the
 'settings/updated'(ns: SettingsNamespace, next: unknown, prev: unknown, source: SettingsUpdateSource): void
 ```
 
-Source: [`packages/settings/settings/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/settings/settings/src/types.ts)
+Source: [`packages/settings/settings/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/settings/settings/src/types.ts)
 <!-- END GENERATED cordis-surface -->

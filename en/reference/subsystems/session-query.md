@@ -1,8 +1,8 @@
 # Session Query
 
-Query vocabulary over the live-preferred logical session corpus. The [Service Definition package](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session-query/session-query) owns exact reads, source precedence, relationship tracing, semantic extraction, and provider-independent filters, while the [SQLite provider](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session-query/session-query-sqlite) owns the concrete full-text index lifecycle.
+Query vocabulary over the live-preferred logical session corpus. The [Service Definition package](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/session-query/session-query) owns exact reads, source precedence, relationship tracing, semantic extraction, and provider-independent filters, while the [SQLite provider](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/session-query/session-query-sqlite) owns the concrete full-text index lifecycle.
 
-Source: [`packages/session-query/session-query/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session-query/session-query/src/types.ts)
+Source: [`packages/session-query/session-query/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/session-query/session-query/src/types.ts)
 
 ## Logical records
 
@@ -503,5 +503,5 @@ async readEvent(request: SessionEventReadRequest, signal?: AbortSignal): Promise
 
 Types: [SessionId](./core.md) · [SessionTitleSnapshot](./session-title.md)
 
-Source: [`packages/session-query/session-query/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session-query/session-query/src/index.ts)
+Source: [`packages/session-query/session-query/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/session-query/session-query/src/index.ts)
 <!-- END GENERATED cordis-surface -->

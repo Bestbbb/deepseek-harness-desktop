@@ -1,6 +1,6 @@
 # 用 Cordis 工具扩展运行中的智能体
 
-本实战指南启用 [`@deepseek-ai/dsh-tool-cordis`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/extensions/tool-cordis/README.zh.md)。智能体可以检查当前 Cordis 进程，并在内存中挂载或卸载模型编写的插件。临时插件会在卸载或进程退出时消失，并可能影响同一进程中的其他会话。
+本实战指南启用 [`@deepseek-ai/dsh-tool-cordis`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/extensions/tool-cordis/README.zh.md)。智能体可以检查当前 Cordis 进程，并在内存中挂载或卸载模型编写的插件。临时插件会在卸载或进程退出时消失，并可能影响同一进程中的其他会话。
 
 ## 运行
 
@@ -10,4 +10,4 @@
 pnpm dsh web --patch apps/cli/config/examples/cordis/cordis.yml
 ```
 
-该命令需要模型凭据。[Cordis 工具参考](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/extensions/tool-cordis/README.zh.md)定义了四类约定：工具参数、存续时间、清理行为和安全性。
+该命令需要模型凭据。[Cordis 工具参考](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/extensions/tool-cordis/README.zh.md)定义了四类约定：工具参数、存续时间、清理行为和安全性。

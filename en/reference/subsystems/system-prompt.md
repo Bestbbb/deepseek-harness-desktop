@@ -1,8 +1,8 @@
 # System Prompt Assembly
 
-The [system-prompt package](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/system-prompt) owns the data exchanged between prompt contributors and one assembly call. The package [README](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/system-prompt/README.md) documents registration, ordering, scoping, and rendering behavior; this page records the exact cross-package types that plugins implement or pass.
+The [system-prompt package](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/core/system-prompt) owns the data exchanged between prompt contributors and one assembly call. The package [README](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/system-prompt/README.md) documents registration, ordering, scoping, and rendering behavior; this page records the exact cross-package types that plugins implement or pass.
 
-Source: [`packages/core/system-prompt/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/system-prompt/src/index.ts).
+Source: [`packages/core/system-prompt/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/system-prompt/src/index.ts).
 
 ## Assembly context
 
@@ -167,7 +167,7 @@ variable(name: string, provider: (context: AssembleContext) => string | undefine
 async assemble(context: AssembleContext = {}): Promise<PromptAssembly>
 ```
 
-Source: [`packages/core/system-prompt/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/system-prompt/src/index.ts)
+Source: [`packages/core/system-prompt/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/system-prompt/src/index.ts)
 
 <a id="system-prompt-events"></a>
 
@@ -197,7 +197,7 @@ Expert waterfall over the assembled sections, contexts, tools, and variables. Sc
 
 Types: [Scoped](./scope.md)
 
-Source: [`packages/core/system-prompt/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/system-prompt/src/index.ts)
+Source: [`packages/core/system-prompt/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/system-prompt/src/index.ts)
 
 <a id="system-promptchange--emit"></a>
 
@@ -214,5 +214,5 @@ Emitted when any prompt provider changes. This registry notification is unfilter
 'system-prompt/change'(): void
 ```
 
-Source: [`packages/core/system-prompt/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/system-prompt/src/index.ts)
+Source: [`packages/core/system-prompt/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/system-prompt/src/index.ts)
 <!-- END GENERATED cordis-surface -->

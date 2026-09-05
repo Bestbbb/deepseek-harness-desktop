@@ -1,6 +1,6 @@
 # 持久 PTY 会话
 
-PTY 后端、`ctx.terminals` 与面向模型的消费方共享的类型。[持久 PTY Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/feature/2026-07-16-persistent-pty-sessions.zh.md) 负责记录决策依据；本页记录来自 [`packages/terminal/terminal/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/terminal/terminal/src/types.ts) 的跨包词汇。
+PTY 后端、`ctx.terminals` 与面向模型的消费方共享的类型。[持久 PTY Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/.agents/notes/implemented/feature/2026-07-16-persistent-pty-sessions.zh.md) 负责记录决策依据；本页记录来自 [`packages/terminal/terminal/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/terminal/terminal/src/types.ts) 的跨包词汇。
 
 ## 标识与就绪
 
@@ -178,5 +178,5 @@ list(owner: Agent): TerminalSessionSnapshot[]
 
 Types: [Agent](./core.md)
 
-Source: [`packages/terminal/terminal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/terminal/terminal/src/index.ts)
+Source: [`packages/terminal/terminal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/terminal/terminal/src/index.ts)
 <!-- END GENERATED cordis-surface -->

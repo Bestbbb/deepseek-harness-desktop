@@ -10,7 +10,7 @@ To write plugins for the harness itself — loaded from a `cordis.yml` and drive
 
 ## Setup
 
-You need a clone of this repository with dependencies installed; the [development guide](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/development.md#setup-tutorial) lists the prerequisites. No API key is needed for this tutorial; every example runs keylessly.
+You need a clone of this repository with dependencies installed; the [development guide](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/docs/development.md#setup-tutorial) lists the prerequisites. No API key is needed for this tutorial; every example runs keylessly.
 
 ```sh
 git clone https://github.com/deepseek-ai/deepseek-harness.git
@@ -31,7 +31,7 @@ Every chapter runs the same command from this directory:
 node --import tsx ../../vendor/cordis/bin.js
 ```
 
-That one-file launcher (see [vendor/cordis/bin.js](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/bin.js)) creates a root `Context`, mounts the Loader plugin, and tells it to load `./cordis.yml` from the current directory. Everything else — which plugins exist, how they are configured — comes from that YAML file, which you will write in a moment. The `--import tsx` flag lets Node run the TypeScript files the config points at without a build step.
+That one-file launcher (see [vendor/cordis/bin.js](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/vendor/cordis/bin.js)) creates a root `Context`, mounts the Loader plugin, and tells it to load `./cordis.yml` from the current directory. Everything else — which plugins exist, how they are configured — comes from that YAML file, which you will write in a moment. The `--import tsx` flag lets Node run the TypeScript files the config points at without a build step.
 
 ## Chapters
 

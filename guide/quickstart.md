@@ -1,14 +1,14 @@
 # 开始使用 Harness Desktop
 
-使用 Harness Desktop 连接模型，并在本地项目中运行任务。本指南面向安装包用户：应用会自行启动 Harness 运行时，无需手动启动 Web 服务器或单独安装 CLI（命令行界面）。如果需要从源码开发，请参阅[构建说明](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/README.zh.md#run-from-source)。
+使用 Harness Desktop 连接模型，并在本地项目中运行任务。本指南面向安装包用户：应用会自行启动 Harness 运行时，无需手动启动 Web 服务器或单独安装 CLI（命令行界面）。如果需要从源码开发，请参阅[构建说明](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/README.zh.md#run-from-source)。
 
 ## 安装并打开应用
 
-1. 打开 [Releases](https://github.com/Bestbbb/deepseek-harness-desktop/releases)，在 **Assets** 中选择 macOS Apple Silicon DMG 或 Windows x64 安装包。检查该版本内置的 Harness 版本和平台说明；源码可能比公开安装包更新。
+1. 打开 [Releases](https://github.com/Bestbbb/deepseek-harness-desktop/releases/tag/desktop-v0.1.3-alpha.1)，在 **Assets** 中选择 macOS Apple Silicon DMG 或 Windows x64 安装包。检查该版本内置的 Harness 版本和平台说明；源码可能比公开安装包更新。
 2. 安装前，使用该版本的 SHA-256 校验和核验下载文件。这些社区预览包在 macOS 上使用临时签名且未经公证，在 Windows 上未签名。如果操作系统阻止应用运行，请先阅读发布页的平台说明，再决定是否允许打开。
 3. 打开 **Harness Desktop**，等待会话界面出现。阅读首次运行提示后，再继续配置模型。
 
-自动更新尚未配置，请到 Releases 检查新版安装包。[桌面指南](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/apps/desktop/README.zh.md)介绍数据隔离方式与分发限制。
+自动更新尚未配置，请到 Releases 检查新版安装包。[桌面指南](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/apps/desktop/README.zh.md)介绍数据隔离方式与分发限制。
 
 ## 配置模型
 

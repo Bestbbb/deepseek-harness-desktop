@@ -1,8 +1,8 @@
 # 用户命令
 
-[`dsh-commands`](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/commands) 提供的用户命令注册表服务。交互式适配器用它发现插件拥有的命令，并针对确切的 agent（智能体）直接执行这些命令，而不创建模型消息。[命令 Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/feature/2026-07-19-plugin-command-registration.zh.md) 负责分发与生命周期的决策依据；[包 README](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/commands/README.zh.md) 负责组合方式与限制。
+[`dsh-commands`](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/interaction/commands) 提供的用户命令注册表服务。交互式适配器用它发现插件拥有的命令，并针对确切的 agent（智能体）直接执行这些命令，而不创建模型消息。[命令 Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/.agents/notes/implemented/feature/2026-07-19-plugin-command-registration.zh.md) 负责分发与生命周期的决策依据；[包 README](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/commands/README.zh.md) 负责组合方式与限制。
 
-来源：[`packages/interaction/commands/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/commands/src/index.ts)
+来源：[`packages/interaction/commands/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/commands/src/index.ts)
 
 ## 输入元数据
 
@@ -191,7 +191,7 @@ find(agent: Agent, name: string): CommandDefinition | undefined
 
 Types: [Agent](./core.md)
 
-Source: [`packages/interaction/commands/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/commands/src/index.ts)
+Source: [`packages/interaction/commands/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/commands/src/index.ts)
 
 <a id="commands-events"></a>
 
@@ -213,5 +213,5 @@ A command was registered or unregistered. This is an unfiltered registry notific
 'commands/change'(): void
 ```
 
-Source: [`packages/interaction/commands/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/commands/src/types.ts)
+Source: [`packages/interaction/commands/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/commands/src/types.ts)
 <!-- END GENERATED cordis-surface -->

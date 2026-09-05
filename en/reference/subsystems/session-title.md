@@ -1,8 +1,8 @@
 # Session Titles
 
-Durable latest-wins title state and the optional asynchronous provider vocabulary owned by [`@deepseek-ai/dsh-session-title`](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-title). The shared LLM helper owns the exact auxiliary request record. Package READMEs own timing, fallback, failure, and fork behavior; the generated [persistence catalog](../persistence-catalog.md) owns the complete event declarations.
+Durable latest-wins title state and the optional asynchronous provider vocabulary owned by [`@deepseek-ai/dsh-session-title`](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/session/session-title). The shared LLM helper owns the exact auxiliary request record. Package READMEs own timing, fallback, failure, and fork behavior; the generated [persistence catalog](../persistence-catalog.md) owns the complete event declarations.
 
-Sources: [`packages/session/session-title/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-title/src/index.ts), [`packages/session/session-title-llm/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-title-llm/src/index.ts)
+Sources: [`packages/session/session-title/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/session/session-title/src/index.ts), [`packages/session/session-title-llm/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/session/session-title-llm/src/index.ts)
 
 ## Durable title state
 
@@ -198,5 +198,5 @@ register(provider: SessionTitleProvider): () => Promise<void>
 
 Types: [Session](./session.md)
 
-Source: [`packages/session/session-title/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-title/src/index.ts)
+Source: [`packages/session/session-title/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/session/session-title/src/index.ts)
 <!-- END GENERATED cordis-surface -->

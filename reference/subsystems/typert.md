@@ -1,6 +1,6 @@
 # Typert 远程调用
 
-以下类型由生成的 Remote 产物、Host Gateway 与消费方 API assembly 共用。[Typert Gateway Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/architecture/2026-08-02-typert-remote-method-calls.zh.md) 负责架构与传输决策；本页记录 [`dsh-typert-protocol`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/typert/protocol/src/types.ts) 和 [`dsh-api-gateway`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/gateway/src/types.ts) 中公共约定的字面定义。
+以下类型由生成的 Remote 产物、Host Gateway 与消费方 API assembly 共用。[Typert Gateway Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/.agents/notes/implemented/architecture/2026-08-02-typert-remote-method-calls.zh.md) 负责架构与传输决策；本页记录 [`dsh-typert-protocol`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/typert/protocol/src/types.ts) 和 [`dsh-api-gateway`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/api/gateway/src/types.ts) 中公共约定的字面定义。
 
 ## Lookup 与上下文声明
 
@@ -304,7 +304,7 @@ toJSONSchema(key: string, params?: z.core.ToJSONSchemaParams): z.core.JSONSchema
 
 Types: [TypertContribution](./invariants.md) · [TypertFace](./invariants.md) · [TypertPackageFilter](./invariants.md) · [TypertPackageRecord](./invariants.md) · [TypertSchemaFilter](./invariants.md) · [TypertSchemaRecord](./invariants.md)
 
-Source: [`packages/typert/registry/src/service.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/typert/registry/src/service.ts)
+Source: [`packages/typert/registry/src/service.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/typert/registry/src/service.ts)
 
 <a id="ctxtypertgateway--typertgatewayservice"></a>
 
@@ -337,5 +337,5 @@ async invoke(request: InvokeRemoteRequest): Promise<unknown>
 async stream(request: InvokeRemoteRequest): Promise<AsyncIterable<unknown>>
 ```
 
-Source: [`packages/api/gateway/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/gateway/src/index.ts)
+Source: [`packages/api/gateway/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/api/gateway/src/index.ts)
 <!-- END GENERATED cordis-surface -->

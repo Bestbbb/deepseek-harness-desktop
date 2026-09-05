@@ -1,8 +1,8 @@
 # Subprocess
 
-The subprocess seam is split across a Service Definition ([dsh-subprocess](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subprocess/subprocess), `ctx.subprocess`) and Service Provider ([dsh-subprocess-local](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subprocess/subprocess-local)); its Consumers are other capability seams and out-of-process backends: the [bash executor family](./shell.md) uses collected batch output, LSP uses raw protocol pipes, the PTY backend uses the terminal primitive, and the ACP subagent backend uses piped ndjson plus inherited stderr. This seam owns the managed `DSH_*` environment namespace, the shared credential scrub (`scrubbedParentEnv`), and the `CollectedOutput` shape; [dsh-shell](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/shell/shell) re-exports the vocabulary so bash consumers keep one import root.
+The subprocess seam is split across a Service Definition ([dsh-subprocess](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/subprocess/subprocess), `ctx.subprocess`) and Service Provider ([dsh-subprocess-local](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/subprocess/subprocess-local)); its Consumers are other capability seams and out-of-process backends: the [bash executor family](./shell.md) uses collected batch output, LSP uses raw protocol pipes, the PTY backend uses the terminal primitive, and the ACP subagent backend uses piped ndjson plus inherited stderr. This seam owns the managed `DSH_*` environment namespace, the shared credential scrub (`scrubbedParentEnv`), and the `CollectedOutput` shape; [dsh-shell](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/shell/shell) re-exports the vocabulary so bash consumers keep one import root.
 
-Source: [`packages/subprocess/subprocess/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subprocess/subprocess/src/types.ts) and [`packages/subprocess/subprocess/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subprocess/subprocess/src/index.ts)
+Source: [`packages/subprocess/subprocess/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/subprocess/subprocess/src/types.ts) and [`packages/subprocess/subprocess/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/subprocess/subprocess/src/index.ts)
 
 ## Executable lookup
 
@@ -244,7 +244,7 @@ The terminal spec fully specifies argv, cwd, environment overrides, dimensions, 
 
 ## Service behavior
 
-The abstract [`SubprocessRuntime`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subprocess/subprocess/src/index.ts) Service Definition specifies execution-world coordinates, executable lookup, ordinary `spawn`, and `spawnTerminal`. [`LocalSubprocessRuntime`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subprocess/subprocess-local/src/index.ts) provides them with detached process trees, per-disposition wiring, credential scrubbing, `node-pty`, platform process inspection, and terminate-and-join disposal. See [`dsh-subprocess`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subprocess/subprocess/README.md) for the Service Definition contract and [`dsh-subprocess-local`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subprocess/subprocess-local/README.md) for local mechanics.
+The abstract [`SubprocessRuntime`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/subprocess/subprocess/src/index.ts) Service Definition specifies execution-world coordinates, executable lookup, ordinary `spawn`, and `spawnTerminal`. [`LocalSubprocessRuntime`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/subprocess/subprocess-local/src/index.ts) provides them with detached process trees, per-disposition wiring, credential scrubbing, `node-pty`, platform process inspection, and terminate-and-join disposal. See [`dsh-subprocess`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/subprocess/subprocess/README.md) for the Service Definition contract and [`dsh-subprocess-local`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/subprocess/subprocess-local/README.md) for local mechanics.
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 
@@ -269,7 +269,7 @@ Creates one lazily consumable E2B SDK handle and deletes the sandbox at timeout 
 async getSandbox(): Promise<Sandbox>
 ```
 
-Source: [`packages/e2b/e2b/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/e2b/e2b/src/index.ts)
+Source: [`packages/e2b/e2b/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/e2b/e2b/src/index.ts)
 
 <a id="ctxsubprocess--subprocessruntime-abstract-seam"></a>
 
@@ -318,5 +318,5 @@ abstract spawn(spec: SubprocessSpawnSpec): SubprocessHandle
 abstract spawnTerminal(spec: SubprocessTerminalSpawnSpec): Promise<SubprocessTerminalHandle>
 ```
 
-Source: [`packages/subprocess/subprocess/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subprocess/subprocess/src/index.ts)
+Source: [`packages/subprocess/subprocess/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/subprocess/subprocess/src/index.ts)
 <!-- END GENERATED cordis-surface -->

@@ -1,6 +1,6 @@
 # Same-session goals
 
-Types shared by the event-sourced goal service and its policy consumers. The [goal-domain Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/feature/2026-07-19-persisted-same-session-goal-domain.md) owns the persistence and activation decisions; this page records the exact fields and variants from [`packages/goal/goal/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/goal/goal/src/types.ts).
+Types shared by the event-sourced goal service and its policy consumers. The [goal-domain Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/.agents/notes/implemented/feature/2026-07-19-persisted-same-session-goal-domain.md) owns the persistence and activation decisions; this page records the exact fields and variants from [`packages/goal/goal/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/goal/goal/src/types.ts).
 
 ## Identity and lifecycle
 
@@ -140,7 +140,7 @@ interface GoalChanged {
 
 ## Service behavior
 
-[`GoalService`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/goal/goal/src/index.ts) resolves creation defaults, reads strict replay from the optionally registered `goal` projection, enforces exact-live-agent identity and compare-and-set mutations, and emits contained `goal/changed` notifications. Its first dependent access fails if the projection registry or key is absent. The package [README](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/goal/goal/README.md) defines the callable API and model-visible contract.
+[`GoalService`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/goal/goal/src/index.ts) resolves creation defaults, reads strict replay from the optionally registered `goal` projection, enforces exact-live-agent identity and compare-and-set mutations, and emits contained `goal/changed` notifications. Its first dependent access fails if the projection registry or key is absent. The package [README](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/goal/goal/README.md) defines the callable API and model-visible contract.
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 
@@ -245,7 +245,7 @@ block(agent: Agent, ref: GoalRef, reason: GoalBlockReason): GoalView
 
 Types: [Agent](./core.md)
 
-Source: [`packages/goal/goal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/goal/goal/src/index.ts)
+Source: [`packages/goal/goal/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/goal/goal/src/index.ts)
 
 <a id="goal-events"></a>
 
@@ -271,5 +271,5 @@ Goal mutation accepted by one live agent. The matching `goal/change` session eve
 
 Types: [Agent](./core.md) · [Scoped](./scope.md)
 
-Source: [`packages/goal/goal/src/domain.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/goal/goal/src/domain.ts)
+Source: [`packages/goal/goal/src/domain.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/goal/goal/src/domain.ts)
 <!-- END GENERATED cordis-surface -->

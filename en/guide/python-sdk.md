@@ -32,7 +32,7 @@ py -3.10 -m venv .venv
 python -m pip install deepseek-harness-sdk
 ```
 
-The installation includes a matching native runtime wheel and the `dsh` command. Normal SDK execution needs no system Node.js. Repository contributors who build the artifacts should use the [Python contributor workflow](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/python/development.md).
+The installation includes a matching native runtime wheel and the `dsh` command. Normal SDK execution needs no system Node.js. Repository contributors who build the artifacts should use the [Python contributor workflow](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/python/development.md).
 
 ## Run the checked-in example
 
@@ -145,4 +145,4 @@ The installed wheel still packages the full `web` profile and frontend assets. R
 
 Use a fresh home when profiles, plugins, credentials, settings, and sessions must be isolated. Use a fresh session id for independent work; reuse a harness, home, and id only to continue the same durable conversation and session-owned resources.
 
-The [bundle reference](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/bundle/sdk-minimal/README.md) owns the exact tree, and the [example reference](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/python/sdk/examples/README.md) owns the runnable program. The [Python SDK reference](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/python/sdk/README.md) covers lifecycle, results, notifications, and low-level behavior; the [dsh CLI reference](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/apps/cli/reference/README.md) covers profile layering.
+The [bundle reference](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/bundle/sdk-minimal/README.md) owns the exact tree, and the [example reference](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/python/sdk/examples/README.md) owns the runnable program. The [Python SDK reference](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/python/sdk/README.md) covers lifecycle, results, notifications, and low-level behavior; the [dsh CLI reference](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/apps/cli/reference/README.md) covers profile layering.

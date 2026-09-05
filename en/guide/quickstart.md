@@ -1,14 +1,14 @@
 # Get started with Harness Desktop
 
-Use Harness Desktop to connect a model and run a task in a local project. This guide is for installer users: the app starts its own Harness runtime, so you do not need to start a Web server or install a separate CLI. For source development, follow the [build instructions](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/README.md#run-from-source).
+Use Harness Desktop to connect a model and run a task in a local project. This guide is for installer users: the app starts its own Harness runtime, so you do not need to start a Web server or install a separate CLI. For source development, follow the [build instructions](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/README.md#run-from-source).
 
 ## Install and open the app
 
-1. Open [Releases](https://github.com/Bestbbb/deepseek-harness-desktop/releases) and choose the macOS Apple Silicon DMG or Windows x64 installer under **Assets**. Check that release's bundled version and platform notes; a source checkout can be newer than the available installers.
+1. Open [Releases](https://github.com/Bestbbb/deepseek-harness-desktop/releases/tag/desktop-v0.1.3-alpha.1) and choose the macOS Apple Silicon DMG or Windows x64 installer under **Assets**. Check that release's bundled version and platform notes; a source checkout can be newer than the available installers.
 2. Verify the download against the release's SHA-256 checksums before installing. These community previews are ad-hoc signed and not notarized on macOS, and unsigned on Windows. If your operating system blocks the app, review the release's platform instructions before deciding whether to allow it.
 3. Open **Harness Desktop** and wait for the conversation interface. Read the first-run notice before continuing to model setup.
 
-Automatic updates are not configured. Check Releases for a newer installer; the [desktop guide](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/apps/desktop/README.md) describes data isolation and distribution limits.
+Automatic updates are not configured. Check Releases for a newer installer; the [desktop guide](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/apps/desktop/README.md) describes data isolation and distribution limits.
 
 ## Configure a model
 

@@ -32,7 +32,7 @@ py -3.10 -m venv .venv
 python -m pip install deepseek-harness-sdk
 ```
 
-安装内容包含匹配的原生运行时 wheel 与 `dsh` 命令。普通 SDK 运行不需要系统 Node.js。需要构建产物的仓库贡献者应使用 [Python 贡献者工作流](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/python/development.zh.md)。
+安装内容包含匹配的原生运行时 wheel 与 `dsh` 命令。普通 SDK 运行不需要系统 Node.js。需要构建产物的仓库贡献者应使用 [Python 贡献者工作流](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/python/development.zh.md)。
 
 ## 运行检入示例
 
@@ -145,4 +145,4 @@ dsh plugin --profile sdk-minimal add file:C:/work/my-plugin-bundle
 
 需要隔离 profile、插件、凭据、设置与会话时，应使用新的 home。独立工作应使用新的 session id；只有继续同一段持久对话和会话资源时，才同时复用 harness、home 与 id。
 
-[组合包参考](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/bundle/sdk-minimal/README.zh.md)定义确切配置树，[示例参考](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/python/sdk/examples/README.zh.md)定义可运行程序。[Python SDK 参考](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/python/sdk/README.zh.md)介绍生命周期、结果、通知与底层行为；[dsh CLI 参考](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/apps/cli/reference/README.zh.md)介绍 profile 分层。
+[组合包参考](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/bundle/sdk-minimal/README.zh.md)定义确切配置树，[示例参考](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/python/sdk/examples/README.zh.md)定义可运行程序。[Python SDK 参考](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/python/sdk/README.zh.md)介绍生命周期、结果、通知与底层行为；[dsh CLI 参考](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/apps/cli/reference/README.zh.md)介绍 profile 分层。

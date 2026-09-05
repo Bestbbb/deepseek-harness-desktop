@@ -5,7 +5,7 @@
 
 会话持久事件日志中可能出现的所有事件类型：完整持久化的 `SessionEvent` 信封，以及可通过合并扩展的 `SessionEventMap` 中的每个成员，包括 `@deepseek-ai/dsh-session` 所属的词汇和本仓库中每个插件对 `@deepseek-ai/dsh-session/types` 的声明合并，并附有源 JSDoc、完整 payload 声明、surface 标记和声明位置。本文档是 [session.md](./subsystems/session.md)（surface 排序与 `deriveMessages()` 投影）、[persistence.md](./subsystems/persistence.md)（如何让日志持久化）和 [session.md](./subsystems/session.md#cordis-surface) 中生成区域（实时总线接线；日志事件**不是** cordis 事件，它通过唯一的 `session/event` emit 到达监听器）的补充。
 
-英文源文件根据源码生成（`scripts/gen-persistence-catalog.ts`），并由 `pnpm run verify-persistence-catalog`（`doc-sync`（文档同步门禁）的一部分）验证新鲜度；本中文文件作为经评审对侧通过双语配对维护。声明块保留源码声明和嵌套属性的 JSDoc，只移除其所在接口／模块带来的缩进，并使用 `ts persistence-catalog` 围栏（doc-typecheck 会跳过这些围栏，因为声明引用了其所属模块中的类型）。payload 中的类型名称会链接到记录该类型的页面。参见 [persistence-log-catalog Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/archived/process/2026-07-04-persistence-log-catalog.md)。
+英文源文件根据源码生成（`scripts/gen-persistence-catalog.ts`），并由 `pnpm run verify-persistence-catalog`（`doc-sync`（文档同步门禁）的一部分）验证新鲜度；本中文文件作为经评审对侧通过双语配对维护。声明块保留源码声明和嵌套属性的 JSDoc，只移除其所在接口／模块带来的缩进，并使用 `ts persistence-catalog` 围栏（doc-typecheck 会跳过这些围栏，因为声明引用了其所属模块中的类型）。payload 中的类型名称会链接到记录该类型的页面。参见 [persistence-log-catalog Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/.agents/notes/archived/process/2026-07-04-persistence-log-catalog.md)。
 
 以下信封声明组合了每个事件的 `type`、单调递增的 `seq`、以 epoch 毫秒表示的 `time`、`data`、可选的未知类型跳过标记 `ignorable`，以及条件字段 `surfaceOp`／`sourceEventSeqs`。**surface** 表示 `SurfaceEventType` 成员：它会生成一条 LLM（大语言模型）消息，并声明该事件如何加入 surface 列表。**log-only** 表示其他所有事件：这类记录可持久化、可回放，但不参与派生历史。每个 payload 均可进行 JSON 序列化（在 `Session.append` 处强制执行）。当前 writer 会写入 `SESSION_FORMAT_VERSION`；受支持的历史产物通过构建期静态相邻迁移目录进入这套当前词汇（参见[版本生命周期](./subsystems/persistence.md)）。范围仅限本仓库中的包；下游插件可以继续合并其他当前版本事件类型，这些类型按设计不属于本目录，并且在后续格式迁移边中需要显式 disposition。
 
@@ -88,7 +88,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 }[T]
 ```
 
-来源：[`packages/core/session/src/types.ts:379`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts) · [`packages/core/session/src/types.ts:387`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts) · [`packages/core/session/src/types.ts:416`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts) · [`packages/core/session/src/types.ts:447`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+来源：[`packages/core/session/src/types.ts:379`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts) · [`packages/core/session/src/types.ts:387`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts) · [`packages/core/session/src/types.ts:416`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts) · [`packages/core/session/src/types.ts:447`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 ## 事件
 
@@ -113,7 +113,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 }
 ```
 
-来源：[`packages/core/agent/src/types.ts:58`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/agent/src/types.ts)
+来源：[`packages/core/agent/src/types.ts:58`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/agent/src/types.ts)
 
 ### `agent-preset/*`
 
@@ -131,7 +131,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'agent-preset/selected': { agentPreset: string }
 ```
 
-来源：[`packages/preset/agent-presets/src/session.ts:28`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/preset/agent-presets/src/session.ts)
+来源：[`packages/preset/agent-presets/src/session.ts:28`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/preset/agent-presets/src/session.ts)
 
 ### `approval/*`
 
@@ -158,7 +158,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 
 类型：[ToolCallId](./subsystems/core.md)
 
-来源：[`packages/interaction/user-approval/src/types.ts:44`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-approval/src/types.ts)
+来源：[`packages/interaction/user-approval/src/types.ts:44`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/user-approval/src/types.ts)
 
 <a id="approvaldecided--log-only"></a>
 
@@ -176,7 +176,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 }
 ```
 
-来源：[`packages/interaction/user-approval/src/types.ts:55`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-approval/src/types.ts)
+来源：[`packages/interaction/user-approval/src/types.ts:55`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/user-approval/src/types.ts)
 
 <a id="approvalpolicy--log-only"></a>
 
@@ -198,7 +198,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 }
 ```
 
-来源：[`packages/interaction/user-approval/src/index.ts:32`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-approval/src/index.ts)
+来源：[`packages/interaction/user-approval/src/index.ts:32`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/user-approval/src/index.ts)
 
 ### `assistant/*`
 
@@ -215,7 +215,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'assistant/attempt': { turn: number; step: number; stream: AssistantStreamRecord[] }
 ```
 
-来源：[`packages/core/session/src/types.ts:313`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+来源：[`packages/core/session/src/types.ts:313`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 <a id="assistantmessage--surface"></a>
 
@@ -245,7 +245,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 
 类型：[TokenUsage](./subsystems/llm-streaming.md)
 
-来源：[`packages/core/session/src/types.ts:299`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+来源：[`packages/core/session/src/types.ts:299`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 ### `command/*`
 
@@ -268,7 +268,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 }
 ```
 
-来源：[`packages/interaction/commands/src/types.ts:110`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/commands/src/types.ts)
+来源：[`packages/interaction/commands/src/types.ts:110`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/commands/src/types.ts)
 
 <a id="commandrun--log-only"></a>
 
@@ -288,7 +288,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'command/run': { commandId: CommandId; name: string; args?: string; source: CommandSource }
 ```
 
-来源：[`packages/interaction/commands/src/types.ts:103`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/commands/src/types.ts)
+来源：[`packages/interaction/commands/src/types.ts:103`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/commands/src/types.ts)
 
 ### `compaction/*`
 
@@ -304,7 +304,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'compaction/end': { compactionId: CompactionId; sourceCommandId?: CommandId; turn: number | null; error?: string }
 ```
 
-来源：[`packages/compaction/compaction/src/types.ts:72`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/compaction/compaction/src/types.ts)
+来源：[`packages/compaction/compaction/src/types.ts:72`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/compaction/compaction/src/types.ts)
 
 <a id="compactionprune--log-only"></a>
 
@@ -330,7 +330,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 }
 ```
 
-来源：[`packages/compaction/compaction/src/types.ts:82`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/compaction/compaction/src/types.ts)
+来源：[`packages/compaction/compaction/src/types.ts:82`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/compaction/compaction/src/types.ts)
 
 <a id="compactionstart--log-only"></a>
 
@@ -345,7 +345,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'compaction/start': { compactionId: CompactionId; sourceCommandId?: CommandId; turn: number | null }
 ```
 
-来源：[`packages/compaction/compaction/src/types.ts:24`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/compaction/compaction/src/types.ts)
+来源：[`packages/compaction/compaction/src/types.ts:24`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/compaction/compaction/src/types.ts)
 
 <a id="compactionsummary--log-only"></a>
 
@@ -399,7 +399,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 
 类型：[ContentBlock](./subsystems/core.md) · [TokenUsage](./subsystems/llm-streaming.md)
 
-来源：[`packages/compaction/compaction/src/types.ts:34`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/compaction/compaction/src/types.ts)
+来源：[`packages/compaction/compaction/src/types.ts:34`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/compaction/compaction/src/types.ts)
 
 ### `feedback/*`
 
@@ -415,7 +415,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'feedback/record': { text: string }
 ```
 
-来源：[`packages/feedback/command-feedback/src/index.ts:62`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/feedback/command-feedback/src/index.ts)
+来源：[`packages/feedback/command-feedback/src/index.ts:62`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/feedback/command-feedback/src/index.ts)
 
 ### `goal/*`
 
@@ -430,7 +430,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'goal/change': GoalChangeMeta
 ```
 
-来源：[`packages/goal/goal/src/domain.ts:66`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/goal/goal/src/domain.ts)
+来源：[`packages/goal/goal/src/domain.ts:66`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/goal/goal/src/domain.ts)
 
 ### `hook/*`
 
@@ -457,7 +457,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 }
 ```
 
-来源：[`packages/hooks/hook-protocol/src/types.ts:19`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/hooks/hook-protocol/src/types.ts)
+来源：[`packages/hooks/hook-protocol/src/types.ts:19`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/hooks/hook-protocol/src/types.ts)
 
 <a id="hookresult--log-only"></a>
 
@@ -480,7 +480,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 }
 ```
 
-来源：[`packages/hooks/hook-protocol/src/types.ts:31`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/hooks/hook-protocol/src/types.ts)
+来源：[`packages/hooks/hook-protocol/src/types.ts:31`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/hooks/hook-protocol/src/types.ts)
 
 ### `llm/*`
 
@@ -493,7 +493,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'llm/retry': LlmRetryEventData
 ```
 
-来源：[`packages/llm/llm-retry/src/types.ts:9`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/llm/llm-retry/src/types.ts)
+来源：[`packages/llm/llm-retry/src/types.ts:9`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/llm/llm-retry/src/types.ts)
 
 <a id="llmretry-started--log-only"></a>
 
@@ -504,7 +504,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'llm/retry-started': LlmRetryStartedEventData
 ```
 
-来源：[`packages/llm/llm-retry/src/types.ts:11`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/llm/llm-retry/src/types.ts)
+来源：[`packages/llm/llm-retry/src/types.ts:11`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/llm/llm-retry/src/types.ts)
 
 ### `model/*`
 
@@ -520,7 +520,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'model/selection': ModelSelection
 ```
 
-来源：[`packages/api/session-controller/src/types.ts:41`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/session-controller/src/types.ts)
+来源：[`packages/api/session-controller/src/types.ts:41`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/api/session-controller/src/types.ts)
 
 ### `permission/*`
 
@@ -538,7 +538,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'permission/preset': { preset: string }
 ```
 
-来源：[`packages/interaction/permission-presets/src/index.ts:53`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/permission-presets/src/index.ts)
+来源：[`packages/interaction/permission-presets/src/index.ts:53`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/permission-presets/src/index.ts)
 
 ### `plan/*`
 
@@ -555,7 +555,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'plan/mode': { active: boolean }
 ```
 
-来源：[`packages/plan/plan-mode/src/index.ts:46`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/plan/plan-mode/src/index.ts)
+来源：[`packages/plan/plan-mode/src/index.ts:46`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/plan/plan-mode/src/index.ts)
 
 ### `request/*`
 
@@ -571,7 +571,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'request/context': RequestContext
 ```
 
-来源：[`packages/core/session/src/types.ts:341`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+来源：[`packages/core/session/src/types.ts:341`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 <a id="requestheader--log-only"></a>
 
@@ -590,7 +590,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 }
 ```
 
-来源：[`packages/core/session/src/types.ts:331`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+来源：[`packages/core/session/src/types.ts:331`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 ### `sandbox/*`
 
@@ -613,7 +613,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 }
 ```
 
-来源：[`packages/sandbox/sandbox-policy/src/session-mode.ts:33`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/sandbox/sandbox-policy/src/session-mode.ts)
+来源：[`packages/sandbox/sandbox-policy/src/session-mode.ts:33`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/sandbox/sandbox-policy/src/session-mode.ts)
 
 ### `schedule/*`
 
@@ -631,7 +631,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 
 类型：[ScheduleChange](./subsystems/schedule.md)
 
-来源：[`packages/schedule/schedule/src/types.ts:219`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/schedule/schedule/src/types.ts)
+来源：[`packages/schedule/schedule/src/types.ts:219`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/schedule/schedule/src/types.ts)
 
 ### `session/*`
 
@@ -665,7 +665,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'session/end-seed': { inherited?: true }
 ```
 
-来源：[`packages/core/session/src/types.ts:375`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+来源：[`packages/core/session/src/types.ts:375`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 <a id="sessiontitle--log-only"></a>
 
@@ -681,7 +681,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 
 类型：[SessionTitleEventData](./subsystems/session-title.md)
 
-来源：[`packages/session/session-title/src/index.ts:77`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-title/src/index.ts)
+来源：[`packages/session/session-title/src/index.ts:77`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/session/session-title/src/index.ts)
 
 <a id="sessiontitle-llm-request--log-only"></a>
 
@@ -694,7 +694,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 
 类型：[SessionTitleLlmRequestEventData](./subsystems/session-title.md)
 
-来源：[`packages/session/session-title-llm/src/index.ts:45`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-title-llm/src/index.ts)
+来源：[`packages/session/session-title-llm/src/index.ts:45`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/session/session-title-llm/src/index.ts)
 
 ### `session-log-deepseek/*`
 
@@ -714,7 +714,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 }
 ```
 
-来源：[`packages/session/session-log-deepseek/src/types.ts:59`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-log-deepseek/src/types.ts)
+来源：[`packages/session/session-log-deepseek/src/types.ts:59`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/session/session-log-deepseek/src/types.ts)
 
 ### `step/*`
 
@@ -727,7 +727,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'step/end': { turn: number; step: number }
 ```
 
-来源：[`packages/core/session/src/types.ts:281`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+来源：[`packages/core/session/src/types.ts:281`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 <a id="stepstart--log-only"></a>
 
@@ -738,7 +738,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'step/start': { turn: number; step: number }
 ```
 
-来源：[`packages/core/session/src/types.ts:279`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+来源：[`packages/core/session/src/types.ts:279`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 ### `subagent/*`
 
@@ -757,7 +757,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'subagent/descriptor': SubagentDescriptorData
 ```
 
-来源：[`packages/subagent/subagent/src/descriptor.ts:38`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/subagent/src/descriptor.ts)
+来源：[`packages/subagent/subagent/src/descriptor.ts:38`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/subagent/subagent/src/descriptor.ts)
 
 <a id="subagentmodel-selection-policy--log-only"></a>
 
@@ -776,7 +776,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 }
 ```
 
-来源：[`packages/subagent/tool-subagent/src/model-selection-state.ts:17`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/tool-subagent/src/model-selection-state.ts)
+来源：[`packages/subagent/tool-subagent/src/model-selection-state.ts:17`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/subagent/tool-subagent/src/model-selection-state.ts)
 
 ### `team/*`
 
@@ -789,9 +789,9 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'team/member': { version: 2; teamId: TeamId; member: TeamMemberSnapshot }
 ```
 
-类型：[TeamId](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/subsystems/agent-team.zh.md) · [TeamMemberSnapshot](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/subsystems/agent-team.zh.md)
+类型：[TeamId](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/docs/subsystems/agent-team.zh.md) · [TeamMemberSnapshot](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/docs/subsystems/agent-team.zh.md)
 
-来源：[`packages/experimental/agent-team/src/types.ts:204`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/experimental/agent-team/src/types.ts)
+来源：[`packages/experimental/agent-team/src/types.ts:204`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/experimental/agent-team/src/types.ts)
 
 <a id="teammessagedelivered--log-only"></a>
 
@@ -807,9 +807,9 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 }
 ```
 
-类型：[TeamId](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/subsystems/agent-team.zh.md) · [TeamMessageId](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/subsystems/agent-team.zh.md)
+类型：[TeamId](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/docs/subsystems/agent-team.zh.md) · [TeamMessageId](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/docs/subsystems/agent-team.zh.md)
 
-来源：[`packages/experimental/agent-team/src/types.ts:210`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/experimental/agent-team/src/types.ts)
+来源：[`packages/experimental/agent-team/src/types.ts:210`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/experimental/agent-team/src/types.ts)
 
 <a id="teammessagequeued--log-only"></a>
 
@@ -820,9 +820,9 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'team/message/queued': { version: 2; teamId: TeamId; message: TeamMessageSnapshot }
 ```
 
-类型：[TeamId](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/subsystems/agent-team.zh.md) · [TeamMessageSnapshot](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/subsystems/agent-team.zh.md)
+类型：[TeamId](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/docs/subsystems/agent-team.zh.md) · [TeamMessageSnapshot](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/docs/subsystems/agent-team.zh.md)
 
-来源：[`packages/experimental/agent-team/src/types.ts:208`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/experimental/agent-team/src/types.ts)
+来源：[`packages/experimental/agent-team/src/types.ts:208`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/experimental/agent-team/src/types.ts)
 
 <a id="teamtask--log-only"></a>
 
@@ -833,9 +833,9 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'team/task': { version: 2; teamId: TeamId; task: TeamTaskSnapshot }
 ```
 
-类型：[TeamId](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/subsystems/agent-team.zh.md) · [TeamTaskSnapshot](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/subsystems/agent-team.zh.md)
+类型：[TeamId](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/docs/subsystems/agent-team.zh.md) · [TeamTaskSnapshot](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/docs/subsystems/agent-team.zh.md)
 
-来源：[`packages/experimental/agent-team/src/types.ts:206`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/experimental/agent-team/src/types.ts)
+来源：[`packages/experimental/agent-team/src/types.ts:206`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/experimental/agent-team/src/types.ts)
 
 ### `todo/*`
 
@@ -848,9 +848,9 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'todo/write': { todos: TodoItem[] }
 ```
 
-类型：[TodoItem](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/subsystems/todo.zh.md)
+类型：[TodoItem](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/docs/subsystems/todo.zh.md)
 
-来源：[`packages/todo/tool-todo/src/types.ts:31`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/todo/tool-todo/src/types.ts)
+来源：[`packages/todo/tool-todo/src/types.ts:31`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/todo/tool-todo/src/types.ts)
 
 ### `tool/*`
 
@@ -869,7 +869,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 
 类型：[ToolCallId](./subsystems/core.md)
 
-来源：[`packages/core/session/src/types.ts:308`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+来源：[`packages/core/session/src/types.ts:308`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 <a id="toolcode-dispatch--log-only"></a>
 
@@ -894,7 +894,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'tool/code-dispatch': PtcDispatchEventData
 ```
 
-来源：[`packages/core/tools/src/types.ts:56`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/tools/src/types.ts)
+来源：[`packages/core/tools/src/types.ts:56`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/tools/src/types.ts)
 
 <a id="toolcode-dispatch-start--log-only"></a>
 
@@ -917,7 +917,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'tool/code-dispatch-start': PtcDispatchStartEventData
 ```
 
-来源：[`packages/core/tools/src/types.ts:40`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/tools/src/types.ts)
+来源：[`packages/core/tools/src/types.ts:40`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/tools/src/types.ts)
 
 <a id="toolresult--surface"></a>
 
@@ -944,7 +944,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 }
 ```
 
-来源：[`packages/core/session/src/types.ts:320`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+来源：[`packages/core/session/src/types.ts:320`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 ### `tool-workflow/*`
 
@@ -960,7 +960,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'tool-workflow/agent-end': ToolWorkflowAgentEndData
 ```
 
-来源：[`packages/workflow/tool-workflow/src/types.ts:57`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/workflow/tool-workflow/src/types.ts)
+来源：[`packages/workflow/tool-workflow/src/types.ts:57`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/workflow/tool-workflow/src/types.ts)
 
 <a id="tool-workflowagent-start--log-only"></a>
 
@@ -974,7 +974,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'tool-workflow/agent-start': ToolWorkflowAgentStartData
 ```
 
-来源：[`packages/workflow/tool-workflow/src/types.ts:52`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/workflow/tool-workflow/src/types.ts)
+来源：[`packages/workflow/tool-workflow/src/types.ts:52`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/workflow/tool-workflow/src/types.ts)
 
 <a id="tool-workflowrun-end--log-only"></a>
 
@@ -988,7 +988,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'tool-workflow/run-end': ToolWorkflowRunEndData
 ```
 
-来源：[`packages/workflow/tool-workflow/src/types.ts:62`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/workflow/tool-workflow/src/types.ts)
+来源：[`packages/workflow/tool-workflow/src/types.ts:62`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/workflow/tool-workflow/src/types.ts)
 
 <a id="tool-workflowrun-start--log-only"></a>
 
@@ -1002,7 +1002,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'tool-workflow/run-start': ToolWorkflowRunStartData
 ```
 
-来源：[`packages/workflow/tool-workflow/src/types.ts:47`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/workflow/tool-workflow/src/types.ts)
+来源：[`packages/workflow/tool-workflow/src/types.ts:47`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/workflow/tool-workflow/src/types.ts)
 
 ### `turn/*`
 
@@ -1024,7 +1024,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 
 类型：[TurnEndReason](./subsystems/session.md)
 
-来源：[`packages/core/session/src/types.ts:277`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+来源：[`packages/core/session/src/types.ts:277`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 <a id="turnstart--log-only"></a>
 
@@ -1040,7 +1040,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'turn/start': { turn: number }
 ```
 
-来源：[`packages/core/session/src/types.ts:268`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+来源：[`packages/core/session/src/types.ts:268`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 ### `user/*`
 
@@ -1059,7 +1059,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'user/message': UserMessage
 ```
 
-来源：[`packages/core/session/src/types.ts:289`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+来源：[`packages/core/session/src/types.ts:289`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 ### `web/*`
 
@@ -1072,4 +1072,4 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 'web/deepseek-search-llm-request': DeepSeekSearchLlmRequest
 ```
 
-来源：[`packages/web/web-search-deepseek/src/provider.ts:83`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/web/web-search-deepseek/src/provider.ts)
+来源：[`packages/web/web-search-deepseek/src/provider.ts:83`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/web/web-search-deepseek/src/provider.ts)

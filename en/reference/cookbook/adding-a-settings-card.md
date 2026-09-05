@@ -2,7 +2,7 @@
 
 How a plugin puts its own configuration on the web settings page. Nothing in this path needs a change inside this repository: the Host serves every registered settings namespace, and the **Plugins** section keys its cards on the namespace they edit, so a plugin that registers both halves is paired up automatically.
 
-The two halves live in one package — the Host half under `src/`, the browser half under `src/client/`, exported as `./client` and declared with `dsh.client`. [`packages/client/ui-theme`](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/client/ui-theme) is a worked example of that packaging; the cards this section ships live in [`packages/client/ui-settings-plugins`](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/client/ui-settings-plugins).
+The two halves live in one package — the Host half under `src/`, the browser half under `src/client/`, exported as `./client` and declared with `dsh.client`. [`packages/client/ui-theme`](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/client/ui-theme) is a worked example of that packaging; the cards this section ships live in [`packages/client/ui-settings-plugins`](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/client/ui-settings-plugins).
 
 ## 1. Register the namespace (Host half)
 
@@ -77,7 +77,7 @@ Cards appear in the order they registered into the slot; a keyed entry declares 
 
 ## Packaging
 
-The browser half is served to the page by the [client module system](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/client/modules), which scans the enabled Loader entries for packages declaring `dsh.client` and serves each one's built `./client` export. So the plugin appears on the page as soon as a `cordis.yml` mounts it — no rebuild of the web application.
+The browser half is served to the page by the [client module system](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/client/modules), which scans the enabled Loader entries for packages declaring `dsh.client` and serves each one's built `./client` export. So the plugin appears on the page as soon as a `cordis.yml` mounts it — no rebuild of the web application.
 
 ```jsonc
 {
@@ -97,4 +97,4 @@ import { clientBundle } from '../tsdown.client.ts'
 export default clientBundle('@deepseek-ai/dsh-client-my-plugin', ['lib/types/index.js', 'lib/types/invariant.js'])
 ```
 
-No published preset exposes this package, so a package outside this repository has to reproduce the same output format itself. The bundle-purity gate also rejects value imports across plugins, so a card cannot import this section's card chrome or its staged-form model — it renders its own, and owns its own staging and revision fencing. Both limits are recorded under [the section's known limitations](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/client/ui-settings-plugins/README.md#known-limitations-and-deferred-work).
+No published preset exposes this package, so a package outside this repository has to reproduce the same output format itself. The bundle-purity gate also rejects value imports across plugins, so a card cannot import this section's card chrome or its staged-form model — it renders its own, and owns its own staging and revision fencing. Both limits are recorded under [the section's known limitations](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/client/ui-settings-plugins/README.md#known-limitations-and-deferred-work).

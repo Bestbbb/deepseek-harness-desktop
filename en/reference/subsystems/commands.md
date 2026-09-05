@@ -1,8 +1,8 @@
 # Human Commands
 
-The human-command registry service from [`dsh-commands`](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/commands). Interactive adapters use it to discover and directly execute plugin-owned commands for an exact agent without creating a model message. The [command Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/feature/2026-07-19-plugin-command-registration.md) owns dispatch and lifecycle rationale; the [package README](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/commands/README.md) owns composition and limitations.
+The human-command registry service from [`dsh-commands`](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/interaction/commands). Interactive adapters use it to discover and directly execute plugin-owned commands for an exact agent without creating a model message. The [command Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/.agents/notes/implemented/feature/2026-07-19-plugin-command-registration.md) owns dispatch and lifecycle rationale; the [package README](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/commands/README.md) owns composition and limitations.
 
-Source: [`packages/interaction/commands/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/commands/src/index.ts)
+Source: [`packages/interaction/commands/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/commands/src/index.ts)
 
 ## Input metadata
 
@@ -191,7 +191,7 @@ find(agent: Agent, name: string): CommandDefinition | undefined
 
 Types: [Agent](./core.md)
 
-Source: [`packages/interaction/commands/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/commands/src/index.ts)
+Source: [`packages/interaction/commands/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/commands/src/index.ts)
 
 <a id="commands-events"></a>
 
@@ -213,5 +213,5 @@ A command was registered or unregistered. This is an unfiltered registry notific
 'commands/change'(): void
 ```
 
-Source: [`packages/interaction/commands/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/commands/src/types.ts)
+Source: [`packages/interaction/commands/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/commands/src/types.ts)
 <!-- END GENERATED cordis-surface -->

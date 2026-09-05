@@ -1,8 +1,8 @@
 # 会话
 
-[dsh-session](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session) 的内存事件溯源模型。`Session` 是一份由类型化 `SessionEvent` 组成的**仅追加日志**，是 agent（智能体）完整交互历史的唯一真源。LLM（大语言模型）消息历史从日志*派生*而来，从不单独存储；回放即从同一组事件重新派生。日志如何实现**持久化**（持久化 seam、后端、崩溃恢复）是兄弟文档 [persistence.md](./persistence.md) 的关注点。
+[dsh-session](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/core/session) 的内存事件溯源模型。`Session` 是一份由类型化 `SessionEvent` 组成的**仅追加日志**，是 agent（智能体）完整交互历史的唯一真源。LLM（大语言模型）消息历史从日志*派生*而来，从不单独存储；回放即从同一组事件重新派生。日志如何实现**持久化**（持久化 seam、后端、崩溃恢复）是兄弟文档 [persistence.md](./persistence.md) 的关注点。
 
-源码：[`packages/core/session/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+源码：[`packages/core/session/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 ## `SessionEventMap`：事件词汇
 
@@ -265,7 +265,7 @@ V2 `assistant/message` 嵌入 provider stream，不能携带 `sourceEventSeqs`�
 
 ## Surface 类型
 
-三种产生消息的类型（`SurfaceEventType`：`user/message`、`assistant/message`、`tool/result`）携带 surface 元数据，用来声明它们如何加入有序的派生 surface。见 [session surface Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/architecture/2026-06-18-session-surface.zh.md)。
+三种产生消息的类型（`SurfaceEventType`：`user/message`、`assistant/message`、`tool/result`）携带 surface 元数据，用来声明它们如何加入有序的派生 surface。见 [session surface Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/.agents/notes/implemented/architecture/2026-06-18-session-surface.zh.md)。
 
 ### `SurfaceEventType`：事件类型中产生消息的子集
 
@@ -323,7 +323,7 @@ type SurfaceIntent<T extends SurfaceEventType = SurfaceEventType> = {
 })
 ```
 
-对 `SurfaceEventType` 事件必填：每个产生消息的事件都必须声明它如何加入 surface（派生模型历史的唯一来源）。面向人类的 transcript（文本记录）是另一个投影，读取的是日志中追加来源的事件，因为 surface 会有意遮蔽替换所概括的范围（见 [dsh-session](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/README.zh.md) 的 `isAppendSurfaceEvent`）。非 surface 类型在编译期拒绝此参数。
+对 `SurfaceEventType` 事件必填：每个产生消息的事件都必须声明它如何加入 surface（派生模型历史的唯一来源）。面向人类的 transcript（文本记录）是另一个投影，读取的是日志中追加来源的事件，因为 surface 会有意遮蔽替换所概括的范围（见 [dsh-session](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/README.zh.md) 的 `isAppendSurfaceEvent`）。非 surface 类型在编译期拒绝此参数。
 
 `assistant/message` 不能携带 `sourceEventSeqs`；它的 `stream` 拥有精确 provider 证据。其他 surface event 不引用较早 event 时省略该字段，需要引用时使用完整非空 list。
 
@@ -635,7 +635,7 @@ interface TurnEndReasonMap {
 
 一个轮次包围一次模型循环执行，而不是整个会话日志。AgentLoop 只会在轮次内进入 pre-step 批次时记录注入的 `user/message` 事件；插件所属的纯日志事件仍可出现在 `turn/end` 与下一个 `turn/start` 之间，占用事件 seq 但不递增轮次编号。持久化会将每个连续且已接受的事件纳入有界持久化批次，而崩溃修复只关闭确实仍处于开放状态的尾部轮次。需要即时持久性屏障的生产方会显式等待 `ctx.sessions.flush(session)`。
 
-可选的 `dsh-session/invariant` 配套插件会强制核心拥有的关系：轮次与步骤编号、执行事件封闭，以及同一步骤内的工具调用／结果配对。可合并扩展事件的关系由声明它的插件拥有，因此核心不会仅因没有开放轮次就拒绝未知事件。见[独立事件决策](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/simplification/2026-07-28-remove-synthetic-log-only-turns.zh.md)。
+可选的 `dsh-session/invariant` 配套插件会强制核心拥有的关系：轮次与步骤编号、执行事件封闭，以及同一步骤内的工具调用／结果配对。可合并扩展事件的关系由声明它的插件拥有，因此核心不会仅因没有开放轮次就拒绝未知事件。见[独立事件决策](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/.agents/notes/implemented/simplification/2026-07-28-remove-synthetic-log-only-turns.zh.md)。
 
 ## 种子结束边界：`session/end-seed`
 
@@ -653,7 +653,7 @@ interface TurnEndReasonMap {
 
 如果同一个插件事件族中的多条事件要组装成一个 Web Client Conversation Node，该事件族中的每条 start、update、result、resource 或 interruption 事件都必须携带或独立推导出同一个稳定业务 id。此要求只约束需要关联的 Node 事件族，并不要求每条 Session 事件都有业务 id；Client 因此无须根据相邻关系猜测归属，也无须扫描历史。参见 [Conversation 子系统](./conversation.md)。
 
-钩子桥接层的 `hook/invoked` / `hook/result` 对（来自 `@deepseek-ai/dsh-hook-protocol`）通过 `handlerId` 关联。`UserPromptSubmit`、`PreToolUse`、`PostToolUse` 与 `Stop` 在 loop 已打开的轮次内触发，因此其 `hook/*` 记录天然位于轮次之内。`SessionStart` 不生成 `hook/*` 记录，因为它在轮次 1 之前运行；其上下文会在 inbox 中保持待处理，直到唤醒交付打开一个轮次（见[钩子桥接 Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/feature/2026-06-30-hook-bridges.zh.md)）。
+钩子桥接层的 `hook/invoked` / `hook/result` 对（来自 `@deepseek-ai/dsh-hook-protocol`）通过 `handlerId` 关联。`UserPromptSubmit`、`PreToolUse`、`PostToolUse` 与 `Stop` 在 loop 已打开的轮次内触发，因此其 `hook/*` 记录天然位于轮次之内。`SessionStart` 不生成 `hook/*` 记录，因为它在轮次 1 之前运行；其上下文会在 inbox 中保持待处理，直到唤醒交付打开一个轮次（见[钩子桥接 Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/.agents/notes/implemented/feature/2026-06-30-hook-bridges.zh.md)）。
 
 ## 持久性约定
 
@@ -818,7 +818,7 @@ inspect( sessionId: SessionId, signal?: AbortSignal, ): Promise<SessionInspectio
 
 Types: [SessionId](./core.md) · [SessionInspection](./persistence.md) · [SessionSearchRequest](./session-query.md)
 
-Source: [`packages/api/session-controller/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/session-controller/src/index.ts)
+Source: [`packages/api/session-controller/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/api/session-controller/src/index.ts)
 
 <a id="ctxsessions--sessionstore"></a>
 
@@ -954,7 +954,7 @@ fork(source: SessionForkSource, boundary?: SessionSeq, childSessionId?: SessionI
 
 Types: [CreateSessionOptions](./persistence.md) · [PrepareSessionOptions](./persistence.md) · [SessionId](./core.md)
 
-Source: [`packages/core/session/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/index.ts)
+Source: [`packages/core/session/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/index.ts)
 
 <a id="api-session-events"></a>
 
@@ -978,7 +978,7 @@ One user-authored durable message advanced Session list activity.
 
 Types: [SessionId](./core.md)
 
-Source: [`packages/api/session-controller/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/session-controller/src/types.ts)
+Source: [`packages/api/session-controller/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/api/session-controller/src/types.ts)
 
 <a id="api-sessionadded--emit"></a>
 
@@ -995,7 +995,7 @@ A Session became visible to Session list consumers.
 'api-session/added'(summary: SessionSummary): void
 ```
 
-Source: [`packages/api/session-controller/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/session-controller/src/types.ts)
+Source: [`packages/api/session-controller/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/api/session-controller/src/types.ts)
 
 <a id="api-sessionerror--emit"></a>
 
@@ -1015,7 +1015,7 @@ One Agent failed outside a durable turn position.
 
 Types: [SessionId](./core.md)
 
-Source: [`packages/api/session-controller/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/session-controller/src/types.ts)
+Source: [`packages/api/session-controller/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/api/session-controller/src/types.ts)
 
 <a id="api-sessionremoved--emit"></a>
 
@@ -1034,7 +1034,7 @@ A Session left the live Host registry.
 
 Types: [SessionId](./core.md)
 
-Source: [`packages/api/session-controller/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/session-controller/src/types.ts)
+Source: [`packages/api/session-controller/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/api/session-controller/src/types.ts)
 
 <a id="api-sessionstatus--emit"></a>
 
@@ -1054,7 +1054,7 @@ One Agent changed running state.
 
 Types: [SessionId](./core.md)
 
-Source: [`packages/api/session-controller/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/session-controller/src/types.ts)
+Source: [`packages/api/session-controller/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/api/session-controller/src/types.ts)
 
 <a id="session-events"></a>
 
@@ -1083,7 +1083,7 @@ Creation announcement during session publication. A synchronous throw vetoes and
 
 Types: [Scoped](./scope.md)
 
-Source: [`packages/core/session/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/index.ts)
+Source: [`packages/core/session/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/index.ts)
 
 <a id="sessiondisposed--emit"></a>
 
@@ -1106,7 +1106,7 @@ Emitted once when an announced session leaves the store, including publication r
 
 Types: [Scoped](./scope.md)
 
-Source: [`packages/core/session/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/index.ts)
+Source: [`packages/core/session/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/index.ts)
 
 <a id="sessionevent--emit"></a>
 
@@ -1131,7 +1131,7 @@ Post-commit, fire-and-forget append feed. The listener snapshot resolves before 
 
 Types: [Scoped](./scope.md)
 
-Source: [`packages/core/session/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/index.ts)
+Source: [`packages/core/session/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/index.ts)
 
 <a id="sessionflush--parallel"></a>
 
@@ -1153,5 +1153,5 @@ Awaited parallel durability checkpoint: every listener runs and the caller await
 
 Types: [Scoped](./scope.md)
 
-Source: [`packages/core/session/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/index.ts)
+Source: [`packages/core/session/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/index.ts)
 <!-- END GENERATED cordis-surface -->

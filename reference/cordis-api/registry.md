@@ -30,7 +30,7 @@ inject(deps: Inject, callback: Plugin.Function<void>): Fiber & PromiseLike<Fiber
 
 **返回** fiber；对其执行 await 会在加载完成后结束等待。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/registry.ts#L176)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/vendor/cordis/src/registry.ts#L176)
 
 ### ctx.plugin(plugin, ...args)
 
@@ -53,7 +53,7 @@ plugin<P extends Plugin>(plugin: P, ...args: Spread<GetPluginConfig<P>>): Fiber 
 
 **返回** fiber；对其执行 await 会在加载完成后结束等待（如果发生配置错误或启动错误，则会被拒绝）。
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/registry.ts#L185)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/vendor/cordis/src/registry.ts#L185)
 
 ## Plugin
 
@@ -118,7 +118,7 @@ namespace Plugin {
 }
 ```
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/registry.ts#L92)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/vendor/cordis/src/registry.ts#L92)
 
 ## Inject
 
@@ -149,4 +149,4 @@ namespace Inject {
 }
 ```
 
-[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/vendor/cordis/src/registry.ts#L19)
+[源码](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/vendor/cordis/src/registry.ts#L19)

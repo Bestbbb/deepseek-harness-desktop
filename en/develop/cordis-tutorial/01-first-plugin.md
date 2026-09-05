@@ -46,7 +46,7 @@ The process exits on its own once nothing is left running. What happened:
 2. The Loader read `cordis.yml`, resolved `./hello.ts`, and mounted it as a child plugin.
 3. Cordis called your `apply(ctx)`.
 
-There is no framework bootstrap code in your file: a plugin describes what it contributes, and `cordis.yml` composes the application. The [`dsh` base](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/bundle/base/cordis.patch.yml), for example, is a longer plugin composition that deployment overlays patch.
+There is no framework bootstrap code in your file: a plugin describes what it contributes, and `cordis.yml` composes the application. The [`dsh` base](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/bundle/base/cordis.patch.yml), for example, is a longer plugin composition that deployment overlays patch.
 
 ## The two other plugin shapes
 

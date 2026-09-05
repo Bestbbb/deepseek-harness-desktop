@@ -5,7 +5,7 @@
 
 Every event type that can appear in a session's durable event log: the complete persisted `SessionEvent` envelope and each member of the merge-extensible `SessionEventMap` — the owning vocabulary in `@deepseek-ai/dsh-session` plus every plugin declaration merge into `@deepseek-ai/dsh-session/types` in this repo — with source JSDoc, full payload declaration, surface badge, and declaration site. It complements [session.md](./subsystems/session.md) (surface ordering and the `deriveMessages()` projection), [persistence.md](./subsystems/persistence.md) (how the log is made durable), and the generated region of [session.md](./subsystems/session.md#cordis-surface) (the live bus wiring — a log event is NOT a cordis event; it reaches listeners via the single `session/event` emit).
 
-This file is GENERATED from source (`scripts/gen-persistence-catalog.ts`) and verified fresh by `pnpm run verify-persistence-catalog` (part of `doc-sync`) — do not edit it by hand. Declaration blocks retain the source declaration and nested property JSDoc, removing only the indentation imposed by a containing interface/module, and use a `ts persistence-catalog` fence (skipped by doc-typecheck because declarations reference types from their owning modules). Type names in a payload link to the page that documents them. See [the persistence-log-catalog Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/archived/process/2026-07-04-persistence-log-catalog.md).
+This file is GENERATED from source (`scripts/gen-persistence-catalog.ts`) and verified fresh by `pnpm run verify-persistence-catalog` (part of `doc-sync`) — do not edit it by hand. Declaration blocks retain the source declaration and nested property JSDoc, removing only the indentation imposed by a containing interface/module, and use a `ts persistence-catalog` fence (skipped by doc-typecheck because declarations reference types from their owning modules). Type names in a payload link to the page that documents them. See [the persistence-log-catalog Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/.agents/notes/archived/process/2026-07-04-persistence-log-catalog.md).
 
 The envelope declarations below compose each event's `type`, monotonic `seq`, epoch-ms `time`, `data`, the optional `ignorable` unknown-type skip marker, and the conditional `surfaceOp`/`sourceEventSeqs` fields. **surface** marks a `SurfaceEventType` member: it produces an LLM message and declares how it joins the surface list. **log-only** marks everything else: a durable, replayable record with no derived-history contribution. Every payload is JSON-serializable (enforced at `Session.append`). Current writers stamp `SESSION_FORMAT_VERSION`; supported historical artifacts reach this current vocabulary through the build-static adjacent migration catalog ([the version lifecycle](./subsystems/persistence.md)). Scope: the packages in this repo; a downstream plugin can merge further current-version event types, which are outside this catalog by construction and require an explicit disposition at a later format edge.
 
@@ -88,7 +88,7 @@ export type SessionEvent<T extends SessionEventType = SessionEventType> = {
 }[T]
 ```
 
-Sources: [`packages/core/session/src/types.ts:379`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts) · [`packages/core/session/src/types.ts:387`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts) · [`packages/core/session/src/types.ts:416`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts) · [`packages/core/session/src/types.ts:447`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+Sources: [`packages/core/session/src/types.ts:379`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts) · [`packages/core/session/src/types.ts:387`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts) · [`packages/core/session/src/types.ts:416`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts) · [`packages/core/session/src/types.ts:447`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 ## Events
 
@@ -113,7 +113,7 @@ Sources: [`packages/core/session/src/types.ts:379`](https://github.com/Bestbbb/d
 }
 ```
 
-Source: [`packages/core/agent/src/types.ts:58`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/agent/src/types.ts)
+Source: [`packages/core/agent/src/types.ts:58`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/agent/src/types.ts)
 
 ### `agent-preset/*`
 
@@ -131,7 +131,7 @@ Source: [`packages/core/agent/src/types.ts:58`](https://github.com/Bestbbb/deeps
 'agent-preset/selected': { agentPreset: string }
 ```
 
-Source: [`packages/preset/agent-presets/src/session.ts:28`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/preset/agent-presets/src/session.ts)
+Source: [`packages/preset/agent-presets/src/session.ts:28`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/preset/agent-presets/src/session.ts)
 
 ### `approval/*`
 
@@ -158,7 +158,7 @@ Source: [`packages/preset/agent-presets/src/session.ts:28`](https://github.com/B
 
 Types: [ToolCallId](./subsystems/core.md)
 
-Source: [`packages/interaction/user-approval/src/types.ts:44`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-approval/src/types.ts)
+Source: [`packages/interaction/user-approval/src/types.ts:44`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/user-approval/src/types.ts)
 
 <a id="approvaldecided--log-only"></a>
 
@@ -176,7 +176,7 @@ Source: [`packages/interaction/user-approval/src/types.ts:44`](https://github.co
 }
 ```
 
-Source: [`packages/interaction/user-approval/src/types.ts:55`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-approval/src/types.ts)
+Source: [`packages/interaction/user-approval/src/types.ts:55`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/user-approval/src/types.ts)
 
 <a id="approvalpolicy--log-only"></a>
 
@@ -198,7 +198,7 @@ Source: [`packages/interaction/user-approval/src/types.ts:55`](https://github.co
 }
 ```
 
-Source: [`packages/interaction/user-approval/src/index.ts:33`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/user-approval/src/index.ts)
+Source: [`packages/interaction/user-approval/src/index.ts:33`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/user-approval/src/index.ts)
 
 ### `assistant/*`
 
@@ -215,7 +215,7 @@ Source: [`packages/interaction/user-approval/src/index.ts:33`](https://github.co
 'assistant/attempt': { turn: number; step: number; stream: AssistantStreamRecord[] }
 ```
 
-Source: [`packages/core/session/src/types.ts:313`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+Source: [`packages/core/session/src/types.ts:313`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 <a id="assistantmessage--surface"></a>
 
@@ -245,7 +245,7 @@ Source: [`packages/core/session/src/types.ts:313`](https://github.com/Bestbbb/de
 
 Types: [TokenUsage](./subsystems/llm-streaming.md)
 
-Source: [`packages/core/session/src/types.ts:299`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+Source: [`packages/core/session/src/types.ts:299`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 ### `command/*`
 
@@ -268,7 +268,7 @@ Source: [`packages/core/session/src/types.ts:299`](https://github.com/Bestbbb/de
 }
 ```
 
-Source: [`packages/interaction/commands/src/types.ts:110`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/commands/src/types.ts)
+Source: [`packages/interaction/commands/src/types.ts:110`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/commands/src/types.ts)
 
 <a id="commandrun--log-only"></a>
 
@@ -288,7 +288,7 @@ Source: [`packages/interaction/commands/src/types.ts:110`](https://github.com/Be
 'command/run': { commandId: CommandId; name: string; args?: string; source: CommandSource }
 ```
 
-Source: [`packages/interaction/commands/src/types.ts:103`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/commands/src/types.ts)
+Source: [`packages/interaction/commands/src/types.ts:103`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/commands/src/types.ts)
 
 ### `compaction/*`
 
@@ -304,7 +304,7 @@ Source: [`packages/interaction/commands/src/types.ts:103`](https://github.com/Be
 'compaction/end': { compactionId: CompactionId; sourceCommandId?: CommandId; turn: number | null; error?: string }
 ```
 
-Source: [`packages/compaction/compaction/src/types.ts:72`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/compaction/compaction/src/types.ts)
+Source: [`packages/compaction/compaction/src/types.ts:72`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/compaction/compaction/src/types.ts)
 
 <a id="compactionprune--log-only"></a>
 
@@ -330,7 +330,7 @@ Source: [`packages/compaction/compaction/src/types.ts:72`](https://github.com/Be
 }
 ```
 
-Source: [`packages/compaction/compaction/src/types.ts:82`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/compaction/compaction/src/types.ts)
+Source: [`packages/compaction/compaction/src/types.ts:82`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/compaction/compaction/src/types.ts)
 
 <a id="compactionstart--log-only"></a>
 
@@ -345,7 +345,7 @@ Source: [`packages/compaction/compaction/src/types.ts:82`](https://github.com/Be
 'compaction/start': { compactionId: CompactionId; sourceCommandId?: CommandId; turn: number | null }
 ```
 
-Source: [`packages/compaction/compaction/src/types.ts:24`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/compaction/compaction/src/types.ts)
+Source: [`packages/compaction/compaction/src/types.ts:24`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/compaction/compaction/src/types.ts)
 
 <a id="compactionsummary--log-only"></a>
 
@@ -399,7 +399,7 @@ Source: [`packages/compaction/compaction/src/types.ts:24`](https://github.com/Be
 
 Types: [ContentBlock](./subsystems/core.md) · [TokenUsage](./subsystems/llm-streaming.md)
 
-Source: [`packages/compaction/compaction/src/types.ts:34`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/compaction/compaction/src/types.ts)
+Source: [`packages/compaction/compaction/src/types.ts:34`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/compaction/compaction/src/types.ts)
 
 ### `feedback/*`
 
@@ -415,7 +415,7 @@ Source: [`packages/compaction/compaction/src/types.ts:34`](https://github.com/Be
 'feedback/record': { text: string }
 ```
 
-Source: [`packages/feedback/command-feedback/src/index.ts:62`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/feedback/command-feedback/src/index.ts)
+Source: [`packages/feedback/command-feedback/src/index.ts:62`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/feedback/command-feedback/src/index.ts)
 
 ### `goal/*`
 
@@ -430,7 +430,7 @@ Source: [`packages/feedback/command-feedback/src/index.ts:62`](https://github.co
 'goal/change': GoalChangeMeta
 ```
 
-Source: [`packages/goal/goal/src/domain.ts:66`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/goal/goal/src/domain.ts)
+Source: [`packages/goal/goal/src/domain.ts:66`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/goal/goal/src/domain.ts)
 
 ### `hook/*`
 
@@ -457,7 +457,7 @@ Source: [`packages/goal/goal/src/domain.ts:66`](https://github.com/Bestbbb/deeps
 }
 ```
 
-Source: [`packages/hooks/hook-protocol/src/types.ts:19`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/hooks/hook-protocol/src/types.ts)
+Source: [`packages/hooks/hook-protocol/src/types.ts:19`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/hooks/hook-protocol/src/types.ts)
 
 <a id="hookresult--log-only"></a>
 
@@ -480,7 +480,7 @@ Source: [`packages/hooks/hook-protocol/src/types.ts:19`](https://github.com/Best
 }
 ```
 
-Source: [`packages/hooks/hook-protocol/src/types.ts:31`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/hooks/hook-protocol/src/types.ts)
+Source: [`packages/hooks/hook-protocol/src/types.ts:31`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/hooks/hook-protocol/src/types.ts)
 
 ### `llm/*`
 
@@ -493,7 +493,7 @@ Source: [`packages/hooks/hook-protocol/src/types.ts:31`](https://github.com/Best
 'llm/retry': LlmRetryEventData
 ```
 
-Source: [`packages/llm/llm-retry/src/types.ts:9`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/llm/llm-retry/src/types.ts)
+Source: [`packages/llm/llm-retry/src/types.ts:9`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/llm/llm-retry/src/types.ts)
 
 <a id="llmretry-started--log-only"></a>
 
@@ -504,7 +504,7 @@ Source: [`packages/llm/llm-retry/src/types.ts:9`](https://github.com/Bestbbb/dee
 'llm/retry-started': LlmRetryStartedEventData
 ```
 
-Source: [`packages/llm/llm-retry/src/types.ts:11`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/llm/llm-retry/src/types.ts)
+Source: [`packages/llm/llm-retry/src/types.ts:11`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/llm/llm-retry/src/types.ts)
 
 ### `model/*`
 
@@ -520,7 +520,7 @@ Source: [`packages/llm/llm-retry/src/types.ts:11`](https://github.com/Bestbbb/de
 'model/selection': ModelSelection
 ```
 
-Source: [`packages/api/session-controller/src/types.ts:40`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/session-controller/src/types.ts)
+Source: [`packages/api/session-controller/src/types.ts:40`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/api/session-controller/src/types.ts)
 
 ### `permission/*`
 
@@ -538,7 +538,7 @@ Source: [`packages/api/session-controller/src/types.ts:40`](https://github.com/B
 'permission/preset': { preset: string }
 ```
 
-Source: [`packages/interaction/permission-presets/src/index.ts:53`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/interaction/permission-presets/src/index.ts)
+Source: [`packages/interaction/permission-presets/src/index.ts:53`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/interaction/permission-presets/src/index.ts)
 
 ### `plan/*`
 
@@ -555,7 +555,7 @@ Source: [`packages/interaction/permission-presets/src/index.ts:53`](https://gith
 'plan/mode': { active: boolean }
 ```
 
-Source: [`packages/plan/plan-mode/src/index.ts:46`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/plan/plan-mode/src/index.ts)
+Source: [`packages/plan/plan-mode/src/index.ts:46`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/plan/plan-mode/src/index.ts)
 
 ### `request/*`
 
@@ -571,7 +571,7 @@ Source: [`packages/plan/plan-mode/src/index.ts:46`](https://github.com/Bestbbb/d
 'request/context': RequestContext
 ```
 
-Source: [`packages/core/session/src/types.ts:352`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+Source: [`packages/core/session/src/types.ts:352`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 <a id="requestheader--log-only"></a>
 
@@ -590,7 +590,7 @@ Source: [`packages/core/session/src/types.ts:352`](https://github.com/Bestbbb/de
 }
 ```
 
-Source: [`packages/core/session/src/types.ts:342`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+Source: [`packages/core/session/src/types.ts:342`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 ### `sandbox/*`
 
@@ -613,7 +613,7 @@ Source: [`packages/core/session/src/types.ts:342`](https://github.com/Bestbbb/de
 }
 ```
 
-Source: [`packages/sandbox/sandbox-policy/src/session-mode.ts:33`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/sandbox/sandbox-policy/src/session-mode.ts)
+Source: [`packages/sandbox/sandbox-policy/src/session-mode.ts:33`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/sandbox/sandbox-policy/src/session-mode.ts)
 
 ### `schedule/*`
 
@@ -631,7 +631,7 @@ Source: [`packages/sandbox/sandbox-policy/src/session-mode.ts:33`](https://githu
 
 Types: [ScheduleChange](./subsystems/schedule.md)
 
-Source: [`packages/schedule/schedule/src/types.ts:219`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/schedule/schedule/src/types.ts)
+Source: [`packages/schedule/schedule/src/types.ts:219`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/schedule/schedule/src/types.ts)
 
 ### `session/*`
 
@@ -665,7 +665,7 @@ Source: [`packages/schedule/schedule/src/types.ts:219`](https://github.com/Bestb
 'session/end-seed': { inherited?: true }
 ```
 
-Source: [`packages/core/session/src/types.ts:375`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+Source: [`packages/core/session/src/types.ts:375`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 <a id="sessiontitle--log-only"></a>
 
@@ -681,7 +681,7 @@ Source: [`packages/core/session/src/types.ts:375`](https://github.com/Bestbbb/de
 
 Types: [SessionTitleEventData](./subsystems/session-title.md)
 
-Source: [`packages/session/session-title/src/index.ts:77`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-title/src/index.ts)
+Source: [`packages/session/session-title/src/index.ts:77`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/session/session-title/src/index.ts)
 
 <a id="sessiontitle-llm-request--log-only"></a>
 
@@ -694,7 +694,7 @@ Source: [`packages/session/session-title/src/index.ts:77`](https://github.com/Be
 
 Types: [SessionTitleLlmRequestEventData](./subsystems/session-title.md)
 
-Source: [`packages/session/session-title-llm/src/index.ts:45`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-title-llm/src/index.ts)
+Source: [`packages/session/session-title-llm/src/index.ts:45`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/session/session-title-llm/src/index.ts)
 
 ### `session-log-deepseek/*`
 
@@ -714,7 +714,7 @@ Source: [`packages/session/session-title-llm/src/index.ts:45`](https://github.co
 }
 ```
 
-Source: [`packages/session/session-log-deepseek/src/types.ts:59`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/session/session-log-deepseek/src/types.ts)
+Source: [`packages/session/session-log-deepseek/src/types.ts:59`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/session/session-log-deepseek/src/types.ts)
 
 ### `step/*`
 
@@ -727,7 +727,7 @@ Source: [`packages/session/session-log-deepseek/src/types.ts:59`](https://github
 'step/end': { turn: number; step: number }
 ```
 
-Source: [`packages/core/session/src/types.ts:280`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+Source: [`packages/core/session/src/types.ts:280`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 <a id="stepstart--log-only"></a>
 
@@ -738,7 +738,7 @@ Source: [`packages/core/session/src/types.ts:280`](https://github.com/Bestbbb/de
 'step/start': { turn: number; step: number }
 ```
 
-Source: [`packages/core/session/src/types.ts:278`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+Source: [`packages/core/session/src/types.ts:278`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 ### `subagent/*`
 
@@ -757,7 +757,7 @@ Source: [`packages/core/session/src/types.ts:278`](https://github.com/Bestbbb/de
 'subagent/descriptor': SubagentDescriptorData
 ```
 
-Source: [`packages/subagent/subagent/src/descriptor.ts:38`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/subagent/src/descriptor.ts)
+Source: [`packages/subagent/subagent/src/descriptor.ts:38`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/subagent/subagent/src/descriptor.ts)
 
 <a id="subagentmodel-selection-policy--log-only"></a>
 
@@ -776,7 +776,7 @@ Source: [`packages/subagent/subagent/src/descriptor.ts:38`](https://github.com/B
 }
 ```
 
-Source: [`packages/subagent/tool-subagent/src/model-selection-state.ts:17`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/subagent/tool-subagent/src/model-selection-state.ts)
+Source: [`packages/subagent/tool-subagent/src/model-selection-state.ts:17`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/subagent/tool-subagent/src/model-selection-state.ts)
 
 ### `team/*`
 
@@ -789,9 +789,9 @@ Source: [`packages/subagent/tool-subagent/src/model-selection-state.ts:17`](http
 'team/member': { version: 2; teamId: TeamId; member: TeamMemberSnapshot }
 ```
 
-Types: [TeamId](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/subsystems/agent-team.md) · [TeamMemberSnapshot](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/subsystems/agent-team.md)
+Types: [TeamId](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/docs/subsystems/agent-team.md) · [TeamMemberSnapshot](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/docs/subsystems/agent-team.md)
 
-Source: [`packages/experimental/agent-team/src/types.ts:221`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/experimental/agent-team/src/types.ts)
+Source: [`packages/experimental/agent-team/src/types.ts:221`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/experimental/agent-team/src/types.ts)
 
 <a id="teammessagedelivered--log-only"></a>
 
@@ -807,9 +807,9 @@ Source: [`packages/experimental/agent-team/src/types.ts:221`](https://github.com
 }
 ```
 
-Types: [TeamId](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/subsystems/agent-team.md) · [TeamMessageId](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/subsystems/agent-team.md)
+Types: [TeamId](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/docs/subsystems/agent-team.md) · [TeamMessageId](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/docs/subsystems/agent-team.md)
 
-Source: [`packages/experimental/agent-team/src/types.ts:227`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/experimental/agent-team/src/types.ts)
+Source: [`packages/experimental/agent-team/src/types.ts:227`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/experimental/agent-team/src/types.ts)
 
 <a id="teammessagequeued--log-only"></a>
 
@@ -820,9 +820,9 @@ Source: [`packages/experimental/agent-team/src/types.ts:227`](https://github.com
 'team/message/queued': { version: 2; teamId: TeamId; message: TeamMessageSnapshot }
 ```
 
-Types: [TeamId](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/subsystems/agent-team.md) · [TeamMessageSnapshot](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/subsystems/agent-team.md)
+Types: [TeamId](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/docs/subsystems/agent-team.md) · [TeamMessageSnapshot](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/docs/subsystems/agent-team.md)
 
-Source: [`packages/experimental/agent-team/src/types.ts:225`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/experimental/agent-team/src/types.ts)
+Source: [`packages/experimental/agent-team/src/types.ts:225`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/experimental/agent-team/src/types.ts)
 
 <a id="teamtask--log-only"></a>
 
@@ -833,9 +833,9 @@ Source: [`packages/experimental/agent-team/src/types.ts:225`](https://github.com
 'team/task': { version: 2; teamId: TeamId; task: TeamTaskSnapshot }
 ```
 
-Types: [TeamId](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/subsystems/agent-team.md) · [TeamTaskSnapshot](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/subsystems/agent-team.md)
+Types: [TeamId](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/docs/subsystems/agent-team.md) · [TeamTaskSnapshot](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/docs/subsystems/agent-team.md)
 
-Source: [`packages/experimental/agent-team/src/types.ts:223`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/experimental/agent-team/src/types.ts)
+Source: [`packages/experimental/agent-team/src/types.ts:223`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/experimental/agent-team/src/types.ts)
 
 ### `todo/*`
 
@@ -848,9 +848,9 @@ Source: [`packages/experimental/agent-team/src/types.ts:223`](https://github.com
 'todo/write': { todos: TodoItem[] }
 ```
 
-Types: [TodoItem](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/docs/subsystems/todo.md)
+Types: [TodoItem](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/docs/subsystems/todo.md)
 
-Source: [`packages/todo/tool-todo/src/types.ts:31`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/todo/tool-todo/src/types.ts)
+Source: [`packages/todo/tool-todo/src/types.ts:31`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/todo/tool-todo/src/types.ts)
 
 ### `tool/*`
 
@@ -869,7 +869,7 @@ Source: [`packages/todo/tool-todo/src/types.ts:31`](https://github.com/Bestbbb/d
 
 Types: [ToolCallId](./subsystems/core.md)
 
-Source: [`packages/core/session/src/types.ts:319`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+Source: [`packages/core/session/src/types.ts:319`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 <a id="toolcode-dispatch--log-only"></a>
 
@@ -894,7 +894,7 @@ Source: [`packages/core/session/src/types.ts:319`](https://github.com/Bestbbb/de
 'tool/code-dispatch': PtcDispatchEventData
 ```
 
-Source: [`packages/core/tools/src/types.ts:56`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/tools/src/types.ts)
+Source: [`packages/core/tools/src/types.ts:56`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/tools/src/types.ts)
 
 <a id="toolcode-dispatch-start--log-only"></a>
 
@@ -917,7 +917,7 @@ Source: [`packages/core/tools/src/types.ts:56`](https://github.com/Bestbbb/deeps
 'tool/code-dispatch-start': PtcDispatchStartEventData
 ```
 
-Source: [`packages/core/tools/src/types.ts:40`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/tools/src/types.ts)
+Source: [`packages/core/tools/src/types.ts:40`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/tools/src/types.ts)
 
 <a id="toolresult--surface"></a>
 
@@ -944,7 +944,7 @@ Source: [`packages/core/tools/src/types.ts:40`](https://github.com/Bestbbb/deeps
 }
 ```
 
-Source: [`packages/core/session/src/types.ts:331`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+Source: [`packages/core/session/src/types.ts:331`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 ### `tool-workflow/*`
 
@@ -960,7 +960,7 @@ Source: [`packages/core/session/src/types.ts:331`](https://github.com/Bestbbb/de
 'tool-workflow/agent-end': ToolWorkflowAgentEndData
 ```
 
-Source: [`packages/workflow/tool-workflow/src/types.ts:57`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/workflow/tool-workflow/src/types.ts)
+Source: [`packages/workflow/tool-workflow/src/types.ts:57`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/workflow/tool-workflow/src/types.ts)
 
 <a id="tool-workflowagent-start--log-only"></a>
 
@@ -974,7 +974,7 @@ Source: [`packages/workflow/tool-workflow/src/types.ts:57`](https://github.com/B
 'tool-workflow/agent-start': ToolWorkflowAgentStartData
 ```
 
-Source: [`packages/workflow/tool-workflow/src/types.ts:52`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/workflow/tool-workflow/src/types.ts)
+Source: [`packages/workflow/tool-workflow/src/types.ts:52`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/workflow/tool-workflow/src/types.ts)
 
 <a id="tool-workflowrun-end--log-only"></a>
 
@@ -988,7 +988,7 @@ Source: [`packages/workflow/tool-workflow/src/types.ts:52`](https://github.com/B
 'tool-workflow/run-end': ToolWorkflowRunEndData
 ```
 
-Source: [`packages/workflow/tool-workflow/src/types.ts:62`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/workflow/tool-workflow/src/types.ts)
+Source: [`packages/workflow/tool-workflow/src/types.ts:62`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/workflow/tool-workflow/src/types.ts)
 
 <a id="tool-workflowrun-start--log-only"></a>
 
@@ -1002,7 +1002,7 @@ Source: [`packages/workflow/tool-workflow/src/types.ts:62`](https://github.com/B
 'tool-workflow/run-start': ToolWorkflowRunStartData
 ```
 
-Source: [`packages/workflow/tool-workflow/src/types.ts:47`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/workflow/tool-workflow/src/types.ts)
+Source: [`packages/workflow/tool-workflow/src/types.ts:47`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/workflow/tool-workflow/src/types.ts)
 
 ### `turn/*`
 
@@ -1024,7 +1024,7 @@ Source: [`packages/workflow/tool-workflow/src/types.ts:47`](https://github.com/B
 
 Types: [TurnEndReason](./subsystems/session.md)
 
-Source: [`packages/core/session/src/types.ts:276`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+Source: [`packages/core/session/src/types.ts:276`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 <a id="turnstart--log-only"></a>
 
@@ -1040,7 +1040,7 @@ Source: [`packages/core/session/src/types.ts:276`](https://github.com/Bestbbb/de
 'turn/start': { turn: number }
 ```
 
-Source: [`packages/core/session/src/types.ts:267`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+Source: [`packages/core/session/src/types.ts:267`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 ### `user/*`
 
@@ -1059,7 +1059,7 @@ Source: [`packages/core/session/src/types.ts:267`](https://github.com/Bestbbb/de
 'user/message': UserMessage
 ```
 
-Source: [`packages/core/session/src/types.ts:288`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+Source: [`packages/core/session/src/types.ts:288`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 ### `web/*`
 
@@ -1072,4 +1072,4 @@ Source: [`packages/core/session/src/types.ts:288`](https://github.com/Bestbbb/de
 'web/deepseek-search-llm-request': DeepSeekSearchLlmRequest
 ```
 
-Source: [`packages/web/web-search-deepseek/src/provider.ts:83`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/web/web-search-deepseek/src/provider.ts)
+Source: [`packages/web/web-search-deepseek/src/provider.ts:83`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/web/web-search-deepseek/src/provider.ts)

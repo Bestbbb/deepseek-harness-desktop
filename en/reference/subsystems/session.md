@@ -1,8 +1,8 @@
 # Sessions
 
-The in-memory, event-sourced model of [dsh-session](https://github.com/Bestbbb/deepseek-harness-desktop/tree/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session). A `Session` is an **append-only log** of typed `SessionEvent`s — the single source of truth for an agent's whole interaction history. The LLM message history is *derived* from the log, never stored separately; replay is re-derivation from the same events. How the log is made **durable** (the persistence seam, backends, crash recovery) is the sibling concern on [persistence.md](./persistence.md).
+The in-memory, event-sourced model of [dsh-session](https://github.com/Bestbbb/deepseek-harness-desktop/tree/main/packages/core/session). A `Session` is an **append-only log** of typed `SessionEvent`s — the single source of truth for an agent's whole interaction history. The LLM message history is *derived* from the log, never stored separately; replay is re-derivation from the same events. How the log is made **durable** (the persistence seam, backends, crash recovery) is the sibling concern on [persistence.md](./persistence.md).
 
-Source: [`packages/core/session/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/types.ts)
+Source: [`packages/core/session/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/types.ts)
 
 ## `SessionEventMap` — the event vocabulary
 
@@ -263,7 +263,7 @@ V2 `assistant/message` embeds its provider stream and cannot carry `sourceEventS
 
 ## Surface types
 
-The three message-producing types (`SurfaceEventType` — `user/message`, `assistant/message`, `tool/result`) carry surface metadata declaring how they join the ordered derived surface. See the [session surface Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/architecture/2026-06-18-session-surface.md).
+The three message-producing types (`SurfaceEventType` — `user/message`, `assistant/message`, `tool/result`) carry surface metadata declaring how they join the ordered derived surface. See the [session surface Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/.agents/notes/implemented/architecture/2026-06-18-session-surface.md).
 
 ### `SurfaceEventType` — the message-producing subset of event types
 
@@ -321,7 +321,7 @@ type SurfaceIntent<T extends SurfaceEventType = SurfaceEventType> = {
 })
 ```
 
-Required for `SurfaceEventType` events — every message-producing event must declare how it joins the surface, the sole source of derived model history. A human-facing transcript is the other projection and reads the log's append-origin events instead, because the surface deliberately shadows the ranges a replacement summarizes (`isAppendSurfaceEvent` in [dsh-session](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/README.md)). Non-surface types reject it at compile time.
+Required for `SurfaceEventType` events — every message-producing event must declare how it joins the surface, the sole source of derived model history. A human-facing transcript is the other projection and reads the log's append-origin events instead, because the surface deliberately shadows the ranges a replacement summarizes (`isAppendSurfaceEvent` in [dsh-session](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/README.md)). Non-surface types reject it at compile time.
 
 `assistant/message` cannot carry `sourceEventSeqs`; its `stream` owns exact provider evidence. Other surface events omit the field when they cite no earlier event and use a complete non-empty list when they do.
 
@@ -631,7 +631,7 @@ interface TurnEndReasonMap {
 
 A turn encloses one model-loop execution, not the whole session log. AgentLoop records injected `user/message` events only from entering pre-step batches inside a turn; plugin-owned log-only events may still appear between `turn/end` and the next `turn/start`, consuming event seqs without incrementing turn numbers. Persistence admits every contiguous accepted event into a bounded durable batch, while crash repair closes only a genuinely open trailing turn. A producer that needs an immediate durability barrier explicitly awaits `ctx.sessions.flush(session)`.
 
-The optional `dsh-session/invariant` companion enforces the relations owned by core: turn and step numbering, execution-event enclosure, and same-step tool call/result pairing. Merge-extensible event relations belong to the plugin that declares them, so core does not reject an unknown event merely because no turn is open. See [the standalone-event decision](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/simplification/2026-07-28-remove-synthetic-log-only-turns.md).
+The optional `dsh-session/invariant` companion enforces the relations owned by core: turn and step numbering, execution-event enclosure, and same-step tool call/result pairing. Merge-extensible event relations belong to the plugin that declares them, so core does not reject an unknown event merely because no turn is open. See [the standalone-event decision](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/.agents/notes/implemented/simplification/2026-07-28-remove-synthetic-log-only-turns.md).
 
 ## The end-seed boundary: `session/end-seed`
 
@@ -649,7 +649,7 @@ A plugin may declaration-merge extra `SessionEventMap` types. These are **log-on
 
 When several events in one plugin-owned family assemble into one Web Client Conversation Node, every start, update, result, resource, or interruption event in that family carries or independently derives the same stable business id. This requirement applies to correlated Node families, not to every Session event; it lets the client group each event without guessing from adjacency or scanning history. See the [Conversation subsystem](./conversation.md).
 
-The hook bridges' `hook/invoked` / `hook/result` pairs (from `@deepseek-ai/dsh-hook-protocol`) correlate by `handlerId`. `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, and `Stop` fire inside the loop's open turn, so their `hook/*` records are turn-enclosed by construction. `SessionStart` gets no `hook/*` record because it runs before turn 1; its context remains pending in the inbox until a waking delivery opens a turn (see [the hook-bridges Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/.agents/notes/implemented/feature/2026-06-30-hook-bridges.md)).
+The hook bridges' `hook/invoked` / `hook/result` pairs (from `@deepseek-ai/dsh-hook-protocol`) correlate by `handlerId`. `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, and `Stop` fire inside the loop's open turn, so their `hook/*` records are turn-enclosed by construction. `SessionStart` gets no `hook/*` record because it runs before turn 1; its context remains pending in the inbox until a waking delivery opens a turn (see [the hook-bridges Agent Note](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/.agents/notes/implemented/feature/2026-06-30-hook-bridges.md)).
 
 ## Durability contract
 
@@ -814,7 +814,7 @@ inspect( sessionId: SessionId, signal?: AbortSignal, ): Promise<SessionInspectio
 
 Types: [SessionId](./core.md) · [SessionInspection](./persistence.md) · [SessionSearchRequest](./session-query.md)
 
-Source: [`packages/api/session-controller/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/session-controller/src/index.ts)
+Source: [`packages/api/session-controller/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/api/session-controller/src/index.ts)
 
 <a id="ctxsessions--sessionstore"></a>
 
@@ -950,7 +950,7 @@ fork(source: SessionForkSource, boundary?: SessionSeq, childSessionId?: SessionI
 
 Types: [CreateSessionOptions](./persistence.md) · [PrepareSessionOptions](./persistence.md) · [SessionId](./core.md)
 
-Source: [`packages/core/session/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/index.ts)
+Source: [`packages/core/session/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/index.ts)
 
 <a id="api-session-events"></a>
 
@@ -974,7 +974,7 @@ One user-authored durable message advanced Session list activity.
 
 Types: [SessionId](./core.md)
 
-Source: [`packages/api/session-controller/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/session-controller/src/types.ts)
+Source: [`packages/api/session-controller/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/api/session-controller/src/types.ts)
 
 <a id="api-sessionadded--emit"></a>
 
@@ -991,7 +991,7 @@ A Session became visible to Session list consumers.
 'api-session/added'(summary: SessionSummary): void
 ```
 
-Source: [`packages/api/session-controller/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/session-controller/src/types.ts)
+Source: [`packages/api/session-controller/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/api/session-controller/src/types.ts)
 
 <a id="api-sessionerror--emit"></a>
 
@@ -1011,7 +1011,7 @@ One Agent failed outside a durable turn position.
 
 Types: [SessionId](./core.md)
 
-Source: [`packages/api/session-controller/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/session-controller/src/types.ts)
+Source: [`packages/api/session-controller/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/api/session-controller/src/types.ts)
 
 <a id="api-sessionremoved--emit"></a>
 
@@ -1030,7 +1030,7 @@ A Session left the live Host registry.
 
 Types: [SessionId](./core.md)
 
-Source: [`packages/api/session-controller/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/session-controller/src/types.ts)
+Source: [`packages/api/session-controller/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/api/session-controller/src/types.ts)
 
 <a id="api-sessionstatus--emit"></a>
 
@@ -1050,7 +1050,7 @@ One Agent changed running state.
 
 Types: [SessionId](./core.md)
 
-Source: [`packages/api/session-controller/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/api/session-controller/src/types.ts)
+Source: [`packages/api/session-controller/src/types.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/api/session-controller/src/types.ts)
 
 <a id="session-events"></a>
 
@@ -1079,7 +1079,7 @@ Creation announcement during session publication. A synchronous throw vetoes and
 
 Types: [Scoped](./scope.md)
 
-Source: [`packages/core/session/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/index.ts)
+Source: [`packages/core/session/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/index.ts)
 
 <a id="sessiondisposed--emit"></a>
 
@@ -1102,7 +1102,7 @@ Emitted once when an announced session leaves the store, including publication r
 
 Types: [Scoped](./scope.md)
 
-Source: [`packages/core/session/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/index.ts)
+Source: [`packages/core/session/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/index.ts)
 
 <a id="sessionevent--emit"></a>
 
@@ -1127,7 +1127,7 @@ Post-commit, fire-and-forget append feed. The listener snapshot resolves before 
 
 Types: [Scoped](./scope.md)
 
-Source: [`packages/core/session/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/index.ts)
+Source: [`packages/core/session/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/index.ts)
 
 <a id="sessionflush--parallel"></a>
 
@@ -1149,5 +1149,5 @@ Awaited parallel durability checkpoint: every listener runs and the caller await
 
 Types: [Scoped](./scope.md)
 
-Source: [`packages/core/session/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/packages/core/session/src/index.ts)
+Source: [`packages/core/session/src/index.ts`](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/packages/core/session/src/index.ts)
 <!-- END GENERATED cordis-surface -->

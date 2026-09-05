@@ -6,7 +6,7 @@
 
 <div class="dsh-actions">
 
-[下载](https://github.com/Bestbbb/deepseek-harness-desktop/releases) [阅读指南](./guide/quickstart.md)
+[下载](https://github.com/Bestbbb/deepseek-harness-desktop/releases/tag/desktop-v0.1.3-alpha.1) [阅读指南](./guide/quickstart.md)
 
 </div></div><div class="dsh-hero-preview">
 
@@ -40,7 +40,7 @@ Harness 负责 agent 运行时，Tauri 提供原生窗口和操作系统集成�
 
 系统 WebView、原生菜单、快捷键、运行时监管和诊断导出。不内置 Electron 或 Chromium。
 
-[桌面架构](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/apps/desktop/README.zh.md)
+[桌面架构](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/apps/desktop/README.zh.md)
 
 </div><div>
 
@@ -68,7 +68,7 @@ Harness 负责 agent 运行时，Tauri 提供原生窗口和操作系统集成�
 
 本地执行不等于离线推理。插件和外部 agent 会执行代码，请在授权工作区访问前检查权限。自动更新尚未配置。
 
-[下载](https://github.com/Bestbbb/deepseek-harness-desktop/releases)
+[下载](https://github.com/Bestbbb/deepseek-harness-desktop/releases/tag/desktop-v0.1.3-alpha.1)
 
 </div></section>
 
@@ -78,6 +78,6 @@ Harness 负责 agent 运行时，Tauri 提供原生窗口和操作系统集成�
 
 [上游 Harness](https://github.com/deepseek-ai/deepseek-harness)
 
-[MIT 许可证](https://github.com/Bestbbb/deepseek-harness-desktop/blob/2847c75ea844b05f9d8adca865940856f1286c8c/LICENSE)
+[MIT 许可证](https://github.com/Bestbbb/deepseek-harness-desktop/blob/main/LICENSE)
 
 </footer></main>
