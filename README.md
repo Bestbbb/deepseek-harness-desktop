@@ -10,7 +10,7 @@ English | [中文](README.zh.md)
 
 An open-source macOS and Windows app built on [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) and Tauri 2. The agent runtime runs locally, with a system WebView for the interface and Rust for native integration. No bundled Electron or Chromium.
 
-[Download](https://github.com/Bestbbb/deepseek-harness-desktop/releases) · [Getting started](#run) · [Documentation](docs/user/index.md) · [Report an issue](https://github.com/Bestbbb/deepseek-harness-desktop/issues)
+[Download](https://github.com/Bestbbb/deepseek-harness-desktop/releases/tag/desktop-v0.1.3-alpha.1) · [Getting started](#run) · [Documentation](docs/user/index.md) · [Report an issue](https://github.com/Bestbbb/deepseek-harness-desktop/issues)
 
 ![Harness Desktop workspace and conversation composer](docs/assets/desktop/harness-desktop-main.png)
 
@@ -20,7 +20,7 @@ An open-source macOS and Windows app built on [DeepSeek Harness](https://github.
 
 ## Start in three steps
 
-1. **Install the app.** Choose the macOS Apple Silicon DMG or Windows x64 installer from [Releases](https://github.com/Bestbbb/deepseek-harness-desktop/releases). Installer users do not need Node.js, pnpm, Rust, or a separate CLI.
+1. **Install the app.** Choose the macOS Apple Silicon DMG or Windows x64 installer from [Releases](https://github.com/Bestbbb/deepseek-harness-desktop/releases/tag/desktop-v0.1.3-alpha.1). Installer users do not need Node.js, pnpm, Rust, or a separate CLI.
 2. **Connect a model.** Open **Settings → Models** to configure a provider or an OpenAI-compatible endpoint. Use the authentication method required by that provider.
 3. **Choose a workspace.** Select a folder, model, and Agent preset, then describe the task.
 

@@ -363,7 +363,7 @@ describe('docsPages locale routes', () => {
         locale, sourcePath: page.source, route: page.route, pages: docsPages,
         repoRoot: repositoryRoot, repositoryRef: 'test-ref',
       })
-      expect(projected).toContain('](https://github.com/Bestbbb/deepseek-harness-desktop/releases)')
+      expect(projected).toContain('](https://github.com/Bestbbb/deepseek-harness-desktop/releases/tag/desktop-v0.1.3-alpha.1)')
       expect(projected).toContain('](./providers.md)')
       expect(projected).toContain('](./providers.md#provider-troubleshooting)')
       expect(projected).not.toContain('started `dsh`')

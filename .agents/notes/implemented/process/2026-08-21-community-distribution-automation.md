@@ -26,6 +26,8 @@ The [workflow tests](../../../../scripts/ci-workflow.spec.ts) retain upstream pl
 
 The upstream Cloudflare preview workflow remains a manual explanation-only task. Its private runner and Cloudflare account are unavailable to this repository, and a source contribution does not authorize a website deployment. The keyless documentation build remains in CI; public hosting is configured separately for the community repository.
 
+The desktop TypeScript command grants tests and cleanup 90 seconds, matching the repository's Windows subprocess-lane budget. The build-environment regression performs real Git initialization, commits, status probes, and a local submodule clone; the default five-second case limit can expire before that sequence finishes on a hosted Windows runner. The command retains parallel files and every assertion, with no retry or skipped case. Release-policy coverage rejects omission of either budget. This accepts slower fixture execution, not a change to application startup deadlines.
+
 ## Alternatives considered
 
 - **Recreate the upstream GitHub App, labels, and project configuration.** Rejected because the community repository does not use the upstream organization's triage process, and copying its credentials or identifiers would not define an appropriate local policy.

@@ -14,7 +14,7 @@ description: "基于 DeepSeek Harness 的社区桌面应用。配置自己的模
 
 <div class="dsh-actions">
 
-[下载](https://github.com/Bestbbb/deepseek-harness-desktop/releases) [阅读指南](guide/index.zh.md)
+[下载](https://github.com/Bestbbb/deepseek-harness-desktop/releases/tag/desktop-v0.1.3-alpha.1) [阅读指南](guide/index.zh.md)
 
 </div></div><div class="dsh-hero-preview">
 
@@ -76,7 +76,7 @@ Harness 负责 agent 运行时，Tauri 提供原生窗口和操作系统集成�
 
 本地执行不等于离线推理。插件和外部 agent 会执行代码，请在授权工作区访问前检查权限。自动更新尚未配置。
 
-[下载](https://github.com/Bestbbb/deepseek-harness-desktop/releases)
+[下载](https://github.com/Bestbbb/deepseek-harness-desktop/releases/tag/desktop-v0.1.3-alpha.1)
 
 </div></section>
 

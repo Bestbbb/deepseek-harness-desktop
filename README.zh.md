@@ -10,7 +10,7 @@ description: "下载、配置并参与基于 Tauri 的 DeepSeek Harness 社区�
 
 这是基于 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 和 Tauri 2 的开源 macOS、Windows 应用。agent（智能体）运行时在本地执行，系统 WebView 展示界面，Rust 负责原生集成。不内置 Electron 或 Chromium。
 
-[下载](https://github.com/Bestbbb/deepseek-harness-desktop/releases) · [快速开始](#run) · [文档](docs/user/index.zh.md) · [报告问题](https://github.com/Bestbbb/deepseek-harness-desktop/issues)
+[下载](https://github.com/Bestbbb/deepseek-harness-desktop/releases/tag/desktop-v0.1.3-alpha.1) · [快速开始](#run) · [文档](docs/user/index.zh.md) · [报告问题](https://github.com/Bestbbb/deepseek-harness-desktop/issues)
 
 ![Harness Desktop 工作区和会话输入区](docs/assets/desktop/harness-desktop-main.png)
 
@@ -20,7 +20,7 @@ description: "下载、配置并参与基于 Tauri 的 DeepSeek Harness 社区�
 
 ## 三步开始
 
-1. **安装应用。** 在 [Releases](https://github.com/Bestbbb/deepseek-harness-desktop/releases) 选择 macOS Apple Silicon DMG 或 Windows x64 安装器。使用安装包不需要另装 Node.js、pnpm、Rust 或 CLI（命令行界面）。
+1. **安装应用。** 在 [Releases](https://github.com/Bestbbb/deepseek-harness-desktop/releases/tag/desktop-v0.1.3-alpha.1) 选择 macOS Apple Silicon DMG 或 Windows x64 安装器。使用安装包不需要另装 Node.js、pnpm、Rust 或 CLI（命令行界面）。
 2. **连接模型。** 打开 **Settings → Models**，配置提供方或 OpenAI 兼容端点，并使用该提供方要求的认证方式。
 3. **选择工作区。** 选择文件夹、模型和 Agent preset，然后描述任务。
 

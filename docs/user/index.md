@@ -14,7 +14,7 @@ Work in your local projects with your choice of models and a plugin-based agent.
 
 <div class="dsh-actions">
 
-[Download](https://github.com/Bestbbb/deepseek-harness-desktop/releases) [Read the guide](guide/index.md)
+[Download](https://github.com/Bestbbb/deepseek-harness-desktop/releases/tag/desktop-v0.1.3-alpha.1) [Read the guide](guide/index.md)
 
 </div></div><div class="dsh-hero-preview">
 
@@ -76,7 +76,7 @@ This is a community preview, not an official DeepSeek product. macOS previews ar
 
 Local execution is not offline inference. Plugins and external agents run code; review permissions before granting workspace access. Automatic updates are not configured.
 
-[Download](https://github.com/Bestbbb/deepseek-harness-desktop/releases)
+[Download](https://github.com/Bestbbb/deepseek-harness-desktop/releases/tag/desktop-v0.1.3-alpha.1)
 
 </div></section>
 

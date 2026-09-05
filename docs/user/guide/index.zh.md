@@ -6,7 +6,7 @@
 
 ## 安装并打开应用
 
-1. 打开 [Releases](https://github.com/Bestbbb/deepseek-harness-desktop/releases)，在 **Assets** 中选择 macOS Apple Silicon DMG 或 Windows x64 安装包。检查该版本内置的 Harness 版本和平台说明；源码可能比公开安装包更新。
+1. 打开 [Releases](https://github.com/Bestbbb/deepseek-harness-desktop/releases/tag/desktop-v0.1.3-alpha.1)，在 **Assets** 中选择 macOS Apple Silicon DMG 或 Windows x64 安装包。检查该版本内置的 Harness 版本和平台说明；源码可能比公开安装包更新。
 2. 安装前，使用该版本的 SHA-256 校验和核验下载文件。这些社区预览包在 macOS 上使用临时签名且未经公证，在 Windows 上未签名。如果操作系统阻止应用运行，请先阅读发布页的平台说明，再决定是否允许打开。
 3. 打开 **Harness Desktop**，等待会话界面出现。阅读首次运行提示后，再继续配置模型。
 

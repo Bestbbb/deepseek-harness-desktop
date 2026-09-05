@@ -16,6 +16,15 @@ function record(value: unknown): Record<string, unknown> {
 }
 
 describe('desktop release', () => {
+  it('gives native subprocess tests and cleanup the Windows lane budget', () => {
+    const manifest = record(JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')))
+    const command = record(manifest.scripts)['desktop:test']
+    assert(typeof command === 'string')
+    expect(command).toContain('--testTimeout=90000')
+    expect(command).toContain('--hookTimeout=90000')
+    expect(command).not.toMatch(/--retry|--no-file-parallelism|--passWithNoTests/)
+  })
+
   it('packs only desktop source inputs rather than native build outputs', () => {
     const manifest = JSON.parse(readFileSync(resolve(root, 'apps/desktop/package.json'), 'utf8')) as PackageManifest
     expect(manifest.files).toEqual([
