@@ -20,7 +20,7 @@ Issue policy 与 Issue lifecycle 工作流文件保留为只能手动运行的�
 
 该配置进入默认分支后，最初未分组的 Dependabot PR 将全部关闭。依赖更新绝不自动合并。
 
-[Desktop 工作流](../../../../.github/workflows/desktop.yml)在原生 macOS arm64 和 Windows x64 托管 runner 上检查运行时源码变更。`desktop-v*` 标签必须与 JavaScript 和原生应用版本一致。两个目标均构建成功后才允许发布安装包及校验和文件，PR 不发布版本。[桌面发布测试](../../../../scripts/desktop-release.spec.ts)覆盖版本检查、runner 矩阵、产物要求和仅标签触发的发布。
+[Desktop 工作流](../../../../.github/workflows/desktop.yml)在原生 macOS arm64 和 Windows x64 托管 runner 上检查运行时源码变更。`desktop-v*` 标签必须与 JavaScript 和原生应用版本一致。两个目标均构建成功后才允许发布安装包及校验和文件，PR 不发布版本。生成校验和前，工作流将安装包文件名中的空格替换为点，与 GitHub 上传后的产物名称保持一致。[桌面发布测试](../../../../scripts/desktop-release.spec.ts)覆盖版本检查、runner 矩阵、产物要求和仅标签触发的发布。
 
 [工作流测试](../../../../scripts/ci-workflow.spec.ts)保留上游的平台、wheel 包和依赖布局断言，同时接受社区 runner 与触发策略。pnpm 安装目录包含运行 id 和尝试次数，手动真实 e2e 采用上游的四个 worker 子进程限制。每个自动 PR 工作流都会检查是否使用了上游私有 runner 标签。
 

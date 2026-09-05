@@ -109,6 +109,8 @@ describe('desktop release', () => {
     const publish = release.steps.map(record).find(step => step.name === 'Publish installers and checksums')
     assert(typeof publish?.run === 'string')
     expect(publish.run).toContain('sha256sum')
+    expect(publish.run).toContain('normalized="${file// /.}"')
+    expect(publish.run.indexOf('normalized=')).toBeLessThan(publish.run.indexOf('sha256sum'))
     expect(publish.run).toContain('--verify-tag')
     expect(publish.run).toContain('--prerelease')
     expect(publish.run).toContain('not notarized')

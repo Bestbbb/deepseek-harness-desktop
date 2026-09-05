@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-08-21-community-distribution-automation.md
-2026-08-21-community-distribution-automation.md: c25bf9c1835b6535cb4c35f448b4cced695ea6f7
-2026-08-21-community-distribution-automation.zh.md: f63ec40514c743d6347f9b9024cb6640664fda06
+2026-08-21-community-distribution-automation.md: b0837e2a7b5c4b831094a98f3d261f3d355a83b4
+2026-08-21-community-distribution-automation.zh.md: d819ac8814eb662d15eea7329376aa9734a1ee11

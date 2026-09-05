@@ -156,6 +156,13 @@ jobs:
           windows=(*.exe)
           test "${#macos[@]}" -eq 1
           test "${#windows[@]}" -eq 1
+          # Match GitHub's uploaded asset names before generating the checksum manifest.
+          for file in "${macos[@]}" "${windows[@]}"; do
+            normalized="${file// /.}"
+            if [[ "$file" != "$normalized" ]]; then mv -- "$file" "$normalized"; fi
+          done
+          macos=(*.dmg)
+          windows=(*.exe)
           sha256sum "${macos[@]}" "${windows[@]}" > SHA256SUMS
           version="${RELEASE_TAG#desktop-v}"
           options=()
