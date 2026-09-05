@@ -187,6 +187,13 @@ export function resolveClientBuildEnvironment(
   profile: string | undefined = environment[CLIENT_BUILD_PROFILE_SELECTOR],
 ): ClientBuildEnvironment {
   if (profile === undefined) return clientBuildEnvironment(environment)
+  if (profile === 'desktop') {
+    return {
+      ...clientBuildEnvironment(environment),
+      DSH_CLIENT_BUILD_PROFILE: 'desktop',
+      DSH_CLIENT_TITLE: 'Harness Desktop',
+    }
+  }
   if (profile === 'official') {
     const commitHash = environment[CLIENT_COMMIT_HASH_VARIABLE]
     const version = environment[CLIENT_VERSION_VARIABLE]
@@ -202,7 +209,7 @@ export function resolveClientBuildEnvironment(
       ...OFFICIAL_CLIENT_BUILD_ENVIRONMENT,
     }
   }
-  throw new Error(`unknown client build profile ${JSON.stringify(profile)}; expected "official"`)
+  throw new Error(`unknown client build profile ${JSON.stringify(profile)}; expected "official" or "desktop"`)
 }
 
 /**

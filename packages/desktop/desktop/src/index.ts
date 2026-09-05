@@ -11,6 +11,8 @@ export interface DesktopNotification {
   readonly title: string
   /** Notification body. */
   readonly body: string
+  /** Suppress this notification while the main window is focused. */
+  readonly backgroundOnly?: boolean
 }
 
 /** Current native host availability. */

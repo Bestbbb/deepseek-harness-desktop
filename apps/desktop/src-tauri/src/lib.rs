@@ -2,11 +2,13 @@
 
 mod bridge;
 mod diagnostics;
+mod locale;
 mod navigation;
 mod runtime;
 
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use bridge::DesktopBridge;
+use locale::text;
 use navigation::RuntimeNavigation;
 use rand::RngCore;
 use runtime::{RuntimeConfig, RuntimeEvent, RuntimeSupervisor};
@@ -60,6 +62,7 @@ pub fn run() {
         })
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_log::Builder::new().build())
+        .invoke_handler(tauri::generate_handler![desktop_recovery])
         .setup(setup);
     let app = builder
         .build(tauri::generate_context!())
@@ -68,6 +71,10 @@ pub fn run() {
     ctrlc::set_handler(move || signal_app.exit(0))
         .expect("could not install desktop termination handler");
     app.run(|app, event| {
+        #[cfg(target_os = "macos")]
+        if matches!(event, RunEvent::Reopen { .. }) {
+            let _ = show_main_window(app);
+        }
         if matches!(event, RunEvent::ExitRequested { .. } | RunEvent::Exit) {
             shutdown(app);
         }
@@ -85,10 +92,22 @@ fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         .ok_or("the desktop configuration must declare the main window")?;
     let navigation = Arc::new(Mutex::new(RuntimeNavigation::default()));
     let page_navigation = navigation.clone();
+    let recovery_script = Arc::new(Mutex::new(None::<String>));
+    let page_recovery = recovery_script.clone();
     let window = WebviewWindowBuilder::from_config(app, window_config)?
-        .on_page_load(move |_, payload| {
+        .on_page_load(move |window, payload| {
             if let Ok(mut state) = page_navigation.lock() {
                 state.page_load(payload.event(), payload.url());
+            }
+            // Fast spawn failures can arrive before the loading page installs its listeners.
+            if payload.event() == tauri::webview::PageLoadEvent::Finished
+                && is_loading_page(payload.url())
+            {
+                if let Ok(script) = page_recovery.lock() {
+                    if let Some(script) = script.as_ref() {
+                        let _ = window.eval(script);
+                    }
+                }
             }
         })
         .build()?;
@@ -107,6 +126,11 @@ fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     std::fs::create_dir_all(&dsh_home)?;
     let app_handle = app.handle().clone();
     let publish: Arc<dyn Fn(RuntimeEvent) + Send + Sync> = Arc::new(move |event| match event {
+        RuntimeEvent::Starting(attempt) => {
+            publish_recovery(&app_handle, &recovery_script, format!(
+                    "dispatchEvent(new CustomEvent('dsh-desktop-runtime-starting', {{ detail: {attempt} }}));",
+                ));
+        }
         RuntimeEvent::Ready(url) => {
             let should_navigate = navigation
                 .lock()
@@ -126,13 +150,11 @@ fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         }
         RuntimeEvent::Error(message) => {
             log::error!(target: "dsh_runtime", "{message}");
-            if let Some(window) = app_handle.get_webview_window("main") {
-                let detail = serde_json::to_string(&message)
-                    .unwrap_or_else(|_| "\"Unknown runtime error\"".to_owned());
-                let _ = window.eval(format!(
+            let detail = serde_json::to_string(&message)
+                .unwrap_or_else(|_| "\"Unknown runtime error\"".to_owned());
+            publish_recovery(&app_handle, &recovery_script, format!(
                     "dispatchEvent(new CustomEvent('dsh-desktop-runtime-error', {{ detail: {detail} }}));",
                 ));
-            }
         }
         RuntimeEvent::Log(line) => log::info!(target: "dsh_runtime", "{line}"),
     });
@@ -192,27 +214,40 @@ fn random_token() -> String {
 }
 
 fn install_menu(app: &AppHandle) -> tauri::Result<()> {
-    let new_session = MenuItemBuilder::with_id("new-session", "New Session")
+    let retry = MenuItemBuilder::with_id("retry-runtime", text("Retry Runtime", "重启本地运行时"))
+        .build(app)?;
+    let new_session = MenuItemBuilder::with_id("new-session", text("New Session", "新建会话"))
         .accelerator("CmdOrCtrl+N")
         .build(app)?;
-    let settings = MenuItemBuilder::with_id("settings", "Settings")
+    let settings = MenuItemBuilder::with_id("settings", text("Settings", "设置"))
         .accelerator("CmdOrCtrl+,")
         .build(app)?;
-    let export_diagnostics_item =
-        MenuItemBuilder::with_id("export-diagnostics", "Export Diagnostics…").build(app)?;
-    let show = MenuItemBuilder::with_id("show", "Show Harness Desktop").build(app)?;
+    let export_diagnostics_item = MenuItemBuilder::with_id(
+        "export-diagnostics",
+        text("Export Diagnostics…", "导出诊断…"),
+    )
+    .build(app)?;
+    let show =
+        MenuItemBuilder::with_id("show", text("Show Harness Desktop", "显示 Harness Desktop"))
+            .build(app)?;
     let app_menu = SubmenuBuilder::new(app, "Harness Desktop")
+        .item(&PredefinedMenuItem::about(
+            app,
+            Some(text("About Harness Desktop", "关于 Harness Desktop")),
+            None,
+        )?)
         .item(&show)
         .separator()
         .item(&settings)
         .item(&export_diagnostics_item)
+        .item(&retry)
         .separator()
         .item(&PredefinedMenuItem::quit(app, None)?)
         .build()?;
-    let file = SubmenuBuilder::new(app, "File")
+    let file = SubmenuBuilder::new(app, text("File", "文件"))
         .item(&new_session)
         .build()?;
-    let edit = SubmenuBuilder::new(app, "Edit")
+    let edit = SubmenuBuilder::new(app, text("Edit", "编辑"))
         .item(&PredefinedMenuItem::undo(app, None)?)
         .item(&PredefinedMenuItem::redo(app, None)?)
         .separator()
@@ -221,7 +256,7 @@ fn install_menu(app: &AppHandle) -> tauri::Result<()> {
         .item(&PredefinedMenuItem::paste(app, None)?)
         .item(&PredefinedMenuItem::select_all(app, None)?)
         .build()?;
-    let window = SubmenuBuilder::new(app, "Window")
+    let window = SubmenuBuilder::new(app, text("Window", "窗口"))
         .item(&PredefinedMenuItem::minimize(app, None)?)
         .item(&PredefinedMenuItem::maximize(app, None)?)
         .separator()
@@ -247,14 +282,19 @@ fn install_menu(app: &AppHandle) -> tauri::Result<()> {
             "dispatchEvent(new CustomEvent('dsh-desktop-open-settings'))",
         ),
         "export-diagnostics" => export_diagnostics(app),
+        "retry-runtime" => retry_runtime(app),
         _ => {}
     });
     Ok(())
 }
 
 fn install_tray(app: &AppHandle) -> tauri::Result<()> {
-    let show = MenuItemBuilder::with_id("tray-show", "Show Harness Desktop").build(app)?;
-    let quit = MenuItemBuilder::with_id("tray-quit", "Quit").build(app)?;
+    let show = MenuItemBuilder::with_id(
+        "tray-show",
+        text("Show Harness Desktop", "显示 Harness Desktop"),
+    )
+    .build(app)?;
+    let quit = MenuItemBuilder::with_id("tray-quit", text("Quit", "退出")).build(app)?;
     let menu = MenuBuilder::new(app)
         .item(&show)
         .separator()
@@ -288,8 +328,43 @@ fn install_tray(app: &AppHandle) -> tauri::Result<()> {
 
 fn show_main_window(app: &AppHandle) -> tauri::Result<()> {
     if let Some(window) = app.get_webview_window("main") {
+        window.unminimize()?;
         window.show()?;
         window.set_focus()?;
+    }
+    Ok(())
+}
+
+fn retry_runtime(app: &AppHandle) {
+    if let Some(state) = app.try_state::<DesktopState>() {
+        if let Ok(runtime) = state.runtime.lock() {
+            if let Some(runtime) = runtime.as_ref() {
+                runtime.retry();
+            }
+        }
+    }
+}
+
+fn is_loading_page(url: &url::Url) -> bool {
+    let local = (url.scheme() == "tauri" && url.host_str() == Some("localhost"))
+        || (matches!(url.scheme(), "http" | "https") && url.host_str() == Some("tauri.localhost"));
+    local
+        && url.port().is_none()
+        && url.username().is_empty()
+        && url.password().is_none()
+        && matches!(url.path(), "/" | "/index.html")
+}
+
+/// Recovery commands belong only to the packaged loading document, never the runtime WebView.
+#[tauri::command]
+fn desktop_recovery(window: tauri::WebviewWindow, action: String) -> Result<(), String> {
+    if !is_loading_page(&window.url().map_err(|error| error.to_string())?) {
+        return Err("Recovery commands require the local loading page".to_owned());
+    }
+    match action.as_str() {
+        "retry" => retry_runtime(window.app_handle()),
+        "diagnostics" => export_diagnostics(window.app_handle()),
+        _ => return Err("Unknown recovery action".to_owned()),
     }
     Ok(())
 }
@@ -298,6 +373,13 @@ fn eval_main(app: &AppHandle, script: &str) {
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.eval(script);
     }
+}
+
+fn publish_recovery(app: &AppHandle, latest: &Mutex<Option<String>>, script: String) {
+    if let Ok(mut latest) = latest.lock() {
+        *latest = Some(script.clone());
+    }
+    eval_main(app, &script);
 }
 
 fn export_diagnostics(app: &AppHandle) {
@@ -351,6 +433,25 @@ fn shutdown(app: &AppHandle) {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn recovery_commands_are_local_document_only() {
+        for url in [
+            "tauri://localhost/index.html",
+            "http://tauri.localhost/",
+            "https://tauri.localhost/index.html",
+        ] {
+            assert!(super::is_loading_page(&url::Url::parse(url).unwrap()));
+        }
+        for url in [
+            "http://127.0.0.1:4000/",
+            "https://example.com/",
+            "http://tauri.localhost:4000/",
+            "http://user@tauri.localhost/",
+            "tauri://localhost/other.html",
+        ] {
+            assert!(!super::is_loading_page(&url::Url::parse(url).unwrap()));
+        }
+    }
     #[test]
     fn main_window_preserves_browser_file_drops_and_setup_owned_creation() {
         let config: tauri::Config = serde_json::from_str(include_str!("../tauri.conf.json"))

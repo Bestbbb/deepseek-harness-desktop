@@ -1945,6 +1945,8 @@ describe('ChatView', () => {
       tail.getAttribute('data-turn-tail'), tail.getAttribute('data-actions-reveal'),
     ]))).toEqual(new Map([['1', 'hover'], ['2', 'always']]))
     expect(view.container.querySelectorAll('[data-chat-flow-kind="user"]')).toHaveLength(2)
+    expect([...view.container.querySelectorAll('[data-chat-flow-kind="user"]')]
+      .map(row => row.getAttribute('data-actions-reveal'))).toEqual(['hover', 'always'])
   })
 
   it('the run-time label is withheld when the turn start is outside the window', () => {
@@ -1954,6 +1956,20 @@ describe('ChatView', () => {
     })
     const view = render(<h.ChatView {...h.props} />)
     expect(view.queryByText(/用时/)).toBeNull()
+  })
+
+  it('moves authored action recency on steering append and preserves it on history prepend', () => {
+    const h = makeHarness({ nodes: [user(4, 'question'), assistant(5, 'working')] })
+    const view = render(<h.ChatView {...h.props} />)
+    const recency = () => [...view.container.querySelectorAll('[data-chat-flow-kind="user"], [data-chat-flow-kind="steering"]')]
+      .map(row => row.getAttribute('data-actions-reveal'))
+    expect(recency()).toEqual(['always'])
+    act(() => { h.setChat({ nodes: [user(4, 'question'), assistant(5, 'working'), steering(6, 'follow up', 1)] }) })
+    expect(recency()).toEqual(['hover', 'always'])
+    act(() => {
+      h.setChat({ nodes: [user(1, 'older'), assistant(2, 'old answer'), user(4, 'question'), assistant(5, 'working'), steering(6, 'follow up', 1)] })
+    })
+    expect(recency()).toEqual(['hover', 'hover', 'always'])
   })
 
   it('enables fork only on the finalized assistant at the completed transcript tail', () => {

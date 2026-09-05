@@ -46,6 +46,8 @@ Settings → General exposes a persisted `Normal` / `Compact` conversation-displ
 <a id="scroll-ownership"></a>
 ## Scroll ownership
 
+User and steering action rows receive recency from one ChatView calculation per order change. Hover and focus use a local row attribute, not a following-sibling search; all loaded history remains mounted ([cost decision](../../../.agents/notes/implemented/bug-fix/2026-09-05-chat-action-recency-cost.md)).
+
 Chat restores semantic anchors across history prepend and renderer remounts. While the reader is pinned to the floor, `ResizeObserver` follows the new floor and selects the latest loaded Turn without reading row geometry. Once the reader moves away, flow-height changes preserve the top position and the reading-line geometry selects the active Turn. Turn-rail previews paint above sticky Markdown code-block banners, while the rail frame remains inside the transcript band above the composer ([loaded-Turn navigation](../../../.agents/notes/implemented/feature/2026-08-25-loaded-turn-chat-navigation.md)).
 
 -----

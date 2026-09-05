@@ -24,6 +24,8 @@ Desktop-hosted plugins can show the application window, send operating-system no
 
 Load the [native provider](../desktop-native/README.md) in the [desktop launch overlay](../../../apps/desktop/runtime/desktop.cordis.yml). This abstract service has no configuration and is not an independently installable Profile Bundle.
 
+Notifications may set `backgroundOnly` to suppress delivery while the main window is focused. An accepted notification is not proof that the OS displayed it; system permissions and notification settings still apply.
+
 <a id="implementation"></a>
 
 ## Implementation

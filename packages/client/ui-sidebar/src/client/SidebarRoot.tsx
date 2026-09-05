@@ -159,14 +159,16 @@ export function SidebarRoot({
               </span>
               <span className={css.brandName}>
                 {renderSlot('sidebar.brand.name', {}, {
-                  fallback: buildVersion === undefined
-                    ? <span className={css.fallbackBrandName}>{t('brand.localBuild')}</span>
-                    : (
-                      <span className={css.localBuildBrand}>
-                        <span className={css.localBuildTitle}>{t('brand.localBuild')}</span>
-                        <span className={css.buildVersion}>{buildVersion}</span>
-                      </span>
-                    ),
+                  fallback: process.env.DSH_CLIENT_BUILD_PROFILE === 'desktop'
+                    ? <span className={css.fallbackBrandName} title={buildVersion}>{process.env.DSH_CLIENT_TITLE}</span>
+                    : buildVersion === undefined
+                      ? <span className={css.fallbackBrandName}>{t('brand.localBuild')}</span>
+                      : (
+                        <span className={css.localBuildBrand}>
+                          <span className={css.localBuildTitle}>{t('brand.localBuild')}</span>
+                          <span className={css.buildVersion}>{buildVersion}</span>
+                        </span>
+                      ),
                 })}
               </span>
             </span>

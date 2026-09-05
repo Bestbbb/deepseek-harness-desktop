@@ -29,6 +29,9 @@ Tauri 应用管理 Harness 时，插件可通过 `ctx.desktop` 调用原生桌�
 | `endpoint` | 必填 | 精确的 `http://127.0.0.1:<port>` origin，不含用户信息、路径、查询或片段。 |
 | `token` | 必填 | 原生 bridge 使用的 secret-role token，从不放入 URL。 |
 | `timeoutMs` | `5000` | 每次操作独立计算的超时毫秒数。 |
+| `notifyOnTurnEnd` | `false` | 对顶层会话的实时完成或失败发送通知；桌面 overlay 启用此项。 |
+
+后台轮次通知不包含任务文本和错误详情。主窗口聚焦时，原生宿主抑制这些通知。取消或阻塞的轮次、子会话与恢复的历史不会通知；卸载提供方会移除观察器。提供方记录通知失败，不会使已提交的轮次失败。仍需 OS 通知权限；点击通知不会选中对应 Session。
 
 <a id="implementation"></a>
 

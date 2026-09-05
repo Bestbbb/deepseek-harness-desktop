@@ -8,5 +8,6 @@
     - id: desktop-native
       name: __DSH_DESKTOP_NATIVE_ENTRY__
       config:
+        notifyOnTurnEnd: true
         endpoint: !!js process.env.DSH_DESKTOP_BRIDGE_URL
         token: !!js process.env.DSH_DESKTOP_BRIDGE_TOKEN

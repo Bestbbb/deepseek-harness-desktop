@@ -41,6 +41,8 @@ The add flow is a card carrying the dormant-directory provider select — a bare
 
 ### First-run dialogs
 
+Choose another provider opens Models and completes the current credential step without writing a DeepSeek key. Users keep the existing provider-native authentication and custom-route flows.
+
 After the versioned notice step completes, the DeepSeek step projects first-run readiness from the same joined snapshot. ANY provider the user can already reach ends it without rendering; only a user with none is asked for the official DeepSeek key. Configure later completes only this coordinator pass, and an absent adapter, inactive route, failed join, read-only deployment, or unusable capability completes the step without rendering — Models remains the diagnostic surface.
 
 ### Extension slots

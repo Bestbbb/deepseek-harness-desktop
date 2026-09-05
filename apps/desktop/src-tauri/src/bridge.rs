@@ -67,6 +67,8 @@ impl Drop for DesktopBridge {
 struct NotificationRequest {
     title: String,
     body: String,
+    #[serde(default)]
+    background_only: bool,
 }
 
 #[derive(Deserialize)]
@@ -89,10 +91,27 @@ fn handle_request(mut request: Request, app: &AppHandle, token: &str) {
         (&Method::Post, "/v1/show") => show_main_window(app).map(|()| r#"{"ok":true}"#.to_owned()),
         (&Method::Post, "/v1/notify") => read_json::<NotificationRequest>(&mut request)
             .and_then(|input| {
+                if !should_notify(
+                    input.background_only,
+                    app.get_webview_window("main")
+                        .is_some_and(|window| window.is_focused().unwrap_or(true)),
+                ) {
+                    return Ok(());
+                }
                 app.notification()
                     .builder()
                     .title(input.title)
-                    .body(input.body)
+                    .body(match input.body.as_str() {
+                        "Task finished. Open Harness Desktop to review." => super::locale::text(
+                            "Task finished. Open Harness Desktop to review.",
+                            "任务已完成，打开 Harness Desktop 查看。",
+                        ),
+                        "Task failed. Open Harness Desktop to review." => super::locale::text(
+                            "Task failed. Open Harness Desktop to review.",
+                            "任务执行失败，打开 Harness Desktop 查看。",
+                        ),
+                        _ => &input.body,
+                    })
                     .show()
                     .map_err(|error| error.to_string())
             })
@@ -142,6 +161,30 @@ fn authenticated(request: &Request, expected: &str) -> bool {
         })
 }
 
+fn should_notify(background_only: bool, focused: bool) -> bool {
+    !background_only || !focused
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn background_notifications_respect_focus_and_old_requests_keep_their_behavior() {
+        let input: NotificationRequest =
+            serde_json::from_str(r#"{"title":"Ready","body":"Done"}"#).unwrap();
+        assert!(!input.background_only);
+        let input: NotificationRequest =
+            serde_json::from_str(r#"{"title":"Ready","body":"Done","backgroundOnly":true}"#)
+                .unwrap();
+        assert!(input.background_only);
+        assert!(should_notify(false, true));
+        assert!(should_notify(false, false));
+        assert!(should_notify(true, false));
+        assert!(!should_notify(true, true));
+    }
+}
+
 fn read_json<T: for<'de> Deserialize<'de>>(request: &mut Request) -> Result<T, String> {
     let mut body = String::new();
     request
@@ -159,6 +202,7 @@ fn show_main_window(app: &AppHandle) -> Result<(), String> {
     let window = app
         .get_webview_window("main")
         .ok_or_else(|| "Main window is unavailable".to_owned())?;
+    window.unminimize().map_err(|error| error.to_string())?;
     window.show().map_err(|error| error.to_string())?;
     window.set_focus().map_err(|error| error.to_string())
 }

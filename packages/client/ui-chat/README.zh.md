@@ -46,6 +46,8 @@ Chat 会为每个非空的初始或恢复请求、显式消息序列起点或真
 <a id="scroll-ownership"></a>
 ## 滚动归属
 
+用户和 steering 操作行的新近度由 ChatView 在 order 改变时统一计算。悬停和聚焦使用本地行属性，不执行后继兄弟搜索；全部已加载历史保持挂载（[开销决策](../../../.agents/notes/implemented/bug-fix/2026-09-05-chat-action-recency-cost.zh.md)）。
+
 Chat 会在历史前插与 renderer 重新挂载时恢复语义锚点。读者跟随底部时，`ResizeObserver` 追随新的底部，并且无需读取行几何就选中最后一个已加载 Turn；读者离开底部后，高度变化会保持顶部位置，再由阅读线几何选择活跃 Turn。轮次导航预览位于 Markdown 代码块粘性头栏上方，而导航外框始终处于 composer 上方的 transcript 区域内（[已加载 Turn 导航](../../../.agents/notes/implemented/feature/2026-08-25-loaded-turn-chat-navigation.zh.md)）。
 
 -----

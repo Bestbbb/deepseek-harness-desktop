@@ -8,6 +8,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import { DesktopHost, type DesktopNotification, type DesktopStatus } from '@deepseek-ai/dsh-desktop'
 import type {} from '@deepseek-ai/dsh-system-prompt'
+import type {} from '@deepseek-ai/dsh-session'
 
 const TOKEN_HEADER = 'x-dsh-desktop-bridge-token'
 
@@ -26,18 +27,22 @@ export interface Config {
   token: string
   /** Maximum time allowed for one native operation. */
   timeoutMs?: number
+  /** Notify about completed or failed top-level turns while the app is in the background. */
+  notifyOnTurnEnd?: boolean
 }
 
 interface ResolvedConfig {
   endpoint: string
   token: string
   timeoutMs: number
+  notifyOnTurnEnd: boolean
 }
 
 export const Config: z<Config> = z.object({
   endpoint: z.string().required(),
   token: z.string().role('secret').required(),
   timeoutMs: z.natural().min(1).default(5_000),
+  notifyOnTurnEnd: z.boolean().default(false),
 })
 
 /**
@@ -62,6 +67,7 @@ export function resolveConfig(config: Config): ResolvedConfig {
     endpoint: endpoint.origin,
     token: config.token,
     timeoutMs: config.timeoutMs ?? 5_000,
+    notifyOnTurnEnd: config.notifyOnTurnEnd ?? false,
   }
 }
 
@@ -73,6 +79,21 @@ export class NativeDesktopHost extends DesktopHost {
   constructor(ctx: Context, config: Config) {
     super(ctx)
     this.config = resolveConfig(config)
+    if (this.config.notifyOnTurnEnd) {
+      ctx.on('session/event', (session, event) => {
+        if (event.type !== 'turn/end' || session.header.parentSession !== undefined) return
+        const kind = event.data.reason.kind
+        if (kind !== 'completed' && kind !== 'error') return
+        // The post-commit observer never blocks the agent or includes task contents.
+        void this.notify({
+          title: 'Harness Desktop',
+          body: kind === 'completed'
+            ? 'Task finished. Open Harness Desktop to review.'
+            : 'Task failed. Open Harness Desktop to review.',
+          backgroundOnly: true,
+        }).catch(() => { ctx.logger.warn('desktop-native: background notification could not be delivered') })
+      })
+    }
     ctx.inject(['systemPrompt'], (promptCtx) => {
       promptCtx.systemPrompt.section({
         name: 'app:desktop-surface',

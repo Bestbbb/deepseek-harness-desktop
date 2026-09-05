@@ -157,6 +157,15 @@ function harness(options: {
 }
 
 describe('DeepSeekOnboardingDialog', () => {
+  it('opens provider selection without writing a DeepSeek credential', async () => {
+    const h = harness()
+    render(<DeepSeekOnboardingDialog {...h.props} />)
+    fireEvent.click(await screen.findByRole('button', { name: en.onboardingOtherProvider }))
+    expect(h.complete).toHaveBeenCalledOnce()
+    expect(h.openSection).toHaveBeenCalledWith('models')
+    expect(h.set).not.toHaveBeenCalled()
+    expect(h.mutate).not.toHaveBeenCalled()
+  })
   it('renders when the shell root is absent', async () => {
     const h = harness()
     document.getElementById('root')!.remove()

@@ -4010,7 +4010,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'DesktopNotification',
-    declaration: 'export interface DesktopNotification {\n    readonly title: string;\n    readonly body: string;\n}',
+    declaration: 'export interface DesktopNotification {\n    readonly title: string;\n    readonly body: string;\n    readonly backgroundOnly?: boolean;\n}',
   },
   {
     name: 'DesktopStatus',

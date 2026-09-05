@@ -121,6 +121,21 @@ describe('SidebarRoot shell', () => {
     expect(b.startSession).toHaveBeenCalledOnce()
   })
 
+  it('uses the desktop product name without development chrome', () => {
+    vi.stubEnv('DSH_CLIENT_BUILD_PROFILE', 'desktop')
+    vi.stubEnv('DSH_CLIENT_TITLE', 'Harness Desktop')
+    vi.stubEnv('DSH_CLIENT_VERSION', '0.1.3-alpha.1')
+    render(<SidebarRoot
+      collapsed={false} width={300}
+      useSessions={neverHook} useSessionPendingInteraction={useSessionPendingInteraction} useWorkspaces={neverHook}
+      startSession={vi.fn()} toggleSidebar={vi.fn()} t={t}
+      renderSlot={((_key: string, _owner: unknown, options?: { fallback?: ReactNode }) =>
+        options?.fallback ?? null) as SidebarRootComponentProps['renderSlot']}
+    />)
+    expect(screen.getByText('Harness Desktop')).toBeTruthy()
+    expect(screen.queryByText('DSH Local Build')).toBeNull()
+  })
+
   it.each([
     [{ DSH_CLIENT_VERSION: '1.2.3' }, '1.2.3'],
     [{ DSH_CLIENT_COMMIT_HASH: 'abcdef0', DSH_CLIENT_VERSION: '1.2.3' }, '1.2.3-abcdef0'],

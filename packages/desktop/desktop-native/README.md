@@ -29,6 +29,9 @@ The [desktop overlay](../../../apps/desktop/runtime/desktop.cordis.yml) mounts t
 | `endpoint` | Required | Exact `http://127.0.0.1:<port>` origin, without user info, path, query, or fragment. |
 | `token` | Required | Secret-role token for the native bridge, never placed in a URL. |
 | `timeoutMs` | `5000` | Independent deadline in milliseconds for each operation. |
+| `notifyOnTurnEnd` | `false` | Notify on live top-level completion or failure; enabled by the desktop overlay. |
+
+Background turn notifications omit task text and error details. The native host suppresses them while the main window is focused. Canceled or blocked turns, child sessions, and restored history do not notify; unloading the provider removes the observer. The provider logs notification failures without failing an already committed turn. OS notification permission is still required; clicking a notification does not select its Session.
 
 <a id="implementation"></a>
 

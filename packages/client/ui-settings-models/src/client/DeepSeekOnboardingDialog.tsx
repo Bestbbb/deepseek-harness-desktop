@@ -18,6 +18,7 @@ import { ProviderEditor } from './ProviderEditor.tsx'
 import type { en } from './locales.ts'
 import { OnboardingModal } from './OnboardingModal.tsx'
 import styles from './DeepSeekOnboardingDialog.module.css'
+import { Button } from '@deepseek-ai/dsh-client-ui-primitives'
 
 /** Registration-side dependencies of {@link DeepSeekOnboardingDialog}. */
 export interface DeepSeekOnboardingInjected {
@@ -51,7 +52,7 @@ function assertNever(_value: never): never {
  * @returns the onboarding modal or null when onboarding needs no intervention.
  */
 export function DeepSeekOnboardingDialog(props: DeepSeekOnboardingDialogProps): ReactNode {
-  const { complete, controller, useModels, operations, schema, t } = props
+  const { complete, openSection, controller, useModels, operations, schema, t } = props
   const state = useModels(snapshot => snapshot)
   const readiness = onboardingReadiness(state)
 
@@ -99,6 +100,11 @@ export function DeepSeekOnboardingDialog(props: DeepSeekOnboardingDialogProps): 
   return (
     <OnboardingModal title={t('onboardingTitle')}>
       <p className={styles.description}>{t('onboardingDescription')}</p>
+      <div className={styles.editor}>
+        <Button onClick={() => { complete(); openSection('models') }}>
+          {t('onboardingOtherProvider')}
+        </Button>
+      </div>
       <div className={styles.editor}>
         <ProviderEditor
           provider={row.entry.provider}

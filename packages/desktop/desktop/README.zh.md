@@ -24,6 +24,8 @@ kind: "package-reference"
 
 把[原生提供方](../desktop-native/README.zh.md)加载到[桌面启动 overlay](../../../apps/desktop/runtime/desktop.cordis.yml) 中。该抽象服务没有配置，也不是可独立安装的 Profile Bundle。
 
+通知可以设置 `backgroundOnly`，在主窗口聚焦时抑制送达。请求被接受不代表 OS 已展示通知；系统权限和通知设置仍然适用。
+
 <a id="implementation"></a>
 
 ## 实现

@@ -1,5 +1,7 @@
 //! Supervision for the bundled Node Harness runtime.
 
+#[cfg(unix)]
+use std::process::Child;
 use std::{
     io::{BufRead, BufReader},
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream},
@@ -7,10 +9,8 @@ use std::{
     process::{Command, Stdio},
     sync::{mpsc, Arc},
     thread,
-    time::Duration,
+    time::{Duration, Instant},
 };
-#[cfg(unix)]
-use std::{process::Child, time::Instant};
 use url::Url;
 
 #[cfg(windows)]
@@ -22,6 +22,9 @@ use windows::ManagedChild;
 const SHUTDOWN_GRACE: Duration = Duration::from_secs(3);
 const RESTART_DELAY: Duration = Duration::from_millis(500);
 const POLL_INTERVAL: Duration = Duration::from_millis(50);
+const STARTUP_TIMEOUT: Duration = Duration::from_secs(45);
+const HEALTHY_INTERVAL: Duration = Duration::from_secs(60);
+const MAX_ATTEMPTS: u32 = 3;
 
 #[derive(Clone)]
 pub struct RuntimeConfig {
@@ -36,6 +39,7 @@ pub struct RuntimeConfig {
 }
 
 pub enum RuntimeEvent {
+    Starting(u32),
     Ready(Url),
     Error(String),
     Log(String),
@@ -43,6 +47,7 @@ pub enum RuntimeEvent {
 
 enum SupervisorCommand {
     Shutdown(mpsc::Sender<()>),
+    Retry,
 }
 
 pub struct RuntimeSupervisor {
@@ -51,6 +56,10 @@ pub struct RuntimeSupervisor {
 }
 
 impl RuntimeSupervisor {
+    pub fn retry(&self) {
+        let _ = self.commands.send(SupervisorCommand::Retry);
+    }
+
     pub fn start(
         config: RuntimeConfig,
         publish: Arc<dyn Fn(RuntimeEvent) + Send + Sync + 'static>,
@@ -95,13 +104,16 @@ fn supervise(
     publish: Arc<dyn Fn(RuntimeEvent) + Send + Sync + 'static>,
 ) {
     let mut stable_port: Option<u16> = None;
+    let mut failures = 0;
     loop {
+        publish(RuntimeEvent::Starting(failures + 1));
         let port = stable_port.unwrap_or(0);
         let (mut child, output) = match spawn_runtime(&config, port) {
             Ok(value) => value,
             Err(error) => {
                 publish(RuntimeEvent::Error(error));
-                if wait_for_restart_or_shutdown(&commands) {
+                failures += 1;
+                if wait_for_restart_or_shutdown(&commands, &mut failures, &publish) {
                     return;
                 }
                 continue;
@@ -111,10 +123,17 @@ fn supervise(
         let mut pending_url = None;
         let mut shutdown_reply = None;
         let mut channel_disconnected = false;
+        let started = Instant::now();
+        let mut ready_at = None;
+        let mut manual_retry = false;
         loop {
             match commands.try_recv() {
                 Ok(SupervisorCommand::Shutdown(reply)) => {
                     shutdown_reply = Some(reply);
+                    break;
+                }
+                Ok(SupervisorCommand::Retry) => {
+                    manual_retry = true;
                     break;
                 }
                 Err(mpsc::TryRecvError::Disconnected) => {
@@ -123,7 +142,9 @@ fn supervise(
                 }
                 Err(mpsc::TryRecvError::Empty) => {}
             }
-            while let Ok(event) = output.try_recv() {
+            // Bound each drain so a noisy child cannot starve shutdown or the deadline.
+            for _ in 0..256 {
+                let Ok(event) = output.try_recv() else { break };
                 match event {
                     OutputEvent::Stdout(line) => {
                         publish(RuntimeEvent::Log(super::diagnostics::redact(&line, None)));
@@ -139,9 +160,16 @@ fn supervise(
             }
             if !ready && pending_url.as_ref().is_some_and(listener_open) {
                 ready = true;
+                ready_at = Some(Instant::now());
                 if let Some(url) = pending_url.take() {
                     publish(RuntimeEvent::Ready(url));
                 }
+            }
+            if startup_expired(ready, started.elapsed()) {
+                publish(RuntimeEvent::Error(
+                    "The local runtime did not become ready within 45 seconds.".to_owned(),
+                ));
+                break;
             }
             match child.child.try_wait() {
                 Ok(Some(status)) => {
@@ -170,7 +198,15 @@ fn supervise(
         if channel_disconnected {
             return;
         }
-        if wait_for_restart_or_shutdown(&commands) {
+        if manual_retry {
+            failures = 0;
+            continue;
+        }
+        if ready_at.is_some_and(|time| time.elapsed() >= HEALTHY_INTERVAL) {
+            failures = 0;
+        }
+        failures += 1;
+        if wait_for_restart_or_shutdown(&commands, &mut failures, &publish) {
             return;
         }
     }
@@ -182,8 +218,33 @@ fn listener_open(url: &Url) -> bool {
     TcpStream::connect_timeout(&address, Duration::from_millis(20)).is_ok()
 }
 
-fn wait_for_restart_or_shutdown(commands: &mpsc::Receiver<SupervisorCommand>) -> bool {
-    match commands.recv_timeout(RESTART_DELAY) {
+fn startup_expired(ready: bool, elapsed: Duration) -> bool {
+    !ready && elapsed >= STARTUP_TIMEOUT
+}
+
+fn retry_delay(failures: u32) -> Option<Duration> {
+    (failures < MAX_ATTEMPTS).then(|| RESTART_DELAY * failures.max(1))
+}
+
+fn wait_for_restart_or_shutdown(
+    commands: &mpsc::Receiver<SupervisorCommand>,
+    failures: &mut u32,
+    publish: &Arc<dyn Fn(RuntimeEvent) + Send + Sync>,
+) -> bool {
+    let command = match retry_delay(*failures) {
+        Some(delay) => commands.recv_timeout(delay),
+        None => {
+            publish(RuntimeEvent::Error("Automatic recovery stopped after three attempts. Use Retry Runtime or export diagnostics.".to_owned()));
+            commands
+                .recv()
+                .map_err(|_| mpsc::RecvTimeoutError::Disconnected)
+        }
+    };
+    match command {
+        Ok(SupervisorCommand::Retry) => {
+            *failures = 0;
+            false
+        }
         Ok(SupervisorCommand::Shutdown(reply)) => {
             let _ = reply.send(());
             true
@@ -362,6 +423,44 @@ impl Drop for ManagedChild {
 #[cfg(test)]
 mod tests {
     use super::{module_file_url, parse_readiness};
+
+    #[test]
+    fn startup_has_a_deadline_but_ready_runtimes_do_not() {
+        use super::{startup_expired, STARTUP_TIMEOUT};
+        assert!(!startup_expired(
+            false,
+            STARTUP_TIMEOUT - std::time::Duration::from_millis(1)
+        ));
+        assert!(startup_expired(false, STARTUP_TIMEOUT));
+        assert!(!startup_expired(true, STARTUP_TIMEOUT * 2));
+    }
+
+    #[test]
+    fn failed_recovery_is_bounded_and_manual_retry_resets_it() {
+        use super::*;
+        assert_eq!(retry_delay(1), Some(Duration::from_millis(500)));
+        assert_eq!(retry_delay(2), Some(Duration::from_secs(1)));
+        assert_eq!(retry_delay(3), None);
+        let (send, receive) = mpsc::channel();
+        send.send(SupervisorCommand::Retry).unwrap();
+        let mut failures = 3;
+        let publish: Arc<dyn Fn(RuntimeEvent) + Send + Sync> = Arc::new(|_| {});
+        assert!(!wait_for_restart_or_shutdown(
+            &receive,
+            &mut failures,
+            &publish
+        ));
+        assert_eq!(failures, 0);
+        let (reply, settled) = mpsc::channel();
+        send.send(SupervisorCommand::Shutdown(reply)).unwrap();
+        failures = 3;
+        assert!(wait_for_restart_or_shutdown(
+            &receive,
+            &mut failures,
+            &publish
+        ));
+        settled.recv().unwrap();
+    }
 
     #[cfg(unix)]
     use super::{process_group_alive, ManagedChild};

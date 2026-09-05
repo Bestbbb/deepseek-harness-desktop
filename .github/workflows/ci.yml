@@ -71,4 +71,4 @@ jobs:
       - name: Replay desktop Web composition
         env:
           DSH_SNAPSHOT: replay
-        run: pnpm exec vitest run --config vitest.web.config.ts apps/web/tests/desktop-context.e2e.ts
+        run: pnpm exec vitest run --config vitest.web.config.ts apps/web/tests/desktop-context.e2e.ts apps/web/tests/desktop-loading.e2e.ts

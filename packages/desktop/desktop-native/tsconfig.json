@@ -10,6 +10,7 @@
     { "path": "../../../vendor/cordis" },
     { "path": "../../../vendor/schemastery" },
     { "path": "../desktop" },
+    { "path": "../../core/session" },
     { "path": "../../core/system-prompt" }
   ]
 }

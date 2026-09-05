@@ -506,10 +506,12 @@ export interface Config {
   token: string
   /** Maximum time allowed for one native operation. */
   timeoutMs?: number
+  /** Notify about completed or failed top-level turns while the app is in the background. */
+  notifyOnTurnEnd?: boolean
 }
 ```
 
-Source: [`packages/desktop/desktop-native/src/index.ts:22`](../packages/desktop/desktop-native/src/index.ts)
+Source: [`packages/desktop/desktop-native/src/index.ts:23`](../packages/desktop/desktop-native/src/index.ts)
 
 <a id="deepseek-aidsh-e2b"></a>
 

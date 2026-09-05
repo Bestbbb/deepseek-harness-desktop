@@ -12,7 +12,7 @@ The Web chat shows when a message arrived but not how long the agent worked on i
 
 Turn wall time uses the existing logged `turn/start` and `turn/end` timestamps, with no new session events. The client Session folds each in-window pair into `turnTimings`; the actions-owning assistant footer renders `endTime - startTime` as a localized `Ran for {duration}` label after the turn ends. The running `TurnStatus` clock uses the latest timing without an end, so reload preserves elapsed time, steering does not reset it, and a retry starts from its own logged boundary. Both readings use the same localized formatter and whole-second floor. The clock appears only after 15 seconds and is hidden from the live region so screen readers announce the activity status without replaying every tick.
 
-Action chrome is recency-gated on hover-capable devices: the latest user-authored row and latest Turn tail remain visible, while each earlier row fades the complete actions line in on `:hover` or `:focus-within`. Turn tails publish an explicit recency attribute. User and steering rows use a CSS following-sibling selector over their existing flow-kind attributes, so no mounted message subscribes to and reverse-scans the aggregate Chat snapshot. Touch devices keep every action line visible, and opacity preserves layout.
+Action chrome is recency-gated on hover-capable devices: the latest user-authored row and latest Turn tail remain visible, while each earlier row fades the complete actions line in on `:hover` or `:focus-within`. Turn tails and authored rows publish an explicit recency attribute. The [bounded-recency decision](../bug-fix/2026-09-05-chat-action-recency-cost.md) supersedes the following-sibling CSS mechanism for user and steering rows; no mounted message subscribes to and reverse-scans the aggregate Chat snapshot. Touch devices keep every action line visible, and opacity preserves layout.
 
 ## Alternatives considered
 
@@ -20,7 +20,7 @@ Action chrome is recency-gated on hover-capable devices: the latest user-authore
 
 **Anchoring the live clock to component mount.** Simpler, but a mid-turn reload would restart the clock at zero and disagree with the eventual footer label. Mount time remains only the fallback when `turn/start` is outside the loaded window.
 
-**Compute the latest user-authored row inside every message renderer.** Rejected because each mounted row would subscribe to the aggregate Chat snapshot and reverse-scan its order whenever any Chat value changed. The flow already expresses row order and kind in the DOM, so CSS owns this visual recency rule.
+**Compute the latest user-authored row inside every message renderer.** Rejected because each mounted row would subscribe to the aggregate Chat snapshot and reverse-scan its order whenever any Chat value changed. ChatView computes recency once for the order; CSS handles visibility from the resulting row attribute.
 
 ## Consequences
 

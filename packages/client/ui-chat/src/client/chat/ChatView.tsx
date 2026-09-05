@@ -200,13 +200,14 @@ function TurnStatus({ startTime, t }: {
   )
 }
 
-type ChatNodeListProps = Omit<ComponentProps<typeof ChatNodeSeat>, 'nodeKey'> & {
+type ChatNodeListProps = Omit<ComponentProps<typeof ChatNodeSeat>, 'nodeKey' | 'latestAuthored'> & {
   readonly order: readonly string[]
+  readonly latestAuthoredKey: string | undefined
 }
 
-const ChatNodeList = memo(function ChatNodeList({ order, ...seatProps }: ChatNodeListProps) {
+const ChatNodeList = memo(function ChatNodeList({ order, latestAuthoredKey, ...seatProps }: ChatNodeListProps) {
   return order.map(nodeKey => (
-    <ChatNodeSeat key={nodeKey} nodeKey={nodeKey} {...seatProps} />
+    <ChatNodeSeat key={nodeKey} nodeKey={nodeKey} latestAuthored={nodeKey === latestAuthoredKey} {...seatProps} />
   ))
 })
 
@@ -221,6 +222,11 @@ export function ChatView({
 }: ChatViewSlotProps) {
   const order = useChat(s => s.order)
   const nodeStore = useChat(s => s.nodes)
+  // Recency is data, not a forward-sibling CSS search repeated on every hover.
+  const latestAuthoredKey = useMemo(() => order.findLast((key) => {
+    const kind = nodeStore.get(key)?.kind
+    return kind === 'user' || kind === 'steering'
+  }), [order, nodeStore])
   // The rail's items are accumulated in the Chat snapshot, so this selector is
   // both the data and its change signal: the array identity moves only when a
   // Turn enters, leaves, or changes its preview.
@@ -776,6 +782,7 @@ export function ChatView({
           )}
           <ChatNodeList
             order={order}
+            latestAuthoredKey={latestAuthoredKey}
             useChatNode={useChatNode}
             useChatNodeProcess={useChatNodeProcess}
             historyIncomplete={hasMore}

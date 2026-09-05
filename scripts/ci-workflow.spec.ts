@@ -28,7 +28,7 @@ function expectPortableCommunityChecks(validation: Record<string, unknown>): voi
   })
   expect(replay).toMatchObject({
     env: { DSH_SNAPSHOT: 'replay' },
-    run: 'pnpm exec vitest run --config vitest.web.config.ts apps/web/tests/desktop-context.e2e.ts',
+    run: 'pnpm exec vitest run --config vitest.web.config.ts apps/web/tests/desktop-context.e2e.ts apps/web/tests/desktop-loading.e2e.ts',
   })
   expect(steps.indexOf(policy)).toBeLessThan(steps.indexOf(portable))
   expect(steps.indexOf(portable)).toBeLessThan(steps.indexOf(browser))
