@@ -113,6 +113,7 @@ describe('SidebarRoot shell', () => {
     expect(screen.getByText('DSH Local Build')).toBeTruthy()
     expect(screen.getByText('1.2.3-rc.4-0123456-dirty')).toBeTruthy()
     expect(container.querySelector('svg')).not.toBeNull()
+    expect(container.querySelector('[data-harness-mark]')).toBeNull()
   })
 
   it('routes the native desktop New Session menu event through the shared action', () => {
@@ -121,19 +122,27 @@ describe('SidebarRoot shell', () => {
     expect(b.startSession).toHaveBeenCalledOnce()
   })
 
-  it('uses the desktop product name without development chrome', () => {
+  it.each([false, true])('uses the desktop mark with collapsed=%s', (collapsed) => {
     vi.stubEnv('DSH_CLIENT_BUILD_PROFILE', 'desktop')
     vi.stubEnv('DSH_CLIENT_TITLE', 'Harness Desktop')
     vi.stubEnv('DSH_CLIENT_VERSION', '0.1.3-alpha.1')
-    render(<SidebarRoot
-      collapsed={false} width={300}
+    const { container } = render(<SidebarRoot
+      collapsed={collapsed} width={300}
       useSessions={neverHook} useSessionPendingInteraction={useSessionPendingInteraction} useWorkspaces={neverHook}
       startSession={vi.fn()} toggleSidebar={vi.fn()} t={t}
       renderSlot={((_key: string, _owner: unknown, options?: { fallback?: ReactNode }) =>
         options?.fallback ?? null) as SidebarRootComponentProps['renderSlot']}
     />)
-    expect(screen.getByText('Harness Desktop')).toBeTruthy()
+    if (!collapsed) expect(screen.getByText('Harness Desktop')).toBeTruthy()
+    expect(container.querySelectorAll('[data-harness-mark]')).toHaveLength(1)
     expect(screen.queryByText('DSH Local Build')).toBeNull()
+  })
+
+  it('preserves custom brand slots in the desktop build', () => {
+    vi.stubEnv('DSH_CLIENT_BUILD_PROFILE', 'desktop')
+    mountShell()
+    expect(screen.getByTestId('custom-brand-mark')).toBeTruthy()
+    expect(document.querySelector('[data-harness-mark]')).toBeNull()
   })
 
   it.each([

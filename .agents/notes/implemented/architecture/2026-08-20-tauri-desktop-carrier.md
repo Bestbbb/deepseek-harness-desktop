@@ -45,6 +45,8 @@ The desktop build profile supplies the Harness Desktop title without local-devel
 The native provider observes live top-level `turn/end` events when `notifyOnTurnEnd` is enabled by the desktop overlay. Completion and failure send generic background-only notifications, without task text or failure details. Child sessions, restored history, cancellation, and blocked turns do not notify. The native host suppresses background-only requests while its window is focused. The keyless desktop replay verifies the authenticated notification alongside the complete persisted Session; native notification delivery still depends on OS permission. Notification clicks do not select a Session; a per-session click route remains deferred.
 
 
+Desktop branding uses the blue interlocking Harness mark across the native bundle, loading page, desktop-only sidebar fallback, and documentation favicon. The SVG master keeps small assets crisp without loading the raster concept into the client. macOS renders a monochrome tray template; other platforms use the application icon. Upstream Web branding and custom sidebar brand slots remain unchanged.
+
 ## Alternatives considered
 
 - **Electron**: rejected for this carrier because Harness does not require a bundled Chromium or Node-in-renderer surface; the native system WebView plus a supervised Node sidecar preserves the same product with materially less shell overhead.

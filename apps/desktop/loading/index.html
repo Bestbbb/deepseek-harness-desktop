@@ -31,13 +31,7 @@
         width: 48px;
         height: 48px;
         margin: 0 auto 20px;
-        display: grid;
-        place-items: center;
-        border-radius: 14px;
-        color: #fff;
-        background: linear-gradient(145deg, #4b8cff, #5b5bea);
-        font-size: 24px;
-        font-weight: 700;
+        display: block;
       }
       h1 { margin: 0; font-size: 20px; font-weight: 650; }
       .muted { margin: 10px 0 0; color: #657386; font-size: 14px; line-height: 1.6; }
@@ -61,7 +55,7 @@
   </head>
   <body>
     <main class="card">
-      <div class="mark">D</div>
+      <img class="mark" src="icon.svg" width="48" height="48" alt="" />
       <h1>Harness Desktop</h1>
       <p id="status" class="muted">Starting the local agent runtime…</p>
       <p id="error" class="muted"></p>

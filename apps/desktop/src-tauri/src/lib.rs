@@ -300,9 +300,14 @@ fn install_tray(app: &AppHandle) -> tauri::Result<()> {
         .separator()
         .item(&quit)
         .build()?;
-    TrayIconBuilder::new()
-        .icon(app.default_window_icon().cloned().expect("bundle icon"))
-        .menu(&menu)
+    #[cfg(target_os = "macos")]
+    let tray = TrayIconBuilder::new()
+        .icon(tauri::include_image!("icons/tray.png"))
+        .icon_as_template(true);
+    #[cfg(not(target_os = "macos"))]
+    let tray =
+        TrayIconBuilder::new().icon(app.default_window_icon().cloned().expect("bundle icon"));
+    tray.menu(&menu)
         .on_menu_event(|app, event| match event.id().as_ref() {
             "tray-show" => {
                 let _ = show_main_window(app);

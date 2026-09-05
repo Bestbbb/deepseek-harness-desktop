@@ -211,12 +211,11 @@ const siteIdentity = {
 }
 
 /**
- * The DeepSeek wordmark, inlined so its `currentColor` fills follow the active
- * theme. An `<img>` would freeze the mark at the colors the file declares.
+ * Inline the community mark so the navigation and favicon share one source.
  */
-const wordmark = readFileSync(resolve(import.meta.dirname, '../public/wordmark.svg'), 'utf8')
+const wordmark = readFileSync(resolve(import.meta.dirname, '../public/favicon.svg'), 'utf8')
   .trim()
-  .replace('<svg ', '<svg class="dsh-wordmark" ')
+  .replace('<svg ', '<svg class="dsh-wordmark" aria-hidden="true" ')
 
 /**
  * Shared documentation navigation styles; product-page styles live in the theme.
@@ -282,14 +281,14 @@ const scrollbarScript = `
 `
 
 /**
- * Navigation-bar title: the upstream wordmark and the community desktop label.
+ * Navigation-bar title: the community Harness mark and desktop label.
  * VitePress renders `siteTitle` as HTML.
  *
  * @param desktopLabel - Desktop distribution label.
  * @returns Markup placed beside the navigation-bar home link.
  */
 function siteTitle(desktopLabel: string): string {
-  return `<span class="dsh-lockup">${wordmark}<span class="dsh-tag">${desktopLabel}</span></span>`
+  return `<span class="dsh-lockup">${wordmark}<span>Harness</span><span class="dsh-tag">${desktopLabel}</span></span>`
 }
 
 const config = withMermaid({

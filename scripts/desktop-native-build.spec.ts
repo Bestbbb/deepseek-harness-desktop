@@ -1,6 +1,7 @@
 /** Desktop native builds refuse foreign hosts and select the bundled Node headers. */
 
 import { spawnSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -24,6 +25,30 @@ function evaluate(body: string, timeout = 10_000): ReturnType<typeof spawnSync> 
 }
 
 describe('desktop native build', () => {
+  it('keeps the desktop mark consistent across its native and web assets', () => {
+    const read = (path: string) => readFileSync(resolve(import.meta.dirname, '..', path), 'utf8')
+    const master = read('apps/desktop/src-tauri/icons/icon.svg')
+    expect(read('apps/desktop/loading/icon.svg')).toBe(master)
+    expect(read('website/public/favicon.svg')).toBe(master)
+    const paths = [...master.matchAll(/ d="([^"]+)"/g)].map(match => match[1])
+    expect(paths).toHaveLength(2)
+    for (const path of paths) {
+      expect(read('packages/client/ui-sidebar/src/client/HarnessMark.tsx')).toContain(`d="${path}"`)
+      expect(read('apps/desktop/src-tauri/icons/tray.svg')).toContain(`d="${path}"`)
+    }
+    expect(read('apps/desktop/src-tauri/icons/tray.svg')).not.toContain('<rect')
+    expect(read('apps/desktop/loading/index.html')).toContain('src="icon.svg"')
+    for (const [name, size] of [
+      ['32x32.png', 32], ['128x128.png', 128], ['128x128@2x.png', 256], ['tray.png', 44],
+    ] as const) {
+      const png = readFileSync(resolve(import.meta.dirname, '../apps/desktop/src-tauri/icons', name))
+      expect(png.subarray(1, 4).toString()).toBe('PNG')
+      expect(png.readUInt32BE(16)).toBe(size)
+      expect(png.readUInt32BE(20)).toBe(size)
+      expect(png[25]).toBe(6)
+    }
+  })
+
   it('accepts the executing platform and architecture', () => {
     expect(evaluate('assertNativeBuildHost(process.platform, process.arch)').status).toBe(0)
   })
