@@ -36,9 +36,9 @@
     "tauri:build": "tauri build"
   },
   "devDependencies": {
-    "@npmcli/run-script": "10.0.4",
+    "@npmcli/run-script": "11.0.0",
     "@tauri-apps/cli": "2.11.4",
-    "node-gyp": "12.4.0"
+    "node-gyp": "13.0.1"
   },
   "license": "MIT"
 }
