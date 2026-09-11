@@ -1,0 +1,35 @@
+.root { display: grid; gap: 16px; color: var(--dsw-alias-label-primary); }
+.header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.header h3, .card h4 { margin: 0; }
+.header button { flex-shrink: 0; white-space: nowrap; }
+.profile > h4 { margin: 0 0 8px; }
+.profile > details { margin-block-end: 8px; }
+.root p { margin: 8px 0; }
+.root button { cursor: pointer; border: 0.5px solid var(--dsw-alias-border-l3); border-radius: 8px; padding: 8px 12px; background: transparent; color: inherit; font: inherit; }
+.root button:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
+.root button:disabled { cursor: default; opacity: .5; }
+.root a { color: var(--dsw-alias-link); font-weight: 500; text-decoration: none; }
+.root a:hover, .root a:focus-visible { text-decoration: underline dotted; text-underline-offset: 3px; }
+.notice, .review { padding: 16px; border: 0.5px solid var(--dsw-alias-border-l3); border-radius: 12px; }
+.agentConnections { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; }
+.agentConnections > details { flex: 1 1 180px; min-width: 0; }
+.agentConnections summary { cursor: pointer; padding-block: 8px; }
+.agentConnections > button { flex-shrink: 0; white-space: nowrap; }
+.agentConnections > [role="alert"] { flex-basis: 100%; }
+.current { overflow-wrap: anywhere; }
+.list { padding: 0; margin: 0; list-style: none; display: grid; gap: 12px; }
+.card { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 16px; border: 0.5px solid var(--dsw-alias-border-l3); border-radius: 12px; overflow-wrap: anywhere; }
+.card > div:first-child { flex: 1 1 180px; min-width: 0; }
+.card > button { flex-shrink: 0; white-space: nowrap; }
+.card > .contribution { flex: 1 1 100%; min-width: 0; }
+.contribution:empty { display: none; }
+.review button + button { margin-inline-start: 8px; }
+.review button { scroll-margin-block: 24px; }
+.views { display: flex; gap: 8px; }
+.details { margin-block-start: 12px; }
+.details summary { cursor: pointer; padding-block: 4px; }
+.guidance { display: grid; gap: 12px; margin-block: 12px; }
+.guidance dt { font-weight: 600; }
+.guidance dd { margin: 4px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.views button[aria-pressed="true"] { background: var(--dsw-alias-interactive-bg-hover); }
+@media (max-width: 600px) { .header, .card { flex-direction: column; align-items: stretch; } .card > div:first-child, .card > .contribution { flex-basis: auto; } }

@@ -1,0 +1,33 @@
+- heading "Installed Bundles" [level=3]
+- paragraph: These are Bundle layers in the selected Profiles. Versions come from resolved package files, not a live health check. Pending combinations are not yet enabled.
+- button "Refresh status"
+- group "Marketplace views":
+  - button "Discover"
+  - button "Installed" [pressed]
+- region "Built-in local agent connections":
+  - group: Built-in local agent connections
+  - button "Configure local agents"
+- status:
+  - strong: Waiting for app restart
+  - paragraph: The current combination is still active. Finish your tasks, then quit and reopen the app.
+  - button "Cancel pending activation"
+- region "web":
+  - heading "Current combination" [level=4]
+  - group: Combination ID
+  - list:
+    - listitem:
+      - heading "Reviewed example" [level=4]
+      - paragraph:
+        - code: marketplace-web-fixture
+      - paragraph: "Package version: 0.9.0"
+      - button "Review removal" [disabled]
+- region "desktop-{{uuid}}":
+  - heading "Waiting for app restart" [level=4]
+  - group: Combination ID
+  - list:
+    - listitem:
+      - heading "Reviewed example" [level=4]
+      - paragraph:
+        - code: marketplace-web-fixture
+      - paragraph: "Package version: 1.0.0"
+      - button "Review removal" [disabled]

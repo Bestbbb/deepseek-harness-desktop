@@ -1443,6 +1443,45 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     source: 'packages/client/ui-settings/src/client/contract/slots.ts:36',
   },
   {
+    key: 'settings.bundleMarketplace.action',
+    kind: 'keyed',
+    scope: 'root',
+    summary: 'Active Bundle actions keyed by npm package name; registrants own behavior and localized copy.',
+    doc: 'Active Bundle actions keyed by npm package name; registrants own behavior and localized copy.',
+    registerOptions: [
+      {
+        name: 'key',
+        requirement: 'required',
+        type: 'string',
+        doc: 'Your cell key: the entry renders where the owner dispatches this exact key. Registering an already-occupied key replaces that occupant.',
+      },
+    ],
+    ownerProps: [
+      '/** Owner share of a Plugins tab; opening a plugin can leave the Settings panel. */\nexport interface SettingsPluginsTabOwnerProps extends SettingsSectionOwnerProps {}',
+    ],
+    ownerPropsReferences: [
+      'SettingsSectionOwnerProps',
+    ],
+    standardProps: [
+      'useWorkspaces: SnapshotSelectorHook<WorkspaceSnapshot>',
+      'useSessions: UseSessions',
+      'useSessionPendingInteraction: UseSessionPendingInteraction',
+      'useWorkspaces: SnapshotSelectorHook<WorkspaceSnapshot>',
+    ],
+    keyDomain: 'open: any string the owner dispatches (no compile-time key set), already taken: @deepseek-ai/dsh-delegation-launcher, @deepseek-ai/dsh-focus-timer, @deepseek-ai/dsh-notification-controls',
+    hookContext: '',
+    slotInject: '',
+    declaredBy: 'an entry in \'settings.plugins.tab\' (bundle-marketplace), so it exists while that entry is mounted',
+    occupants: [
+      'delegation-launcher MarketplaceAction key \'@deepseek-ai/dsh-delegation-launcher\'',
+      'focus-timer MarketplaceAction key \'@deepseek-ai/dsh-focus-timer\'',
+      'notification-controls NotificationControls key \'@deepseek-ai/dsh-notification-controls\'',
+    ],
+    replaceRisk: 'shadows-shipped-ui',
+    example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'settings.bundleMarketplace.action\', () => ctx.slots.register(\n      { name: \'settings.bundleMarketplace.action\', key: \'<one key the owner dispatches>\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
+    source: 'packages/desktop/bundle-marketplace/src/client/index.ts:15',
+  },
+  {
     key: 'settings.close',
     kind: 'single',
     scope: 'root',
@@ -1743,9 +1782,11 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
       },
     ],
     ownerProps: [
-      '/** Owner share of a Plugins tab (the section supplies nothing). */\nexport interface SettingsPluginsTabOwnerProps {\n  /** Marker field: tab owner props are intentionally empty. */\n  children?: never\n}',
+      '/** Owner share of a Plugins tab; opening a plugin can leave the Settings panel. */\nexport interface SettingsPluginsTabOwnerProps extends SettingsSectionOwnerProps {}',
     ],
-    ownerPropsReferences: [],
+    ownerPropsReferences: [
+      'SettingsSectionOwnerProps',
+    ],
     standardProps: [
       'useWorkspaces: SnapshotSelectorHook<WorkspaceSnapshot>',
       'useSessions: UseSessions',
@@ -1759,6 +1800,7 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     occupants: [
       'client-ui-settings-plugin-inventory PluginInventorySettingsTab id \'all\'',
       'client-ui-settings-plugins ConfigurablePluginsTab id \'configurable\'',
+      'bundle-marketplace MarketplaceTab id \'marketplace\'',
     ],
     replaceRisk: 'none',
     example: 'return {\n  inject: [\'slots\'],\n  apply(ctx) {\n    ctx.slots.inject(\'settings.plugins.tab\', () => ctx.slots.register(\n      { name: \'settings.plugins.tab\', id: \'my-entry\', order: 100, label: \'My entry\' },\n      () => React.createElement(\'div\', null, \'hello\'),\n    ))\n  },\n}',
@@ -2011,6 +2053,8 @@ export const CLIENT_SLOT_API: readonly ClientSlotEntry[] = [
     declaredBy: 'an entry in \'sidebar\' (client-ui-sidebar), so it exists while that entry is mounted',
     occupants: [
       'client-ui-settings-models CredentialStatus id \'model-credential-status\'',
+      'delegation-launcher DelegationLauncher id \'delegation-launcher\'',
+      'focus-timer FocusTimer id \'focus-timer\'',
       'client-ui-cordis CordisPanel id \'cordis-panel\'',
     ],
     replaceRisk: 'none',

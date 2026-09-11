@@ -1,10 +1,15 @@
 //! Harness Desktop application host for DeepSeek Harness.
 
 mod bridge;
+mod bundle_marketplace;
 mod diagnostics;
+mod local_agents;
 mod locale;
+mod marketplace;
 mod navigation;
+mod profiles;
 mod runtime;
+mod startup;
 
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use bridge::DesktopBridge;
@@ -38,6 +43,9 @@ struct RuntimePaths {
     patch: PathBuf,
     working_directory: PathBuf,
     desktop_native_entry: PathBuf,
+    marketplace: bundle_marketplace::Paths,
+    integrations: local_agents::IntegrationPaths,
+    agent_probes: local_agents::ProbePaths,
 }
 
 pub fn run() {
@@ -62,7 +70,15 @@ pub fn run() {
         })
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_log::Builder::new().build())
-        .invoke_handler(tauri::generate_handler![desktop_recovery])
+        .manage(local_agents::AgentChecks::default())
+        .invoke_handler(tauri::generate_handler![
+            desktop_recovery,
+            local_agents::desktop_local_agents,
+            local_agents::desktop_agent_catalog,
+            local_agents::desktop_agent_preferences,
+            marketplace::desktop_skill_catalog,
+            marketplace::desktop_skill_action
+        ])
         .setup(setup);
     let app = builder
         .build(tauri::generate_context!())
@@ -120,10 +136,17 @@ fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     });
     install_menu(app.handle())?;
     install_tray(app.handle())?;
-    let bridge = DesktopBridge::start(app.handle().clone(), bridge_token.clone())?;
+    let startup = Arc::new(startup::StartupReadiness::default());
     let paths = runtime_paths(app.handle())?;
     let dsh_home = app.path().app_data_dir()?.join("harness");
     std::fs::create_dir_all(&dsh_home)?;
+    let profiles = Arc::new(profiles::ProfileControl::new(dsh_home.clone()));
+    let bridge = DesktopBridge::start(
+        app.handle().clone(),
+        bridge_token.clone(),
+        startup.clone(),
+        profiles.clone(),
+    )?;
     let app_handle = app.handle().clone();
     let publish: Arc<dyn Fn(RuntimeEvent) + Send + Sync> = Arc::new(move |event| match event {
         RuntimeEvent::Starting(attempt) => {
@@ -165,9 +188,13 @@ fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
             patch: paths.patch,
             working_directory: paths.working_directory,
             desktop_native_entry: paths.desktop_native_entry,
+            marketplace: paths.marketplace,
+            integrations: paths.integrations,
             dsh_home,
             bridge_url: bridge.url.clone(),
             bridge_token,
+            startup,
+            profiles,
         },
         publish,
     );
@@ -191,6 +218,18 @@ fn runtime_paths(app: &AppHandle) -> Result<RuntimePaths, Box<dyn std::error::Er
             patch: root.join("apps/desktop/runtime/desktop.cordis.yml"),
             working_directory: root.clone(),
             desktop_native_entry: root.join("packages/desktop/desktop-native/lib/index.js"),
+            marketplace: bundle_marketplace::Paths::development(&root),
+            agent_probes: local_agents::ProbePaths {
+                manifest: root.join("apps/desktop/resources/agent-runtimes.json"),
+                root: root.clone(),
+            },
+            integrations: local_agents::IntegrationPaths {
+                codex: root.join("packages/subagent/subagent-codex/lib/index.js"),
+                claude: root.join("packages/subagent/subagent-claude-code/lib/index.js"),
+                acp: root.join("packages/subagent/subagent-acp/lib/index.js"),
+                preset: root
+                    .join("packages/preset/agent-presets/presets/standard/agent.cordis.yml"),
+            },
         });
     }
     let runtime = app.path().resource_dir()?.join("runtime");
@@ -204,6 +243,20 @@ fn runtime_paths(app: &AppHandle) -> Result<RuntimePaths, Box<dyn std::error::Er
         working_directory: runtime.join("app"),
         desktop_native_entry: runtime
             .join("app/node_modules/@deepseek-ai/dsh-desktop-native/lib/index.js"),
+        marketplace: bundle_marketplace::Paths::packaged(&runtime),
+        agent_probes: local_agents::ProbePaths {
+            manifest: runtime.join("agent-runtimes.json"),
+            root: runtime.clone(),
+        },
+        integrations: local_agents::IntegrationPaths {
+            acp: runtime.join("app/node_modules/@deepseek-ai/dsh-subagent-acp/lib/index.js"),
+            codex: runtime.join("app/node_modules/@deepseek-ai/dsh-subagent-codex/lib/index.js"),
+            claude: runtime
+                .join("app/node_modules/@deepseek-ai/dsh-subagent-claude-code/lib/index.js"),
+            preset: runtime.join(
+                "app/node_modules/@deepseek-ai/dsh-agent-presets/presets/standard/agent.cordis.yml",
+            ),
+        },
     })
 }
 
@@ -222,6 +275,8 @@ fn install_menu(app: &AppHandle) -> tauri::Result<()> {
     let settings = MenuItemBuilder::with_id("settings", text("Settings", "设置"))
         .accelerator("CmdOrCtrl+,")
         .build(app)?;
+    let extensions =
+        MenuItemBuilder::with_id("extensions", text("Extensions…", "扩展中心…")).build(app)?;
     let export_diagnostics_item = MenuItemBuilder::with_id(
         "export-diagnostics",
         text("Export Diagnostics…", "导出诊断…"),
@@ -239,6 +294,7 @@ fn install_menu(app: &AppHandle) -> tauri::Result<()> {
         .item(&show)
         .separator()
         .item(&settings)
+        .item(&extensions)
         .item(&export_diagnostics_item)
         .item(&retry)
         .separator()
@@ -282,6 +338,11 @@ fn install_menu(app: &AppHandle) -> tauri::Result<()> {
             "dispatchEvent(new CustomEvent('dsh-desktop-open-settings'))",
         ),
         "export-diagnostics" => export_diagnostics(app),
+        "extensions" => {
+            if let Err(error) = local_agents::show(app) {
+                log::error!("Could not open extension center: {error}");
+            }
+        }
         "retry-runtime" => retry_runtime(app),
         _ => {}
     });

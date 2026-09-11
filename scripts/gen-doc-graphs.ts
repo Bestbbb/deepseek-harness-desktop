@@ -99,6 +99,13 @@ const GROUP_ORDER = [
 
 const SERVICE_ROLES: ServiceRole[] = [
   {
+    key: 'bundlePreparation',
+    pkg: 'bundle-preparation',
+    title: 'Reviewed local Bundle preparation',
+    mode: 'core',
+    note: 'Validates reviewed local bytes and optionally prepares offline dependency candidates through managed subprocesses; it never activates plugins. The opt-in desktop packaging smoke consumes it through a dsh profile.',
+  },
+  {
     key: 'attachments',
     pkg: 'attachment',
     title: 'Durable binary attachment storage',

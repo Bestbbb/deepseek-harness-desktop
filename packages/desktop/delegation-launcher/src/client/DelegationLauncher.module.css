@@ -1,0 +1,23 @@
+.dialog { width: min(600px, 100%); max-height: calc(100dvh - 48px); gap: 0; }
+.header { display: flex; flex: none; align-items: center; justify-content: space-between; padding: 20px 24px 12px; color: var(--dsw-alias-label-primary); }
+.header h2 { margin: 0; font-size: 16px; }
+.header button { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 0; border-radius: 8px; background: transparent; color: inherit; cursor: pointer; }
+.header button:hover { background: var(--dsw-alias-interactive-bg-hover); }
+.header button:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
+.content { min-height: 0; overflow: auto; padding: 0 24px; }
+.intro { margin: 0 0 20px; color: var(--dsw-alias-label-primary); font-size: 14px; }
+.trigger { display: flex; align-items: center; gap: 8px; border: 0; border-radius: 8px; padding: 8px; background: transparent; color: var(--dsw-alias-label-primary); font: inherit; cursor: pointer; }
+.trigger:hover { background: var(--dsw-alias-interactive-bg-hover); }
+.trigger:focus-visible, .body :focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
+.body { display: grid; gap: 12px; color: var(--dsw-alias-label-primary); }
+.body p { margin: 0; overflow-wrap: anywhere; }
+.body textarea { min-height: 140px; resize: vertical; }
+.body select, .body textarea, .body button { border: 0.5px solid var(--dsw-alias-border-l3); border-radius: 8px; padding: 10px; background: transparent; color: inherit; font: inherit; }
+.body button { cursor: pointer; }
+.body :disabled { opacity: .5; cursor: default; }
+.body fieldset { margin: 0; padding: 12px; border: 0.5px solid var(--dsw-alias-border-l3); border-radius: 8px; }
+.body fieldset label { display: flex; gap: 8px; align-items: flex-start; }
+.tasks h3 { margin: 0 0 8px; font-size: inherit; }
+.tasks ul { display: grid; gap: 12px; padding: 0; margin: 0; list-style: none; }
+.task { display: grid; gap: 8px; padding: 12px; border: 0.5px solid var(--dsw-alias-border-l3); border-radius: 8px; }
+.output { max-height: 240px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }

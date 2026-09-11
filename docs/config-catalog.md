@@ -311,6 +311,82 @@ Depends on: [`LocalConfig`](#deepseek-aidsh-bash-local)
 
 Source: [`packages/shell/bash-sandbox/src/index.ts:35`](../packages/shell/bash-sandbox/src/index.ts)
 
+<a id="deepseek-aidsh-bundle-preparation"></a>
+
+## `@deepseek-ai/dsh-bundle-preparation`
+
+```ts config-catalog
+/** Trusted deployment paths and bounded read budgets. */
+export interface Config {
+  /** JSON catalog supplied by the deployment; no remote catalog is fetched. */
+  catalogFile: string
+  /** Directory containing catalog-named npm tarballs. */
+  artifactDirectory: string
+  /** Parent of exclusively created preparation directories; not a profile location. */
+  stagingDirectory: string
+  /** Exact Harness version supplied by the deployment, not by an install request. */
+  hostVersion: string
+  /** Maximum complete catalog file bytes. */
+  maxCatalogBytes: number
+  /** Maximum complete compressed tarball bytes per preparation. */
+  maxArtifactBytes: number
+  /** Omit to disable offline dependency preparation. Requires a local subprocess provider. */
+  installer?: InstallerConfig | false
+  /** Omit to disable boot-free candidate Profile validation. Requires installer configuration. */
+  composition?: CompositionConfig | false
+  /** Omit to disable persistent preparation history; records never authorize activation. */
+  journal?: JournalConfig | false
+}
+
+/** Deployment-owned local package manager and operation limits. */
+export interface InstallerConfig {
+  /** Absolute trusted Node executable, normally the packaged Node. */
+  nodeExecutable: string
+  /** Absolute trusted pnpm ESM entry, not a shell launcher or package-provided executable. */
+  packageManagerEntry: string
+  /** Exact expected pnpm version. */
+  packageManagerVersion: string
+  /** Whole preparation deadline, including copying and managed commands. */
+  timeoutMs: number
+  /** TERM-to-KILL grace for the managed process tree. */
+  graceMs: number
+  /** Retained bytes per child output stream; only the composed YAML is persisted. */
+  maxOutputBytes: number
+  /** Complete uncompressed archive budget. */
+  maxExpandedBytes: number
+  /** Maximum archive entries. */
+  maxArchiveEntries: number
+  /** Maximum manifest, lockfile or source patch bytes. */
+  maxManifestBytes: number
+}
+
+/** Deployment-selected source Profile and bounded copy policy. */
+export interface CompositionConfig {
+  /** Absolute Harness home containing the source Profile and optional home patch. */
+  harnessHome: string
+  /** Existing source Profile name, not a path. */
+  profileName: string
+  /** Absolute trusted dsh CLI entry matching the deployment version. */
+  dshEntry: string
+  /** Maximum aggregate source-copy bytes or inventory manifest bytes, including linked dependency contents. */
+  maxProfileBytes: number
+  /** Maximum copied entries or listed inventory layers, including linked dependency contents. */
+  maxProfileEntries: number
+}
+
+/** Bounded local operation history, independent of disposable candidate directories. */
+export interface JournalConfig {
+  /** Absolute deployment-owned directory outside staging and source Profiles. */
+  directory: string
+  /** Maximum directory entries accepted by one history read. */
+  maxEntries: number
+  /** Maximum bytes for one metadata record or checked preparation receipt. */
+  maxRecordBytes: number
+}
+```
+
+Source: [`packages/desktop/bundle-preparation/src/types.ts:149`](../packages/desktop/bundle-preparation/src/types.ts)
+
 <a id="deepseek-aidsh-client-connection"></a>
 
 ## `@deepseek-ai/dsh-client-connection`
@@ -493,6 +569,24 @@ export interface Config {
 
 Source: [`packages/credentials/credentials-local/src/index.ts:64`](../packages/credentials/credentials-local/src/index.ts)
 
+<a id="deepseek-aidsh-delegation-launcher"></a>
+
+## `@deepseek-ai/dsh-delegation-launcher`
+
+Requires: `commands` · `subagents` · `jobs`
+
+```ts config-catalog
+/** Deployment limits; account and provider enablement stay with their existing owners. */
+export interface Config {
+  /** Maximum UTF-8 bytes accepted for one task. */
+  maxTaskBytes: number
+  /** Maximum bytes in a complete background-job notice or output read. */
+  outputLimitBytes: number
+}
+```
+
+Source: [`packages/desktop/delegation-launcher/src/index.ts:16`](../packages/desktop/delegation-launcher/src/index.ts)
+
 <a id="deepseek-aidsh-desktop-native"></a>
 
 ## `@deepseek-ai/dsh-desktop-native`
@@ -508,10 +602,12 @@ export interface Config {
   timeoutMs?: number
   /** Notify about completed or failed top-level turns while the app is in the background. */
   notifyOnTurnEnd?: boolean
+  /** Per-child acknowledgement identity; requires launcher-owned appReady when configured. */
+  startupToken?: string
 }
 ```
 
-Source: [`packages/desktop/desktop-native/src/index.ts:23`](../packages/desktop/desktop-native/src/index.ts)
+Source: [`packages/desktop/desktop-native/src/index.ts:54`](../packages/desktop/desktop-native/src/index.ts)
 
 <a id="deepseek-aidsh-e2b"></a>
 
@@ -3345,6 +3441,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@deepseek-ai/dsh-api-remotes` — requires `typertGateway` ([`packages/api/remotes/src/index.ts`](../packages/api/remotes/src/index.ts))
 - `@deepseek-ai/dsh-api-workspace-controller` — requires `typert` · `workspaceRegistry` ([`packages/api/workspace-controller/src/index.ts`](../packages/api/workspace-controller/src/index.ts))
 - `@deepseek-ai/dsh-authorization` — requires `credentials` ([`packages/credentials/authorization/src/index.ts`](../packages/credentials/authorization/src/index.ts))
+- `@deepseek-ai/dsh-bundle-marketplace` — requires `bundlePreparation` · `desktop` ([`packages/desktop/bundle-marketplace/src/index.ts`](../packages/desktop/bundle-marketplace/src/index.ts))
 - `@deepseek-ai/dsh-client-file-upload` — requires `agents` · `attachments` · `commands` · `connection` ([`packages/client/file-upload/src/index.ts`](../packages/client/file-upload/src/index.ts))
 - `@deepseek-ai/dsh-client-locale` ([`packages/client/locale/src/index.ts`](../packages/client/locale/src/index.ts))
 - `@deepseek-ai/dsh-client-modules` — requires `webServer` · `loader` ([`packages/client/modules/src/index.ts`](../packages/client/modules/src/index.ts))
@@ -3392,6 +3489,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@deepseek-ai/dsh-cordis-client-runner` ([`packages/extensions/cordis-client-runner/src/index.ts`](../packages/extensions/cordis-client-runner/src/index.ts))
 - `@deepseek-ai/dsh-deepseek-llm-api-extensions` ([`packages/llm/deepseek-llm-api-extensions/src/index.ts`](../packages/llm/deepseek-llm-api-extensions/src/index.ts))
 - `@deepseek-ai/dsh-experimental-client-ui-agent-team` ([`packages/experimental/client-ui-agent-team/src/index.ts`](../packages/experimental/client-ui-agent-team/src/index.ts))
+- `@deepseek-ai/dsh-focus-timer` ([`packages/desktop/focus-timer/src/index.ts`](../packages/desktop/focus-timer/src/index.ts))
 - `@deepseek-ai/dsh-fs-e2b` — requires `e2b` ([`packages/e2b/fs-e2b/src/index.ts`](../packages/e2b/fs-e2b/src/index.ts))
 - `@deepseek-ai/dsh-fs-observation-policy` ([`packages/fs/fs-observation-policy/src/index.ts`](../packages/fs/fs-observation-policy/src/index.ts))
 - `@deepseek-ai/dsh-goal-round-driver` — requires `agents` · `goals` · `sessions` ([`packages/goal/goal-round-driver/src/index.ts`](../packages/goal/goal-round-driver/src/index.ts))
@@ -3400,6 +3498,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 - `@deepseek-ai/dsh-host-plugin-inventory` — requires `loader` ([`packages/host/plugin-inventory/src/index.ts`](../packages/host/plugin-inventory/src/index.ts))
 - `@deepseek-ai/dsh-llm` ([`packages/llm/llm/src/index.ts`](../packages/llm/llm/src/index.ts))
 - `@deepseek-ai/dsh-lsp` ([`packages/lsp/lsp/src/index.ts`](../packages/lsp/lsp/src/index.ts))
+- `@deepseek-ai/dsh-notification-controls` — requires `settings` ([`packages/desktop/notification-controls/src/index.ts`](../packages/desktop/notification-controls/src/index.ts))
 - `@deepseek-ai/dsh-schedule` — requires `agents` · `sessions` · `tools` · `sessionPersistence` ([`packages/schedule/schedule/src/index.ts`](../packages/schedule/schedule/src/index.ts))
 - `@deepseek-ai/dsh-session` ([`packages/core/session/src/index.ts`](../packages/core/session/src/index.ts))
 - `@deepseek-ai/dsh-session-checkpoint-policy` — requires `llm` · `sessionPersistence` · `sessions` · `tools` ([`packages/session/session-checkpoint-policy/src/index.ts`](../packages/session/session-checkpoint-policy/src/index.ts))

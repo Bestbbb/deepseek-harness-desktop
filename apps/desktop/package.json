@@ -30,7 +30,9 @@
   "scripts": {
     "check": "cargo check --manifest-path src-tauri/Cargo.toml",
     "prepare-runtime": "node scripts/prepare-runtime.mjs",
+    "prepare-marketplace": "node scripts/prepare-marketplace.mjs",
     "smoke-runtime": "node scripts/smoke-runtime.mjs",
+    "smoke-plugins": "node scripts/smoke-plugins.mjs",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build"
@@ -38,7 +40,8 @@
   "devDependencies": {
     "@npmcli/run-script": "10.0.4",
     "@tauri-apps/cli": "2.11.4",
-    "node-gyp": "12.4.0"
+    "node-gyp": "12.4.0",
+    "pnpm": "11.7.0"
   },
   "license": "MIT"
 }

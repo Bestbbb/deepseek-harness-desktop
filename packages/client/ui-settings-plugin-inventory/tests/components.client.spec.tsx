@@ -24,6 +24,7 @@ function props(
   return {
     t,
     list,
+    useConnectionGeneration: select => select({ id: 1, host: { home: '/fixture' } }),
     presetName,
   } as PluginInventorySettingsTabProps
 }
@@ -108,7 +109,7 @@ describe('PluginInventorySettingsTab', () => {
     expect(screen.getByText(en.failedTag)).toBeTruthy()
     expect(screen.getByRole('img', { name: 'Running' })).toBeTruthy()
     // No live fiber, no dot: file-state rows carry only their enablement tag.
-    expect(screen.queryByRole('img', { name: 'Not running' })).toBeNull()
+    expect(screen.queryByRole('img', { name: en.unobserved })).toBeNull()
 
     expect(globalToggle().getAttribute('aria-expanded')).toBe('false')
     expect(view.container.querySelector('[data-plugin-count]')?.getAttribute('data-plugin-count')).toBe('7')
@@ -159,7 +160,7 @@ describe('PluginInventorySettingsTab', () => {
 
     // An enabled entry with no live fiber says so in its details, dot-free.
     fireEvent.click(screen.getByRole('button', { name: 'unobserved-name, Enabled' }))
-    expect(screen.getByText('Not running')).toBeTruthy()
+    expect(screen.getByText(en.unobserved)).toBeTruthy()
 
     // A disabled row outside every preset stays plainly disabled.
     fireEvent.click(screen.getByRole('button', { name: 'dormant, Disabled' }))
@@ -325,6 +326,83 @@ describe('PluginInventorySettingsTab', () => {
     fireEvent.click(screen.getByRole('button', { name: en.retry }))
     await waitFor(() => { expect(list).toHaveBeenCalledTimes(2) })
     expect(await screen.findByText(en.empty)).toBeTruthy()
+  })
+
+  it('preserves search and disclosures during refresh and labels a failed refresh as stale', async () => {
+    const pending = Promise.withResolvers<Snapshot>()
+    const list = vi.fn<PluginInventorySettingsTabInjected['list']>()
+      .mockResolvedValueOnce(SNAPSHOT)
+      .mockReturnValueOnce(pending.promise)
+      .mockResolvedValueOnce({ entries: [] })
+    render(<PluginInventorySettingsTab {...props(list)} />)
+    const search = await screen.findByRole('searchbox', { name: en.search })
+    fireEvent.change(search, { target: { value: 'pwsh' } })
+    fireEvent.click(screen.getByRole('button', { name: 'pwsh, Conditional' }))
+    fireEvent.click(screen.getByRole('button', { name: en.refresh }))
+    expect(screen.getByRole('button', { name: en.refresh }).hasAttribute('disabled')).toBe(true)
+    expect(screen.getByText(en.condition)).toBeTruthy()
+    expect(screen.getByText(en.loading)).toBeTruthy()
+    expect(screen.getByRole('searchbox').getAttribute('value')).toBe('pwsh')
+    await act(async () => { pending.reject(new Error('sensitive transport failure')) })
+    expect(screen.getByRole('alert').textContent).toBe(en.staleError)
+    expect(screen.queryByText('sensitive transport failure')).toBeNull()
+    expect(screen.getByText(en.condition)).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: en.retry }))
+    expect(await screen.findByText(en.empty)).toBeTruthy()
+    expect(screen.queryByRole('alert')).toBeNull()
+    expect(list).toHaveBeenCalledTimes(3)
+  })
+
+  it.each(['resolve', 'reject'] as const)('drops old Host data on reset and ignores its late %s', async (settlement) => {
+    const oldRead = Promise.withResolvers<Snapshot>()
+    const newRead = Promise.withResolvers<Snapshot>()
+    const list = vi.fn<PluginInventorySettingsTabInjected['list']>()
+      .mockResolvedValueOnce(SNAPSHOT)
+      .mockReturnValueOnce(oldRead.promise)
+      .mockReturnValueOnce(newRead.promise)
+    const injected = props(list)
+    const view = render(<PluginInventorySettingsTab {...injected} />)
+    await screen.findByRole('searchbox')
+    fireEvent.click(screen.getByRole('button', { name: en.refresh }))
+    await waitFor(() => { expect(list).toHaveBeenCalledTimes(2) })
+    view.rerender(<PluginInventorySettingsTab {...injected} useConnectionGeneration={select => select(undefined)} />)
+    expect(screen.queryByRole('searchbox')).toBeNull()
+    expect(screen.getByRole('status').textContent).toBe(en.waitingConnection)
+    expect(list).toHaveBeenCalledTimes(2)
+    view.rerender(<PluginInventorySettingsTab {...injected} useConnectionGeneration={select => select({ id: 2, host: { home: '/fixture' } })} />)
+    await waitFor(() => { expect(list).toHaveBeenCalledTimes(3) })
+    await act(async () => { newRead.resolve({ entries: [] }) })
+    expect(screen.getByText(en.empty)).toBeTruthy()
+    await act(async () => {
+      if (settlement === 'resolve') oldRead.resolve(SNAPSHOT)
+      else oldRead.reject(new Error('previous Host'))
+    })
+    expect(screen.getByText(en.empty)).toBeTruthy()
+    expect(screen.queryByRole('alert')).toBeNull()
+    expect(screen.queryByText(en.presetTitle)).toBeNull()
+    view.unmount()
+  })
+
+  it('does not reuse previous Host rows when the replacement Host read fails', async () => {
+    const list = vi.fn<PluginInventorySettingsTabInjected['list']>()
+      .mockResolvedValueOnce(SNAPSHOT)
+      .mockRejectedValueOnce(new Error('new Host unavailable'))
+    const injected = props(list)
+    const view = render(<PluginInventorySettingsTab {...injected} />)
+    await screen.findByRole('searchbox')
+    view.rerender(<PluginInventorySettingsTab {...injected} useConnectionGeneration={select => select({ id: 2, host: { home: '/fixture' } })} />)
+    expect((await screen.findByRole('alert')).textContent).toBe(en.error)
+    expect(screen.queryByRole('searchbox')).toBeNull()
+  })
+
+  it('shows configuration separately from a failed or unobserved preset instance', async () => {
+    await renderReady()
+    fireEvent.click(screen.getByRole('button', { name: 'crashy, Failed' }))
+    expect(screen.getByText(en.configuration).nextElementSibling?.textContent).toBe(en.enabledTag)
+    expect(screen.getByText(en.runtime).nextElementSibling?.textContent).toBe(en.failed)
+    fireEvent.click(screen.getByRole('button', { name: 'tool-fs, Enabled' }))
+    expect(screen.getByText(en.configuration).nextElementSibling?.textContent).toBe(en.enabledTag)
+    expect(screen.getByText(en.runtime).nextElementSibling?.textContent).toBe(en.unobserved)
   })
 
   it('contains a synchronous Remote failure and ignores a result after unmount', async () => {

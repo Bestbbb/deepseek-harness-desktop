@@ -26,7 +26,12 @@ pub struct DesktopBridge {
 }
 
 impl DesktopBridge {
-    pub fn start(app: AppHandle, token: String) -> Result<Self, String> {
+    pub fn start(
+        app: AppHandle,
+        token: String,
+        startup: Arc<super::startup::StartupReadiness>,
+        profiles: Arc<super::profiles::ProfileControl>,
+    ) -> Result<Self, String> {
         let server = Server::http("127.0.0.1:0")
             .map_err(|error| format!("Could not bind native bridge: {error}"))?;
         let url = format!("http://{}", server.server_addr());
@@ -35,7 +40,7 @@ impl DesktopBridge {
         let join = thread::spawn(move || {
             while !thread_stop.load(Ordering::Acquire) {
                 match server.recv_timeout(Duration::from_millis(100)) {
-                    Ok(Some(request)) => handle_request(request, &app, &token),
+                    Ok(Some(request)) => handle_request(request, &app, &token, &startup, &profiles),
                     Ok(None) => {}
                     Err(_) => break,
                 }
@@ -76,7 +81,25 @@ struct AutostartRequest {
     enabled: bool,
 }
 
-fn handle_request(mut request: Request, app: &AppHandle, token: &str) {
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct StartupRequest {
+    attempt: String,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct CancelProfileRequest {
+    profile: String,
+}
+
+fn handle_request(
+    mut request: Request,
+    app: &AppHandle,
+    token: &str,
+    startup: &super::startup::StartupReadiness,
+    profiles: &super::profiles::ProfileControl,
+) {
     if !authenticated(&request, token) {
         respond(
             request,
@@ -85,10 +108,20 @@ fn handle_request(mut request: Request, app: &AppHandle, token: &str) {
         );
         return;
     }
+    request = match handle_profile_request(request, profiles) {
+        None => return,
+        Some(request) => request,
+    };
     let path = request.url().split('?').next().unwrap_or(request.url());
     let result = match (request.method(), path) {
         (&Method::Get, "/v1/status") => Ok(r#"{"ok":true}"#.to_owned()),
+        (&Method::Post, "/v1/runtime-ready") => read_json::<StartupRequest>(&mut request)
+            .and_then(|input| startup.confirm(&input.attempt))
+            .map(|()| r#"{"ok":true}"#.to_owned()),
         (&Method::Post, "/v1/show") => show_main_window(app).map(|()| r#"{"ok":true}"#.to_owned()),
+        (&Method::Post, "/v1/local-agents") => super::local_agents::show_agents(app)
+            .map_err(|error| error.to_string())
+            .map(|()| r#"{"ok":true}"#.to_owned()),
         (&Method::Post, "/v1/notify") => read_json::<NotificationRequest>(&mut request)
             .and_then(|input| {
                 if !should_notify(
@@ -135,6 +168,34 @@ fn handle_request(mut request: Request, app: &AppHandle, token: &str) {
             return;
         }
     };
+    respond_result(request, result);
+}
+
+/// Dispatch an already authenticated Profile request; return unrelated requests to the caller.
+pub(crate) fn handle_profile_request(
+    mut request: Request,
+    profiles: &super::profiles::ProfileControl,
+) -> Option<Request> {
+    let path = request.url().split('?').next().unwrap_or(request.url());
+    let result = match (request.method(), path) {
+        (&Method::Get, "/v1/profile-selection") => profiles
+            .selection()
+            .map(|selection| serde_json::json!({ "ok": true, "selection": selection }).to_string()),
+        (&Method::Post, "/v1/profile-queue") => {
+            read_json::<super::profiles::Candidate>(&mut request)
+                .and_then(|candidate| profiles.queue(candidate))
+                .map(|()| r#"{"ok":true}"#.to_owned())
+        }
+        (&Method::Post, "/v1/profile-cancel") => read_json::<CancelProfileRequest>(&mut request)
+            .and_then(|input| profiles.cancel(&input.profile))
+            .map(|()| r#"{"ok":true}"#.to_owned()),
+        _ => return Some(request),
+    };
+    respond_result(request, result);
+    None
+}
+
+fn respond_result(request: Request, result: Result<String, String>) {
     match result {
         Ok(body) => respond(request, StatusCode(200), &body),
         Err(error) => respond(
@@ -163,26 +224,6 @@ fn authenticated(request: &Request, expected: &str) -> bool {
 
 fn should_notify(background_only: bool, focused: bool) -> bool {
     !background_only || !focused
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn background_notifications_respect_focus_and_old_requests_keep_their_behavior() {
-        let input: NotificationRequest =
-            serde_json::from_str(r#"{"title":"Ready","body":"Done"}"#).unwrap();
-        assert!(!input.background_only);
-        let input: NotificationRequest =
-            serde_json::from_str(r#"{"title":"Ready","body":"Done","backgroundOnly":true}"#)
-                .unwrap();
-        assert!(input.background_only);
-        assert!(should_notify(false, true));
-        assert!(should_notify(false, false));
-        assert!(should_notify(true, false));
-        assert!(!should_notify(true, true));
-    }
 }
 
 fn read_json<T: for<'de> Deserialize<'de>>(request: &mut Request) -> Result<T, String> {
@@ -215,4 +256,24 @@ fn respond(request: Request, status: StatusCode, body: &str) {
             .with_status_code(status)
             .with_header(content_type),
     );
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn background_notifications_respect_focus_and_old_requests_keep_their_behavior() {
+        let input: NotificationRequest =
+            serde_json::from_str(r#"{"title":"Ready","body":"Done"}"#).unwrap();
+        assert!(!input.background_only);
+        let input: NotificationRequest =
+            serde_json::from_str(r#"{"title":"Ready","body":"Done","backgroundOnly":true}"#)
+                .unwrap();
+        assert!(input.background_only);
+        assert!(should_notify(false, true));
+        assert!(should_notify(false, false));
+        assert!(should_notify(true, false));
+        assert!(!should_notify(true, true));
+    }
 }

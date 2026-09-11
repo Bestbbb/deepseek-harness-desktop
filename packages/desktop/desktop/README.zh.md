@@ -26,6 +26,10 @@ kind: "package-reference"
 
 通知可以设置 `backgroundOnly`，在主窗口聚焦时抑制送达。请求被接受不代表 OS 已展示通知；系统权限和通知设置仍然适用。
 
+`openLocalAgents()` 打开或聚焦原生扩展设置，不检查账户、不更改偏好，也不启动委派。返回确认仅代表窗口操作。原生页面继续管理本地 agent 配置。
+
+可信准备消费者可以查询原生 Profile 选择、将已准备的 Profile 排入下次完整应用启动队列，并精确取消待启用项。排队不会重启运行中的应用。队列可能已经提交而传输回复失败；重试或删除候选文件前必须检查原生选择。启动确认和恢复由[原生选择所有者](../../../.agents/notes/implemented/architecture/2026-09-07-desktop-profile-startup-selection.zh.md)负责，不在 Node 中模拟另一份状态。
+
 <a id="implementation"></a>
 
 ## 实现

@@ -1,0 +1,14 @@
+- timer: {{clock}}
+- status: Choose a duration
+- text: Duration in minutes
+- spinbutton "Duration in minutes": "25"
+- paragraph: Choose a whole number from 1 to 1440 minutes.
+- button "Start"
+- button "Reset" [disabled]
+- group "Plugin settings":
+  - text: Plugin settings
+  - paragraph: Save a duration for fresh timers on this device. The countdown itself is not saved.
+  - paragraph: "Saved duration: 25 min"
+  - button "Save this duration" [disabled]
+  - button "Clear saved duration"
+- paragraph: Reloading the page, quitting the app or unloading the plugin clears the timer. No sound or system notification is sent.

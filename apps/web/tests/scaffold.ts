@@ -86,7 +86,7 @@ import JsonlSessionPersistence from '@deepseek-ai/dsh-session-persistence-jsonl'
 // Empty type imports carry the webServer/agents/sessionPersistence Context merges.
 import type {} from '@deepseek-ai/dsh-host-webserver'
 import type {} from '@deepseek-ai/dsh-agent'
-import { provideCmdline } from '@deepseek-ai/dsh-cmdline'
+import { provideCmdline, type AppReady } from '@deepseek-ai/dsh-cmdline'
 import { REPO_ROOT, requireDist } from './support.ts'
 
 // Host-side web e2e cannot import a browser package: doing so would pull that
@@ -284,6 +284,8 @@ export interface WebScaffold {
 
 /** Options for {@link launchWebScaffold}. */
 export interface LaunchOptions {
+  /** Optional test-driver startup signal; its owner commits only after this scaffold resolves successfully. */
+  appReady?: AppReady
   /** Compare the replayed root session with `replayFixture`; defaults on for a manifest-owned canonical recording. */
   compareReplaySession?: boolean
   /**
@@ -678,6 +680,7 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     // from a rejected argument, which a fixed empty list has none of.
     provideCmdline(ctx, {
       args: [],
+      ...options.appReady === undefined ? {} : { ready: options.appReady },
       exit: (code) => {
         throw new Error(`web e2e scaffold: the web app requested exit ${String(code)} with no arguments to reject`)
       },

@@ -46,14 +46,18 @@ function cardActions() {
 }
 
 function renderSection(rows: readonly PluginsSettingsTabEntry[]) {
+  const close = vi.fn()
+  const renderSlot = vi.fn((_name: string, _owner: unknown, options: { only?: string }) => (
+    <span>{options.only}</span>
+  ))
   const props = {
     t,
+    close,
     useTabs: (selector: (value: readonly PluginsSettingsTabEntry[]) => unknown) => selector(rows),
-    renderSlot: (_name: string, _owner: unknown, options: { only?: string }) => (
-      <span>{options.only}</span>
-    ),
+    renderSlot,
   } as unknown as PluginsSettingsSectionProps
   render(<PluginsSettingsSection {...props} />)
+  return { close, renderSlot }
 }
 
 function renderConfigurable(namespaces: string[], cards: Record<string, string> = {}, loaded = true) {
@@ -113,6 +117,19 @@ function renderSubagentModelSelection(state: Partial<SubagentModelSelectionCardS
 }
 
 describe('PluginsSettingsSection', () => {
+  it('lets each visited plugin tab close the enclosing Settings panel', () => {
+    const { close, renderSlot } = renderSection([
+      { id: 'configurable', order: 0, label: en.configurableTab },
+      { id: 'marketplace', order: 10, label: 'Marketplace' },
+    ])
+    expect(renderSlot).toHaveBeenCalledWith('settings.plugins.tab', { close }, { only: 'configurable' })
+    fireEvent.click(screen.getByRole('tab', { name: 'Marketplace' }))
+    expect(renderSlot).toHaveBeenCalledWith('settings.plugins.tab', { close }, { only: 'marketplace' })
+    const owner = renderSlot.mock.calls.find(([, , options]) => options.only === 'marketplace')![1] as { close: () => void }
+    owner.close()
+    expect(close).toHaveBeenCalledOnce()
+  })
+
   it('says so when no plugin contributed a tab', () => {
     renderSection([])
 

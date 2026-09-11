@@ -2,7 +2,9 @@
 
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
-import { once } from 'node:events'
+import { EventEmitter, once } from 'node:events'
+import { randomBytes } from 'node:crypto'
+import { createServer } from 'node:http'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
@@ -24,6 +26,47 @@ const sockets = new Set()
 let child
 let stdout
 let stderr
+let startupAttempt
+let startupConfirmed = false
+const startupEvents = new EventEmitter()
+const failureEntered = Promise.withResolvers()
+let releaseFailure
+const bridge = createServer((request, response) => {
+  const requested = new URL(request.url, 'http://127.0.0.1')
+  if (requested.pathname === '/fixture/startup-barrier') {
+    releaseFailure = () => { response.end('release') }
+    failureEntered.resolve(requested.searchParams.get('port'))
+    return
+  }
+  if (request.method === 'GET' && request.url === '/v1/profile-selection'
+    && request.headers['x-dsh-desktop-bridge-token'] === 'desktop-bridge-smoke-token') {
+    response.setHeader('content-type', 'application/json')
+    response.end(JSON.stringify({ ok: true, selection: {
+      schemaVersion: 1, activeProfile: 'web', previousProfile: null, pending: null, trial: null, lastFailure: null,
+    } }))
+    return
+  }
+  if (request.method !== 'POST' || request.url !== '/v1/runtime-ready'
+    || request.headers['x-dsh-desktop-bridge-token'] !== 'desktop-bridge-smoke-token') {
+    response.writeHead(403).end()
+    return
+  }
+  let body = ''
+  request.on('data', chunk => {
+    body += chunk.toString()
+    if (body.length > 4096) request.destroy()
+  })
+  request.on('error', () => { response.destroy() })
+  request.on('end', () => {
+    try {
+      assert.deepEqual(JSON.parse(body), { attempt: startupAttempt })
+      response.end('{"ok":true}')
+      startupConfirmed = true
+      startupEvents.emit('confirmed')
+    } catch { response.writeHead(400).end() }
+  })
+})
+let bridgeOrigin
 
 function readLines(stream) {
   const reader = createInterface({ input: stream })
@@ -36,17 +79,24 @@ function readLines(stream) {
 
 function readyUrl() {
   return new Promise((resolveReady, reject) => {
+    let candidate
     const cleanup = () => {
       clearTimeout(timeout)
       stdout.off('line', onLine)
       child.off('exit', onExit)
       child.off('error', onError)
+      startupEvents.off('confirmed', onConfirmed)
+    }
+    const onConfirmed = () => {
+      if (candidate === undefined || !startupConfirmed) return
+      cleanup()
+      resolveReady(candidate)
     }
     const onLine = line => {
       const match = /^dsh web: (http:\/\/127\.0\.0\.1:\d+\S*)/u.exec(line)
       if (match === null) return
-      cleanup()
-      resolveReady(new URL(match[1]))
+      candidate = new URL(match[1])
+      onConfirmed()
     }
     const onError = error => { cleanup(); reject(error) }
     const onExit = (code, signal) => onError(new Error(
@@ -58,6 +108,7 @@ function readyUrl() {
     stdout.on('line', onLine)
     child.once('exit', onExit)
     child.once('error', onError)
+    startupEvents.on('confirmed', onConfirmed)
   })
 }
 
@@ -137,14 +188,17 @@ function verifyStream(origin, cookie) {
   })
 }
 
-function startRuntime(port) {
+function startRuntime(port, extra = []) {
+  startupAttempt = randomBytes(16).toString('hex')
+  startupConfirmed = false
   const env = Object.fromEntries(Object.entries(process.env).filter(([name]) => !/KEY|SECRET|TOKEN|PASSWORD/iu.test(name)))
-  child = spawn(node, [entry, 'web', '--patch', renderedPatch, '--port', String(port), '--no-open'], {
+  child = spawn(node, [entry, 'web', '--patch', renderedPatch, ...extra, '--port', String(port), '--no-open'], {
     cwd: join(runtime, 'app'),
     env: {
       ...env, DSH_HOME: home,
-      DSH_DESKTOP_BRIDGE_URL: 'http://127.0.0.1:9',
+      DSH_DESKTOP_BRIDGE_URL: bridgeOrigin,
       DSH_DESKTOP_BRIDGE_TOKEN: 'desktop-bridge-smoke-token',
+      DSH_DESKTOP_STARTUP_TOKEN: startupAttempt,
       DSH_TELEMETRY_DISABLED: '1',
     },
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -238,10 +292,27 @@ async function verifyLegacySession(origin, cookie, fixture) {
 }
 
 try {
-  const patch = (await readFile(join(runtime, 'desktop.cordis.yml'), 'utf8')).replaceAll(
-    '__DSH_DESKTOP_NATIVE_ENTRY__',
-    JSON.stringify(pathToFileURL(join(runtime, 'app/node_modules/@deepseek-ai/dsh-desktop-native/lib/index.js')).href),
-  )
+  bridge.listen(0, '127.0.0.1')
+  await once(bridge, 'listening')
+  bridgeOrigin = `http://127.0.0.1:${bridge.address().port}`
+  const manifest = JSON.parse(await readFile(join(runtime, 'runtime-manifest.json'), 'utf8'))
+  const packages = join(runtime, 'app/node_modules/@deepseek-ai')
+  let patch = await readFile(join(runtime, 'desktop.cordis.yml'), 'utf8')
+  for (const [placeholder, value] of Object.entries({
+    __DSH_DESKTOP_NATIVE_ENTRY__: pathToFileURL(join(packages, 'dsh-desktop-native/lib/index.js')).href,
+    __DSH_BUNDLE_PREPARATION_ENTRY__: pathToFileURL(join(packages, 'dsh-bundle-preparation/lib/index.js')).href,
+    __DSH_BUNDLE_MARKETPLACE_ENTRY__: pathToFileURL(join(packages, 'dsh-bundle-marketplace/lib/index.js')).href,
+    __DSH_BUNDLE_CATALOG__: join(runtime, 'marketplace/catalog.json'),
+    __DSH_BUNDLE_ARTIFACTS__: join(runtime, 'marketplace'),
+    __DSH_BUNDLE_STAGING__: join(home, 'bundle-marketplace/staging'),
+    __DSH_BUNDLE_JOURNAL__: join(home, 'bundle-marketplace/operations'),
+    __DSH_BUNDLE_HOME__: home,
+    __DSH_BUNDLE_DSH_ENTRY__: entry,
+    __DSH_BUNDLE_PNPM_ENTRY__: join(runtime, 'tools/pnpm/bin/pnpm.mjs'),
+    __DSH_BUNDLE_PNPM_VERSION__: manifest.pnpmVersion,
+    __DSH_HARNESS_VERSION__: manifest.harnessVersion,
+  })) patch = patch.replaceAll(placeholder, JSON.stringify(value))
+  assert.doesNotMatch(patch, /__DSH_[A-Z_]+__/u)
   await writeFile(renderedPatch, patch)
   const legacy = await Promise.all([0, 1].map(seedLegacySession))
   startRuntime(0)
@@ -261,6 +332,15 @@ try {
   const html = await fetchWhenListening(url.origin, { headers: { cookie } })
   assert.equal(html.status, 200)
   assert.match(await html.text(), /<html/iu)
+
+  assert.equal((await rpc(url.origin, 'bundleMarketplace/snapshot')).status, 401)
+  const market = await rpc(url.origin, 'bundleMarketplace/snapshot', cookie)
+  const marketBody = await market.json()
+  assert.equal(marketBody.result?.ok, true, JSON.stringify(marketBody))
+  assert.deepEqual(marketBody.result.value.entries.map(item => ({ id: item.id, issues: item.issues })), [
+    { id: 'focus-timer', issues: [] }, { id: 'notification-controls', issues: [] },
+  ])
+  assert.equal(marketBody.result.value.selection.activeProfile, 'web')
 
   for (const endpoint of ['settings/describe', 'llm/listProviders', 'session/list']) {
     const args = endpoint === 'session/list' ? { _request: {} } : {}
@@ -286,9 +366,39 @@ try {
   for (const [index, fixture] of legacy.entries()) {
     assert.deepEqual(await verifyLegacySession(restarted.origin, cookie, fixture), migrated[index], 'reopening must reuse the committed current generation')
   }
-  console.log('desktop runtime smoke passed: ' + url.origin + ' (cookie login, RPC, models, v0/v1 Session upgrades, event stream, restart reconnect)')
+  await stopRuntime()
+  const failurePatch = join(home, 'failure.patch.yml')
+  await writeFile(failurePatch, JSON.stringify([{ insert: [{ id: 'startup-failure',
+    name: pathToFileURL(join(desktopDir, 'tests/fixtures/startup-failure.mjs')).href,
+    config: { barrier: `${bridgeOrigin}/fixture/startup-barrier` },
+  }] }]))
+  startRuntime(0, ['--patch', failurePatch])
+  const uncommittedPort = await new Promise((resolveBarrier, reject) => {
+    const timeout = setTimeout(() => reject(new Error('Startup fixture did not reach its barrier')), 30_000)
+    failureEntered.promise.then(resolveBarrier, reject).finally(() => { clearTimeout(timeout) })
+  })
+  assert.match(uncommittedPort, /^\d+$/u)
+  await fetchWhenListening(`http://127.0.0.1:${uncommittedPort}`)
+  assert.equal(startupConfirmed, false, 'A bound listener must not acknowledge incomplete startup')
+  const exited = once(child, 'exit')
+  releaseFailure()
+  const deadline = setTimeout(() => { child.kill('SIGKILL') }, 30_000)
+  try {
+    const [code, signal] = await exited
+    assert.equal(signal, null, 'Failed startup must exit itself, not time out')
+    assert.notEqual(code, 0)
+    assert.equal(startupConfirmed, false, 'A failed plugin must never commit launcher readiness')
+  } finally { clearTimeout(deadline) }
+  console.log('desktop runtime smoke passed: ' + url.origin + ' (committed startup, cookie login, RPC, models, v0/v1 Session upgrades, event stream, restart reconnect, rejected partial startup)')
 } finally {
+  releaseFailure?.()
   for (const socket of sockets) socket.terminate()
   await stopRuntime()
+  if (bridge.listening) {
+    const closed = once(bridge, 'close')
+    bridge.close()
+    bridge.closeAllConnections()
+    await closed
+  }
   await rm(home, { recursive: true, force: true })
 }

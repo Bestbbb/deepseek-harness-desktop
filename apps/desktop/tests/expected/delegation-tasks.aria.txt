@@ -1,0 +1,38 @@
+- paragraph:
+  - text: "Target session:"
+  - strong: delegation-workspace
+  - code: {{temporary}}/delegation-workspace
+- region "Session subagent tasks":
+  - heading "Session subagent tasks" [level=3]
+  - list:
+    - listitem:
+      - strong: "Delegation: marketplace-fixture"
+      - code: subagent-1
+      - paragraph: Completed
+      - button "Read result"
+      - text: Packaged delegation result
+    - listitem:
+      - strong: "Delegation: marketplace-fixture"
+      - code: subagent-2
+      - paragraph: Canceled
+      - button "Read result"
+      - status: Cancellation requested. The live status shows when cleanup finishes.
+- text: Agent provider
+- combobox "Agent provider":
+  - option "Select a loaded provider"
+  - option "fork"
+  - option "marketplace-fixture" [selected]
+  - option "spawn"
+- button "Refresh providers"
+- text: Task
+- textbox "Task":
+  - /placeholder: Describe the task and expected result.
+  - text: Cancel the packaged fixture task
+- group "Review before starting":
+  - text: Review before starting
+  - checkbox "I authorize this task and its possible account usage. Some providers also receive the parent conversation."
+  - text: I authorize this task and its possible account usage. Some providers also receive the parent conversation.
+- button "Start delegation" [disabled]
+- status:
+  - paragraph: "Command result (not the agent’s final answer):"
+  - paragraph: Delegation queued as subagent-2. Use the session's background jobs to inspect or cancel it.

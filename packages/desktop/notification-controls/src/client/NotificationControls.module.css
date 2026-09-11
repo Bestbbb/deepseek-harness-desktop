@@ -1,0 +1,8 @@
+.root { color: var(--dsw-alias-label-primary); font: inherit; }
+.root summary { cursor: pointer; font-weight: 500; }
+.root summary:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 3px; }
+.root p { margin: 12px 0; color: var(--dsw-alias-label-secondary); line-height: 1.5; }
+.root fieldset { border: 0.5px solid var(--dsw-alias-border-l3); border-radius: 8px; padding: 12px; margin: 0; }
+.root fieldset p { margin: 8px 0; color: inherit; }
+.root label { display: flex; align-items: center; gap: 8px; }
+.root input { accent-color: var(--dsw-alias-state-business-primary); }

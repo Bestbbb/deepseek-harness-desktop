@@ -37,6 +37,8 @@ python/**/.pytest_cache/
 packages/**/__pycache__/
 apps/web/dist/
 apps/desktop/resources/runtime/
+apps/desktop/resources/marketplace/
+apps/desktop/resources/agent-runtimes.json
 apps/desktop/.runtime-cache/
 apps/desktop/src-tauri/target/
 apps/desktop/src-tauri/gen/

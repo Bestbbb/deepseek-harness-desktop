@@ -87,7 +87,13 @@ describe('desktop release', () => {
     const commands = steps.map(step => step.run).filter((run): run is string => typeof run === 'string')
     for (const command of [
       'pnpm install --frozen-lockfile', 'pnpm run desktop:prepare', 'pnpm run desktop:smoke',
+      'pnpm --filter @deepseek-ai/dsh-web-frontend exec playwright install chromium',
+      'pnpm run desktop:smoke:plugins',
+      'pnpm exec vitest run scripts/desktop-package-manager.spec.ts --testTimeout=90000 --hookTimeout=90000',
       'pnpm run desktop:test', 'cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml',
+      'cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml packaged_provider_and_preset_smoke -- --ignored',
+      'cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml packaged_profile_selection_and_recovery -- --ignored',
+      'cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml packaged_skill_lifecycle -- --ignored',
     ]) expect(commands).toContain(command)
     expect(steps.find(step => step.name === 'Verify release tag matches the application version')).toMatchObject({
       if: "startsWith(github.ref, 'refs/tags/desktop-v')",

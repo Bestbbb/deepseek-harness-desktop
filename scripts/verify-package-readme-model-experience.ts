@@ -44,6 +44,10 @@ const NO_MODEL_EXPERIENCE_SECTION: Readonly<Record<string, string>> = {
  * blocks. A package moves on or off this list with its context behavior.
  */
 const SENTENCE_MODEL_EXPERIENCE: Readonly<Record<string, SentenceContract>> = {
+  'packages/desktop/bundle-preparation': { kind: 'none', reason: 'Local artifact preparation changes no active composition or model input.' },
+  'packages/desktop/bundle-marketplace': { kind: 'none', reason: 'Browser discovery and next-launch commands add no active model input.' },
+  'packages/desktop/focus-timer': { kind: 'none', reason: 'Browser-local countdown adds no model input or session events.' },
+  'packages/desktop/notification-controls': { kind: 'none', reason: 'Desktop notification policy adds no model input or session events.' },
   'packages/attachment/attachment': { kind: 'indirect', reason: 'The storage seam delegates model request rendering to provider adapters.' },
   'packages/attachment/attachment-local': { kind: 'indirect', reason: 'The local backend delegates model request rendering to provider adapters.' },
   'packages/shell/shell': { kind: 'indirect', reason: 'The service interface delegates all model rendering to dsh-tool-bash.' },

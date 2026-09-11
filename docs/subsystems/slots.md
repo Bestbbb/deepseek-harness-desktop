@@ -126,7 +126,8 @@ root
 │        ├─ settings.models.provider-card
 │        ├─ settings.models.footer
 │        └─ settings.plugins.tab
-│           └─ settings.plugin.item
+│           ├─ settings.plugin.item
+│           └─ settings.bundleMarketplace.action
 ├─ conversation
 │  ├─ conversation.session
 │  │  └─ conversation.view

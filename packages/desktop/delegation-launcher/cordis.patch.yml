@@ -1,0 +1,3 @@
+- insert:
+    - id: delegation-launcher
+      name: '@deepseek-ai/dsh-delegation-launcher'

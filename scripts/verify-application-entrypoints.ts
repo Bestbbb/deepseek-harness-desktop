@@ -68,6 +68,9 @@ const SOURCE_PATTERNS = [
 ]
 
 const SOURCE_EXCLUDES = [
+  // Desktop preparation owns this generated deployment, including third-party tool executables.
+  'apps/desktop/resources/runtime/**',
+  'apps/desktop/src-tauri/target/**/runtime/**',
   '**/node_modules/**',
   '**/lib/**',
   '**/dist/**',

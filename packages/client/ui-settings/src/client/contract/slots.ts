@@ -95,11 +95,8 @@ export interface SettingsGeneralItemOwnerProps {
   children?: never
 }
 
-/** Owner share of a Plugins tab (the section supplies nothing). */
-export interface SettingsPluginsTabOwnerProps {
-  /** Marker field: tab owner props are intentionally empty. */
-  children?: never
-}
+/** Owner share of a Plugins tab; opening a plugin can leave the Settings panel. */
+export interface SettingsPluginsTabOwnerProps extends SettingsSectionOwnerProps {}
 
 /** Owner share of the trigger content seat: the sidebar column state. */
 export interface SettingsTriggerOwnerProps {

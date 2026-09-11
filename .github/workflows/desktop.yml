@@ -73,11 +73,40 @@ jobs:
       - name: Verify bundled runtime and desktop authentication
         run: pnpm run desktop:smoke
 
+      - name: Install plugin smoke browser
+        run: pnpm --filter @deepseek-ai/dsh-web-frontend exec playwright install chromium
+
+      - name: Verify external plugin install and browser activation
+        run: pnpm run desktop:smoke:plugins
+
+      - name: Verify marketplace discovery and next-launch commands
+        env:
+          DSH_SNAPSHOT: replay
+        run: pnpm exec vitest run --config vitest.web.config.ts apps/web/tests/bundle-marketplace.e2e.ts apps/web/tests/focus-timer.e2e.ts
+
+      - name: Test marketplace and preparation services
+        run: pnpm exec vitest run packages/desktop/bundle-marketplace/tests packages/desktop/bundle-preparation/tests packages/desktop/focus-timer/tests --testTimeout=90000 --hookTimeout=90000
+
+      - name: Test packaged package manager
+        run: pnpm exec vitest run scripts/desktop-package-manager.spec.ts --testTimeout=90000 --hookTimeout=90000
+
       - name: Test desktop TypeScript surfaces
         run: pnpm run desktop:test
 
       - name: Test native host
         run: cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml
+
+      - name: Test packaged Profile startup and failed activation recovery
+        run: cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml packaged_profile_selection_and_recovery -- --ignored
+
+      - name: Verify packaged local-agent opt-ins
+        run: cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml packaged_provider_and_preset_smoke -- --ignored
+
+      - name: Verify packaged agent execution runtimes without account access
+        run: cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml packaged_agent_versions_without_host_cli_or_user_credentials -- --ignored --nocapture
+
+      - name: Verify packaged Skill installation lifecycle
+        run: cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml packaged_skill_lifecycle -- --ignored
 
       - name: Build desktop installers
         if: runner.os != 'Windows'

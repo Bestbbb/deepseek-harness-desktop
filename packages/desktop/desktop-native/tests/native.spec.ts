@@ -3,12 +3,143 @@ import { Context } from '@deepseek-ai/cordis'
 import SystemPrompt, { renderPrompt } from '@deepseek-ai/dsh-system-prompt'
 import { SessionStore, SessionId, type TurnEndReason } from '@deepseek-ai/dsh-session'
 import NativeDesktopHost, { resolveConfig } from '../src/index.ts'
+import type { DesktopProfileName } from '@deepseek-ai/dsh-desktop'
 
 afterEach(() => {
   vi.unstubAllGlobals()
 })
 
 describe('desktop native bridge provider', () => {
+  it('opens agent settings through the private bridge without paths, account or activation input', async () => {
+    const fetch = vi.fn((_url: URL, _init: RequestInit) => Promise.resolve(new Response('{"ok":true}')))
+    vi.stubGlobal('fetch', fetch)
+    const ctx = new Context()
+    try {
+      await ctx.plugin(NativeDesktopHost, { endpoint: 'http://127.0.0.1:43123', token: 'token' })
+      expect(fetch).not.toHaveBeenCalled()
+      await ctx.desktop.openLocalAgents()
+      expect(fetch).toHaveBeenCalledOnce()
+      expect(fetch.mock.calls[0]![0].pathname).toBe('/v1/local-agents')
+      expect(fetch.mock.calls[0]![1]).toMatchObject({ method: 'POST', headers: { 'x-dsh-desktop-bridge-token': 'token' } })
+      expect(fetch.mock.calls[0]![1].body).toBeUndefined()
+      fetch.mockResolvedValueOnce(new Response('', { status: 403 }))
+      await expect(ctx.desktop.openLocalAgents()).rejects.toThrow('HTTP 403')
+    } finally { await ctx.fiber.dispose() }
+  })
+  it('reads native selection and sends queue or exact cancellation without restarting', async () => {
+    const selection = { schemaVersion: 1, activeProfile: 'web', previousProfile: null, pending: null, trial: null, lastFailure: null }
+    const fetch = vi.fn((_url: URL, _init: RequestInit) => Promise.resolve(new Response(JSON.stringify({ ok: true, selection }))))
+    vi.stubGlobal('fetch', fetch)
+    const ctx = new Context()
+    try {
+      await ctx.plugin(NativeDesktopHost, { endpoint: 'http://127.0.0.1:43123', token: 'token' })
+      expect(await ctx.desktop.profileSelection()).toEqual(selection)
+      const candidate = { profile: 'desktop-00000000-0000-4000-8000-000000000001' as DesktopProfileName,
+        previousProfile: 'web' as DesktopProfileName, manifestSha256: 'a'.repeat(64) }
+      await ctx.desktop.queueProfile(candidate)
+      await ctx.desktop.cancelProfile(candidate.profile)
+      expect(fetch.mock.calls.map(([url]) => url.pathname)).toEqual(['/v1/profile-selection', '/v1/profile-queue', '/v1/profile-cancel'])
+      expect(fetch.mock.calls[1]![1]).toMatchObject({ method: 'POST', body: JSON.stringify(candidate) })
+      expect(fetch.mock.calls[2]![1]).toMatchObject({ method: 'POST', body: JSON.stringify({ profile: candidate.profile }) })
+    } finally { await ctx.fiber.dispose() }
+  })
+
+  it('bounds and validates the complete Profile response instead of trusting native JSON', async () => {
+    const fetch = vi.fn<() => Promise<Response>>()
+    vi.stubGlobal('fetch', fetch)
+    const ctx = new Context()
+    const selection = { schemaVersion: 1, activeProfile: 'web', previousProfile: null, pending: null, trial: null, lastFailure: null }
+    const valid = JSON.stringify({ ok: true, selection })
+    try {
+      await ctx.plugin(NativeDesktopHost, { endpoint: 'http://127.0.0.1:43123', token: 'token' })
+      fetch.mockResolvedValueOnce(new Response(valid.padEnd(65_536, ' ')))
+      expect(await ctx.desktop.profileSelection()).toEqual(selection)
+      for (const response of [new Response(valid.padEnd(65_537, ' ')), new Response(null), new Response('{'),
+        new Response(new Uint8Array([255])), new Response(JSON.stringify({ ok: true, selection: { ...selection, schemaVersion: 2 } })),
+        new Response(JSON.stringify({ ok: true, selection: { ...selection, activeProfile: '../unsafe' } })),
+        new Response(JSON.stringify({ ok: true, selection: { ...selection, pending: { profile: 'web', previousProfile: 'web', manifestSha256: 'a'.repeat(64) } } })),
+      ]) {
+        fetch.mockResolvedValueOnce(response)
+        await expect(ctx.desktop.profileSelection()).rejects.toThrow()
+      }
+    } finally { await ctx.fiber.dispose() }
+  })
+
+  it('requires launcher readiness and validates per-child acknowledgement identities', async () => {
+    const ctx = new Context()
+    try {
+      await expect(ctx.plugin(NativeDesktopHost, { endpoint: 'http://127.0.0.1:43123', token: 'token',
+        startupToken: 'a'.repeat(32),
+      })).rejects.toThrow('launcher-owned appReady')
+      expect(() => resolveConfig({ endpoint: 'http://127.0.0.1:43123', token: 'token', startupToken: 'invalid' }))
+        .toThrow('per-child hexadecimal identity')
+    } finally { await ctx.fiber.dispose() }
+  })
+
+  it('acknowledges committed launcher startup, never plugin mounting or disposed listeners', async () => {
+    const fetch = vi.fn((_url: URL, _init: RequestInit) => Promise.resolve(new Response('{"ok":true}')))
+    vi.stubGlobal('fetch', fetch)
+    const ctx = new Context()
+    const listeners = new Set<() => void>()
+    ctx.provide('appReady', { onReady(listener) { listeners.add(listener); return () => { listeners.delete(listener) } } })
+    try {
+      const fiber = await ctx.plugin(NativeDesktopHost, { endpoint: 'http://127.0.0.1:43123', token: 'bridge-secret',
+        startupToken: 'a'.repeat(32),
+      })
+      expect(fetch).not.toHaveBeenCalled()
+      for (const listener of listeners) listener()
+      expect(fetch).toHaveBeenCalledOnce()
+      expect(fetch.mock.calls[0]?.[0].href).toBe('http://127.0.0.1:43123/v1/runtime-ready')
+      expect(fetch.mock.calls[0]?.[1].body).toBe(JSON.stringify({ attempt: 'a'.repeat(32) }))
+      expect(fetch.mock.calls[0]?.[1].headers).toMatchObject({ 'x-dsh-desktop-bridge-token': 'bridge-secret' })
+      await fiber.dispose()
+      expect(listeners.size).toBe(0)
+      const pending = await ctx.plugin(NativeDesktopHost, { endpoint: 'http://127.0.0.1:43123', token: 'bridge-secret',
+        startupToken: 'b'.repeat(32),
+      })
+      await pending.dispose()
+      expect(listeners.size).toBe(0)
+      expect(fetch).toHaveBeenCalledOnce()
+    } finally { await ctx.fiber.dispose() }
+  })
+
+  it('aborts and drains acknowledgement transport before disposal completes', async () => {
+    const aborted = Promise.withResolvers<undefined>()
+    const release = Promise.withResolvers<undefined>()
+    vi.stubGlobal('fetch', vi.fn(async (_url: URL, init: RequestInit) => {
+      init.signal!.addEventListener('abort', () => { aborted.resolve(undefined) }, { once: true })
+      await release.promise
+      throw new Error('private transport failure')
+    }))
+    const ctx = new Context()
+    const warn = vi.spyOn(ctx.logger, 'warn').mockImplementation(() => {})
+    ctx.provide('appReady', { onReady(listener) { listener(); return () => {} } })
+    let disposal: Promise<unknown> | undefined
+    try {
+      const fiber = await ctx.plugin(NativeDesktopHost, { endpoint: 'http://127.0.0.1:43123', token: 'bridge-secret',
+        startupToken: 'a'.repeat(32),
+      })
+      let settled = false
+      disposal = fiber.dispose().then(() => { settled = true })
+      await aborted.promise
+      expect(settled).toBe(false)
+      release.resolve(undefined)
+      await disposal
+      expect(warn).not.toHaveBeenCalled()
+    } finally { release.resolve(undefined); await disposal; await ctx.fiber.dispose(); warn.mockRestore() }
+  })
+
+  it('contains a rejected startup acknowledgement without logging launch identities', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('', { status: 403 })))
+    const ctx = new Context()
+    const warn = vi.spyOn(ctx.logger, 'warn').mockImplementation(() => {})
+    ctx.provide('appReady', { onReady(listener) { listener(); return () => {} } })
+    try {
+      await ctx.plugin(NativeDesktopHost, { endpoint: 'http://127.0.0.1:43123', token: 'bridge-secret', startupToken: 'a'.repeat(32) })
+      await expect.poll(() => warn.mock.calls.length).toBe(1)
+      expect(warn).toHaveBeenCalledWith('desktop-native: startup acknowledgement could not be delivered')
+    } finally { await ctx.fiber.dispose(); warn.mockRestore() }
+  })
   it('keeps turn notifications opt-in outside the desktop overlay', async () => {
     const fetch = vi.fn()
     vi.stubGlobal('fetch', fetch)
@@ -77,6 +208,35 @@ describe('desktop native bridge provider', () => {
     } finally {
       await ctx.fiber.dispose()
     }
+  })
+
+  it('delegates notification policy, contains thrown policies, and restores delivery after policy disposal', async () => {
+    const fetch = vi.fn(() => Promise.resolve(new Response('{"ok":true}')))
+    vi.stubGlobal('fetch', fetch)
+    const ctx = new Context()
+    const warn = vi.spyOn(ctx.logger, 'warn').mockImplementation(() => {})
+    try {
+      await ctx.plugin(SessionStore)
+      await ctx.plugin(NativeDesktopHost, { endpoint: 'http://127.0.0.1:43123', token: 'token', notifyOnTurnEnd: true })
+      const policy = ctx.plugin({ apply(policyCtx: Context) {
+        policyCtx.on('desktop/task-notification', (outcome, next) => outcome === 'error' && next())
+      } })
+      await policy.await()
+      const session = ctx.sessions.create()
+      session.append('turn/end', { turn: 1, reason: { kind: 'completed' } })
+      expect(fetch).not.toHaveBeenCalled()
+      session.append('turn/end', { turn: 2, reason: { kind: 'error', error: { code: 'UNKNOWN', message: 'private' } } })
+      expect(fetch).toHaveBeenCalledOnce()
+      await policy.dispose()
+      const off = ctx.on('desktop/task-notification', () => { throw new Error('private policy error') })
+      expect(() => session.append('turn/end', { turn: 3, reason: { kind: 'completed' } })).not.toThrow()
+      await expect.poll(() => warn.mock.calls.length).toBe(1)
+      expect(warn).toHaveBeenCalledWith('desktop-native: background notification could not be delivered')
+      expect(fetch).toHaveBeenCalledOnce()
+      off()
+      session.append('turn/end', { turn: 4, reason: { kind: 'completed' } })
+      expect(fetch).toHaveBeenCalledTimes(2)
+    } finally { await ctx.fiber.dispose(); warn.mockRestore() }
   })
 
   it.each([true, false])('scopes desktop orientation to the provider lifetime (prompt first: %s)', async (promptFirst) => {

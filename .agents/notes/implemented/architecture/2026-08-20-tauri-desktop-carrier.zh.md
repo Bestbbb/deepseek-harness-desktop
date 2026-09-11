@@ -14,7 +14,9 @@ DeepSeek Harness 需要可安装的 macOS 和 Windows 应用，但不应把 Elec
 
 `apps/desktop-runtime` 是生产部署根。它的 manifest（元数据清单）显式闭合 workspace 运行时依赖图，避免 `pnpm deploy --prod --legacy` 静默遗漏只通过 peer 引入的 Harness 包。[依赖生成器](../../../../scripts/sync-desktop-runtime.ts)根据生产依赖图生成清单，[闭包校验器](../../../../scripts/verify-runtime-closure.ts)检查 Profile 可达性。[运行时准备脚本](../../../../apps/desktop/scripts/prepare-runtime.mjs)校验官方 Node 归档的 checksum，并写入运行时清单。每个目标操作系统自行构建运行时与安装包，不在平台之间复制二进制文件。
 
-Rust supervisor 使用生成的 patch 和独立应用数据 `DSH_HOME` 启动 `dsh web`。CLI 提前打印的 `dsh web:` 只代表已分配地址；supervisor 必须等 TCP 真实监听后才导航。运行时意外退出会在稳定端口重启，保留 WebView 和未发送的界面状态。退出时，Unix 通过进程组、Windows 通过 Job Object 管理并终止所有后代进程。
+Rust supervisor 使用生成的 patch 和独立应用数据 `DSH_HOME` 启动选定的 dsh Profile，默认为 `web`。Web 应用在 Loader 完成后打印 `dsh web:` 地址。supervisor 还须等 TCP 真实监听，并收到经过认证、包括加载后宿主设置在内的启动器成功启动确认后才导航。[启动所有者](../../../../apps/desktop/src-tauri/src/startup.rs)将确认绑定到全新子进程标识，并在所有者结束后拒绝迟到回复。原生提供方通过现有启动器管理的 `appReady` 信号注册，不改变加载器或 agent loop。[下次启动选择](2026-09-07-desktop-profile-startup-selection.zh.md)负责候选确认和试启动失败恢复。运行时意外退出会在稳定端口重启，保留 WebView 和未发送的界面状态。退出时，Unix 通过进程组、Windows 通过 Job Object 管理并终止所有后代进程。
+
+内置运行时冒烟测试会在真实插件启动期间暂停，观察 HTTP 监听器已绑定，再释放该插件使其启动报错。未完成或失败的启动都不会发送确认。原生测试拒绝仅有监听器的就绪状态及陈旧子进程标识；提供方测试证明就绪监听器移除及取消后的请求收尾。启动确认不代表持续插件健康、审核代码授权、Profile 切换或回滚。
 
 原生依赖重建通过 npm 生命周期执行器处理显式批准的包列表。旧式 pnpm 部署保留 workspace importer 标识和空的根 importer，因此在部署根运行 `pnpm rebuild` 无法遍历到这些依赖。桌面项目将生命周期执行器与 `node-gyp` 固定为开发依赖，并向每个 preinstall、install 和 postinstall 操作显式传入编译器；任一脚本失败都会终止该序列。这避免了 `npm rebuild` 选择自身内置、却不支持构建器所需 Visual Studio 的编译器。Node-gyp 显式接收内置 Node 版本与架构，而不是继承构建器的 ABI；准备步骤再用内置可执行文件验证原生模块加载。这涵盖会话锁使用的 ABI 相关 `fs-ext` 绑定。部署流程没有跨平台原生扩展构建路径，因此在替换输出前拒绝与当前机器不同的运行时目标。
 
@@ -28,7 +30,7 @@ Rust supervisor 使用生成的 patch 和独立应用数据 `DSH_HOME` 启动 `d
 
 目标平台原生生命周期测试通过独立进程句柄，观察分配失败、恢复失败、所有者释放、退出期间拒绝新增 Job 成员，以及根进程退出后的后代终止。Windows 测试夹具是清理过环境变量的测试可执行文件子进程，在后代就绪后才公布其 PID。Unix 所有者也会在释放时清理，进程组回归测试依据实际退出状态完成观察。[Desktop 工作流](../../../../.github/workflows/desktop.yml)在各自原生操作系统执行这些测试；仅通过交叉编译检查不能证明 Windows 生命周期行为。这些仅涉及进程所有权的变更不改变模型轨迹或会话格式。
 
-回环地址不是权限边界。WebView 打开上游启动 URL，用其中的随机 token 换取 HttpOnly、SameSite=Strict cookie。上游 Connection host 在分发 HTTP 和 WebSocket 请求前校验浏览器认证，桌面覆盖层不替换该协议。TypeScript 到 Rust 的私有 bridge 使用每次启动单独生成的随机 token，允许的操作仅为状态、显示、通知和开机启动。桌面日志会脱敏启动 URL 中的 token。
+回环地址不是权限边界。WebView 打开上游启动 URL，用其中的随机 token 换取 HttpOnly、SameSite=Strict cookie。上游 Connection host 在分发 HTTP 和 WebSocket 请求前校验浏览器认证，桌面覆盖层不替换该协议。TypeScript 到 Rust 的私有 bridge 使用每次启动单独生成的随机 token，允许的操作仅为状态、显示、通知、开机启动、逐子进程启动确认及下次启动 Profile 的查询、排队和取消操作。桌面日志会脱敏启动 URL 中的 token。
 
 桌面数据默认与 CLI 隔离，不会静默共享可变 profile。本版继续在 `credentials` Service 后使用现有只写本地凭证；后续可替换为 Keychain/Credential Manager provider，不改调用方。凭证缺失、格式错误或认证拒绝只显示安全文案，错误行提供直接恢复操作；即使跳过 onboarding，侧栏仍保留持久警告。
 
@@ -48,6 +50,8 @@ Rust supervisor 使用生成的 patch 和独立应用数据 `DSH_HOME` 启动 `d
 桌面品牌在原生包、启动页、仅限桌面的侧栏回退和文档网站图标中使用蓝色交扣 Harness 标记。SVG 源文件让小尺寸资源保持清晰，无需向客户端加载光栅概念稿。macOS 渲染单色托盘模板，其他平台使用应用图标。上游 Web 品牌和自定义侧栏品牌 slot 保持不变。
 
 ## 考虑过的替代方案
+
+**将端口已绑定视为启动成功。** 拒绝，因为一个插件可以打开 Web 监听器，而另一个插件仍在等待初始化或发生失败。提交信号由启动器管理；全新子进程标识可防止之前尝试的迟到回复确认其替代进程。
 
 - **Electron**：Harness 不需要额外捆绑 Chromium，也不需要 Node-in-renderer；系统 WebView 加受控 Node sidecar 可以保留同一个产品，并显著减少壳层开销，因此未采用。
 - **Rust/GPUI 全量重写**：首版会复制 Agent 语义和完整 UI，因此未采用。Rust 只用在真正有价值的操作系统与生命周期边界，而不是成为第二套 Harness。

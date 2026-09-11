@@ -1,0 +1,29 @@
+- main:
+  - heading "Extensions" [level=1]
+  - paragraph: Curated agents and Skills.
+  - button "Agents"
+  - button "Skills" [pressed]
+  - region "Curated Skills":
+    - heading "Curated Skills" [level=2]
+    - button "Refresh status"
+    - paragraph: Skills contain instructions that can influence agent decisions and tool use. Installation itself runs no scripts, but a Skill is not a sandbox. Review the exact content before installing. No API key is sent to the download host.
+    - status
+    - article "Frontend Design":
+      - heading "Frontend Design" [level=3]
+      - paragraph: Guidance for intentional UI design, typography, and layout. English instructions; no bundled scripts.
+      - paragraph: Anthropic · Apache-2.0
+      - paragraph: Not installed
+      - paragraph: Pinned revision
+      - text: 41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f https://github.com/anthropics/skills/tree/41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f/skills/frontend-design
+      - group: Files and SHA-256
+      - button "Review download"
+      - group: SKILL.md Reviewed fixture <img src=x onerror=alert(1)>
+      - group: LICENSE.txt
+      - group: THIRD_PARTY_NOTICES.md
+      - checkbox "I reviewed these instructions and allow Harness to make this Skill available to my agents." [checked]
+      - text: I reviewed these instructions and allow Harness to make this Skill available to my agents.
+      - button "Install reviewed version"
+      - status
+  - region "Curated preview":
+    - heading "Curated preview" [level=2]
+    - paragraph: The catalog ships with the app. Skill review and installation download only pinned text files from GitHub. Open submissions, arbitrary packages, MCP installation, automatic updates, and version rollback are not available.

@@ -30,8 +30,17 @@ The [desktop overlay](../../../apps/desktop/runtime/desktop.cordis.yml) mounts t
 | `token` | Required | Secret-role token for the native bridge, never placed in a URL. |
 | `timeoutMs` | `5000` | Independent deadline in milliseconds for each operation. |
 | `notifyOnTurnEnd` | `false` | Notify on live top-level completion or failure; enabled by the desktop overlay. |
+| `startupToken` | Omitted | Per-child hexadecimal identity supplied by Rust; requires the launcher's `appReady` service. |
+
+With `startupToken`, the provider acknowledges successful launcher startup over the authenticated private bridge. Mounting the provider or opening the HTTP listener does not send that acknowledgement. Unloading detaches the readiness listener, cancels in-flight acknowledgement transport, and awaits its settlement. Delivery failure logs no launch identity and leaves the native startup deadline in force. Rust accepts only its currently owned child identity and requires both the acknowledgement and an open listener before navigation. This confirms startup, not every plugin feature or future runtime health.
 
 Background turn notifications omit task text and error details. The native host suppresses them while the main window is focused. Canceled or blocked turns, child sessions, and restored history do not notify; unloading the provider removes the observer. The provider logs notification failures without failing an already committed turn. OS notification permission is still required; clicking a notification does not select its Session.
+
+Before sending an eligible task notification, the provider asks the synchronous `desktop/task-notification` waterfall. A policy calls `next()` to delegate or returns false to suppress that notification. Without listeners, delivery is permitted; a thrown policy suppresses delivery and logs a generic warning without changing the committed turn. The optional [Notification Controls Bundle](../notification-controls/README.md) supplies persistent switches. This policy does not govern direct `ctx.desktop.notify()` calls.
+
+Profile selection reads validate the native JSON version, identifiers and fields within a 65536-byte response limit. Queue and cancellation forward exact identities through the authenticated bridge; neither restarts the runtime. The provider keeps no activation mirror. A timeout does not prove that a mutating request failed to commit; consumers retain prepared files and inspect selection before retry or cleanup.
+
+Opening local-agent settings sends a fixed, argument-free request to the native host. It neither reads account data nor runs probes. The existing native extension window owns checks and saved choices; the browser receives no native command permission or bridge token.
 
 <a id="implementation"></a>
 

@@ -12,6 +12,9 @@ import { spawn } from 'node:child_process'
 import { pipeline } from 'node:stream/promises'
 import { prepareRuntimeOutput } from './runtime-output.mjs'
 import { assertNativeBuildHost, rebuildNativePackage } from './runtime-native.mjs'
+import { preparePackageManager } from './runtime-package-manager.mjs'
+import { prepareMarketplace } from './runtime-marketplace.mjs'
+import { agentProbeManifest } from './runtime-agent-probes.mjs'
 
 const desktopDir = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const repoRoot = resolve(desktopDir, '../..')
@@ -213,6 +216,7 @@ function includeInStaging(source) {
   if (segments.includes('.git') || segments.includes('node_modules')) return false
   if (path === join('apps', 'desktop', '.runtime-cache') || path.startsWith(`${join('apps', 'desktop', '.runtime-cache')}${sep}`)) return false
   if (path === join('apps', 'desktop', 'resources', 'runtime') || path.startsWith(`${join('apps', 'desktop', 'resources', 'runtime')}${sep}`)) return false
+  if (path === join('apps', 'desktop', 'resources', 'marketplace') || path.startsWith(`${join('apps', 'desktop', 'resources', 'marketplace')}${sep}`)) return false
   if (path === join('apps', 'desktop', 'src-tauri', 'target') || path.startsWith(`${join('apps', 'desktop', 'src-tauri', 'target')}${sep}`)) return false
   return true
 }
@@ -256,15 +260,22 @@ await prepareRuntimeOutput(output, [repoRoot, homedir()])
 await mkdir(dirname(nodeOutput), { recursive: true })
 await deployRuntime()
 await installNodeRuntime()
+const pnpmVersion = await preparePackageManager(output)
 await pruneForeignNodePtyPrebuilds()
 const prunedDevelopmentArtifacts = await pruneDevelopmentArtifacts(appOutput)
 await assertRuntimeTarget()
 await copyFile(join(desktopDir, 'runtime/desktop.cordis.yml'), join(output, 'desktop.cordis.yml'))
+await prepareMarketplace(join(output, 'marketplace'), nodeOutput, join(output, 'tools/pnpm/bin/pnpm.mjs'), targetPlatform, targetArch)
 await copyFile(join(repoRoot, 'THIRD_PARTY_NOTICES.md'), join(output, 'THIRD_PARTY_NOTICES.md'))
 const rootPackage = JSON.parse(await readFile(join(repoRoot, 'package.json'), 'utf8'))
+await writeFile(join(output, 'agent-runtimes.json'), `${JSON.stringify(await agentProbeManifest(output, {
+  codex: join(appOutput, 'node_modules/@deepseek-ai/dsh-subagent-codex/lib/index.js'),
+  claude: join(appOutput, 'node_modules/@deepseek-ai/dsh-subagent-claude-code/lib/index.js'),
+}, targetPlatform, targetArch), null, 2)}\n`)
 await writeFile(join(output, 'runtime-manifest.json'), `${JSON.stringify({
   harnessVersion: rootPackage.version,
   nodeVersion: `v${nodeVersion}`,
+  pnpmVersion,
   platform: targetPlatform,
   arch: targetArch,
 }, null, 2)}\n`)

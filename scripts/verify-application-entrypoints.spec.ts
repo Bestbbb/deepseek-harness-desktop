@@ -47,6 +47,21 @@ describe('application entrypoints', () => {
     ])
   })
 
+  it('excludes only the generated desktop deployment, not neighboring executable sources', () => {
+    const root = fixture()
+    write(root, 'apps/desktop/resources/runtime/tools/pnpm/bin/pnpm.mjs', '#!/usr/bin/env node\n')
+    write(root, 'apps/desktop/src-tauri/target/debug/runtime/tools/pnpm/bin/pnpm.mjs', '#!/usr/bin/env node\n')
+    write(root, 'apps/desktop/src-tauri/target/x86_64-pc-windows-msvc/release/runtime/tools/pnpm/bin/pnpm.cjs', '#!/usr/bin/env node\n')
+    write(root, 'apps/desktop/src-tauri/src/rogue.mjs', '#!/usr/bin/env node\n')
+    write(root, 'apps/desktop/runtime/rogue.mjs', '#!/usr/bin/env node\n')
+    write(root, 'apps/desktop/resources/rogue.mjs', '#!/usr/bin/env node\n')
+    expect(applicationEntrypointViolations(root)).toEqual([
+      'apps/desktop/resources/rogue.mjs: executable source has no application/build/test classification',
+      'apps/desktop/runtime/rogue.mjs: executable source has no application/build/test classification',
+      'apps/desktop/src-tauri/src/rogue.mjs: executable source has no application/build/test classification',
+    ])
+  })
+
   it('rejects an executable at an application package root', () => {
     const root = fixture()
     write(root, 'apps/example/rogue.mjs', '#!/usr/bin/env node\n')

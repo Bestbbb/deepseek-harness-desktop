@@ -11,3 +11,35 @@
         notifyOnTurnEnd: true
         endpoint: !!js process.env.DSH_DESKTOP_BRIDGE_URL
         token: !!js process.env.DSH_DESKTOP_BRIDGE_TOKEN
+        startupToken: !!js process.env.DSH_DESKTOP_STARTUP_TOKEN
+    - id: desktop-bundle-preparation
+      name: __DSH_BUNDLE_PREPARATION_ENTRY__
+      config:
+        catalogFile: __DSH_BUNDLE_CATALOG__
+        artifactDirectory: __DSH_BUNDLE_ARTIFACTS__
+        stagingDirectory: __DSH_BUNDLE_STAGING__
+        hostVersion: __DSH_HARNESS_VERSION__
+        maxCatalogBytes: 1048576
+        maxArtifactBytes: 52428800
+        installer:
+          nodeExecutable: !!js process.execPath
+          packageManagerEntry: __DSH_BUNDLE_PNPM_ENTRY__
+          packageManagerVersion: __DSH_BUNDLE_PNPM_VERSION__
+          timeoutMs: 60000
+          graceMs: 1000
+          maxOutputBytes: 65536
+          maxExpandedBytes: 134217728
+          maxArchiveEntries: 10000
+          maxManifestBytes: 1048576
+        composition:
+          harnessHome: __DSH_BUNDLE_HOME__
+          profileName: web
+          dshEntry: __DSH_BUNDLE_DSH_ENTRY__
+          maxProfileBytes: 536870912
+          maxProfileEntries: 100000
+        journal:
+          directory: __DSH_BUNDLE_JOURNAL__
+          maxEntries: 1000
+          maxRecordBytes: 1048576
+    - id: desktop-bundle-marketplace
+      name: __DSH_BUNDLE_MARKETPLACE_ENTRY__

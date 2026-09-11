@@ -55,6 +55,8 @@ The section is one extension point and one dispatch rule: feature plugins own th
 
 The section declares `settings.plugins.tab`, a root list slot whose labels become ordered tabs; a tab stays mounted after its first selection so local drafts and read-only snapshots survive tab switches. The package registers its own `configurable` contribution, which declares the nested `settings.plugin.item` slot — keyed on the settings namespace a card edits. A plugin that ships a browser half registers its own card under its own namespace and owns every part of it: chrome, controls, and copy. Tabs follow the contribution's `order`; cards follow registration order.
 
+Each visited tab receives the section's `close` callback unchanged, so plugin-owned launch controls can leave the enclosing Settings panel.
+
 ### The write path
 
 Saving writes staged fields through the client settings scope, which fences each write or ordered mutation with the namespace revision the draft read, so a form that has drifted from the document is refused rather than overwriting a concurrent change. A field's presence in the raw user layer — not its value — is what marks it overridden; a reset clears that field so it re-inherits the composition layer. Secret-role fields never ride a response; the card re-reads on the forwarded `credentials/reference-updated` event for the reference it watches.

@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Extensions · Harness Desktop</title>
+    <style>
+      :root { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #202b3d; background: #f8faff; font-size: 14px; --muted: #596980; --line: #dee5ef; --panel: #fff; --blue: #315fec; }
+      * { box-sizing: border-box; }
+      [hidden] { display: none !important; }
+      body { margin: 0; }
+      main { max-width: 820px; padding: 32px; margin: auto; }
+      header { display: flex; gap: 14px; align-items: center; margin-bottom: 30px; }
+      h1 { font-size: 24px; margin: 0; letter-spacing: -.6px; }
+      h2 { font-size: 17px; margin: 0; }
+      h3 { font-size: 16px; margin: 0; }
+      p { line-height: 1.65; }
+      .muted, dt { color: var(--muted); }
+      header p { margin: 5px 0 0; }
+      .section-title { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+      button { font: inherit; color: var(--blue); background: var(--panel); border: 1px solid var(--line); border-radius: 7px; padding: 8px 13px; cursor: pointer; }
+      button:disabled { opacity: .55; cursor: default; }
+      :is(button, summary, input, select):focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+      .agent { padding: 21px; margin-top: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+      @media (min-width: 700px) { #agents { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; } .agent dl { grid-template-columns: 1fr; gap: 3px; } .agent dd { margin-bottom: 7px; } }
+      .agent-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+      .badge { font-size: 12px; color: var(--muted); background: #ecf0f7; padding: 5px 9px; border-radius: 5px; }
+      .badge[data-state="runnable"] { color: #1b6945; background: #e4f4eb; }
+      dl { display: grid; grid-template-columns: 125px 1fr; gap: 9px 15px; margin: 18px 0 0; line-height: 1.5; }
+      dd { margin: 0; overflow-wrap: anywhere; }
+      .path { font: 12px ui-monospace, SFMono-Regular, Consolas, monospace; }
+      .notice { border-left: 3px solid var(--blue); padding: 0 0 0 13px; margin: 22px 0; color: var(--muted); }
+      #progress { min-height: 23px; margin: 10px 0 0; color: var(--muted); }
+      #error { color: #ae3030; }
+      details { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 14px; }
+      summary { cursor: pointer; color: var(--blue); }
+      pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 12px; background: #f0f3f9; border-radius: 6px; user-select: all; }
+      .catalog { margin-top: 30px; }
+      .catalog p { margin-bottom: 0; }
+      .opt-ins { display: flex; gap: 22px; flex-wrap: wrap; margin: 16px 0; }
+      label { display: flex; align-items: center; gap: 8px; }
+      input { accent-color: var(--blue); width: 16px; height: 16px; }
+      .toolbar, .filters, .save-actions { display: flex; align-items: center; gap: 10px; }
+      .toolbar { margin-bottom: 16px; }
+      #search { flex: 1; min-width: 0; width: auto; height: 38px; padding: 9px 12px; }
+      #search, select { font: inherit; color: inherit; background: var(--panel); border: 1px solid var(--line); border-radius: 7px; }
+      select { padding: 8px; max-width: 100%; }
+      .filters { flex-wrap: wrap; margin-bottom: 24px; }
+      .filters label { margin-left: auto; }
+      [aria-pressed="true"] { background: var(--blue); color: var(--panel); border-color: var(--blue); }
+      .agent:has(input:checked) { border-color: var(--blue); }
+      .agent { min-width: 0; align-self: start; }
+      .description { color: var(--muted); min-height: 46px; }
+      .choice { margin: 17px 0 0; font-size: 13px; }
+      .choice input { flex-shrink: 0; }
+      .save-bar { position: sticky; bottom: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-top: 22px; }
+      .save-actions { justify-content: space-between; flex-wrap: wrap; }
+      .save-actions p { margin: 0; flex: 1; min-width: 160px; }
+      #save { background: var(--blue); color: var(--panel); border-color: var(--blue); }
+      #saved:empty { display: none; }
+      #saved { margin: 12px 0 0; }
+      #empty { text-align: center; padding: 35px 12px; }
+      .catalog { font-size: 12px; }
+      .view-tabs { display: flex; gap: 10px; margin-bottom: 24px; }
+      .skill-actions { display: flex; gap: 10px; margin: 18px 0; flex-wrap: wrap; }
+      .skill-preview pre { max-height: 260px; overflow: auto; user-select: text; }
+      .skill-message { overflow-wrap: anywhere; }
+      @media (max-width: 560px) { main { padding: 22px; } dl { grid-template-columns: 1fr; gap: 3px; } dd { margin-bottom: 8px; } }
+      @media (prefers-color-scheme: dark) {
+        :root { color: #e3eaf5; background: #111722; --muted: #a2afc4; --line: #303b4c; --panel: #1a2230; --blue: #8aa8ff; }
+        .badge, pre { background: #263246; }
+        .badge[data-state="runnable"] { color: #98dfb8; background: #203c30; }
+        #error { color: #ff9d9d; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header><img src="icon.svg" width="42" height="42" alt="" /><div><h1 data-copy="title"></h1><p class="muted" data-copy="subtitle"></p></div></header>
+      <div class="view-tabs"><button id="agents-tab" data-copy="agentTab" aria-pressed="true"></button><button id="skills-tab" data-copy="skillTab" aria-pressed="false"></button></div>
+      <div id="agent-view">
+      <div class="toolbar"><input id="search" type="search" /><button id="check" data-copy="check" disabled></button></div>
+      <div class="filters">
+        <button id="browse" data-copy="browse" aria-pressed="true"></button><button id="selected" data-copy="selected" aria-pressed="false"></button>
+        <label><span data-copy="type"></span><select id="category"><option value="all" data-copy="all"></option><option value="sdk" data-copy="sdk"></option><option value="acp" data-copy="acp"></option></select></label>
+      </div>
+      <section aria-labelledby="local-heading">
+        <div class="section-title"><h2 id="local-heading" data-copy="local"></h2><span id="results" class="muted" role="status"></span></div>
+        <p id="progress" role="status" aria-live="polite" data-copy="idle"></p>
+        <p id="error" role="alert" hidden></p>
+        <div id="agents"></div>
+        <div id="empty" hidden><p data-copy="empty"></p><button id="clear" data-copy="clear"></button></div>
+      </section>
+      <section class="save-bar" aria-label="Preferences">
+        <div class="save-actions"><p id="selection" class="muted"></p><button id="reset" data-copy="reset" disabled></button><button id="save" data-copy="save" disabled></button></div>
+        <p id="saved" role="status" aria-live="polite"></p>
+      </section>
+      <p class="notice" data-copy="enableHelp"></p>
+      </div>
+      <section id="skill-view" hidden aria-labelledby="skill-heading">
+        <div class="section-title"><h2 id="skill-heading" data-copy="skillHeading"></h2><button id="skill-refresh" data-copy="skillRefresh"></button></div>
+        <p class="notice" data-copy="skillRisk"></p>
+        <p id="skill-status" role="status"></p>
+        <div id="skills"></div>
+      </section>
+      <section class="catalog" aria-labelledby="catalog-heading">
+        <h2 id="catalog-heading" data-copy="catalog"></h2>
+        <p class="muted" data-copy="catalogBody"></p>
+      </section>
+    </main>
+    <script>
+      const dictionaries = {
+        en: {
+          title: 'Extensions', subtitle: 'Curated agents and Skills.', local: 'Agent extensions', check: 'Check this computer', checking: 'Checking…',
+          agentTab: 'Agents', skillTab: 'Skills', skillHeading: 'Curated Skills', skillRefresh: 'Refresh status',
+          skillRisk: 'Skills contain instructions that can influence agent decisions and tool use. Installation itself runs no scripts, but a Skill is not a sandbox. Review the exact content before installing. No API key is sent to the download host.',
+          skillPreview: 'Review download', skillInstall: 'Install reviewed version', skillRemove: 'Uninstall', skillConfirmRemove: 'Confirm uninstall', skillCancel: 'Cancel',
+          skillConsent: 'I reviewed these instructions and allow Harness to make this Skill available to my agents.',
+          skillWaiting: 'Working…', skillFailed: 'Operation failed. Check the network and retry. If the target exists or has changed, preserve it and inspect the desktop Skills directory; this installer does not overwrite it.',
+          skillLoadFailed: 'Could not read Skill status. Retry after the current operation completes; linked or unreadable directories require manual inspection.',
+          skillInstalled: 'Installed. Start a new session, type /frontend-design, and select the Skill suggestion. Project Skills can override a user Skill with the same name. This status confirms files, not a model invocation.',
+          skillRemoved: 'Uninstalled. Existing conversation history is unchanged. Files are recoverable at:',
+          skillVersion: 'Pinned revision', skillFiles: 'Files and SHA-256', skillState: 'Installation', 'not-installed': 'Not installed', installed: 'Installed · files verified', conflict: 'Conflict · files left untouched',
+          skillRemoveHelp: 'Move this verified bundle out of the Skills directory into recovery storage? This does not erase prior conversation history.',
+          browse: 'Discover', selected: 'Selected', type: 'Type', all: 'All adapters', search: 'Search extensions', empty: 'No extensions match these filters.', clear: 'Clear filters', reset: 'Discard changes',
+          results: '{count} extensions', selection: '{count} selected for next launch', dirty: 'Unsaved changes', clean: 'No unsaved changes', choice: 'Use on next launch', source: 'Adapter source', sourceName: 'DeepSeek Harness upstream', tool: 'Delegation tool', setup: 'Details & permissions',
+          idle: 'Checks run only when requested. No model task is started.', done: 'Check complete. Results describe the checked execution runtimes, not active Harness integrations or a model request.',
+          failure: 'The check could not finish. Try again after the current check completes.',
+          boundary: 'Codex and Claude Code checks use the app’s pinned execution runtimes; Kimi and Qoder checks use your local CLI. Checks exclude inherited API-key and token variables; API-only setups may need a separate check in your terminal. No credentials are copied into Harness.',
+          enableTitle: 'Enable delegation', enableHelp: 'Select agents for the separate “Local agents” preset. Delegated tasks may use your provider quota and access the session workspace under each provider’s unattended permission policy. Standard sessions stay unchanged. Saving applies at the next runtime start, not to a running task.',
+          save: 'Save changes', saved: 'Saved. Finish active tasks, choose Retry Runtime from the app menu, then create a session with the “Local agents” preset. Ask it to delegate to a selected agent. Uncheck and save to disable an agent; that also takes effect after restart.',
+          saveFailed: 'Could not save. Check that the bundled providers are present and no diagnostic check is running.',
+          preferencesFailed: 'Could not load saved choices. Saving is disabled to protect the current configuration.',
+          catalog: 'Curated preview', catalogBody: 'The catalog ships with the app. Skill review and installation download only pinned text files from GitHub. Open submissions, arbitrary packages, MCP installation, automatic updates, and version rollback are not available.',
+          runtimeSource: 'Execution source', bundled: 'Bundled runtime', 'local-cli': 'Local CLI', version: 'Execution runtime version', path: 'Checked executable', auth: 'Local login', connection: 'Harness activation', unverified: 'Not reported here. Saved selections apply after restart.',
+          terminal: 'Run login in your own terminal, then check again. Select the command below to copy it. The CLI owns authorization; a successful status check does not verify quota or a real model request.',
+          install: 'If the program is missing, install the official CLI first. Installation and login are not run automatically.',
+          sdkInstall: 'The app supplies this runtime. Install the official CLI only if you need its login command. If the bundled runtime cannot start, repair or update the app.',
+          missing: 'Not found', runnable: 'Runtime can start', unavailable: 'Could not run', unrecognized: 'Version not recognized', timeout: 'Check timed out', 'manual-check': 'Check Windows shim in terminal',
+          unchecked: 'Not checked', authenticated: 'CLI reports signed in', 'signed-out': 'Sign-in required', unknown: 'Could not verify',
+          transport: 'Integration', sdk: 'Bundled adapter', acp: 'Local ACP · experimental', 'manual-auth': 'Confirm in the official CLI',
+          acpLimits: 'ACP entries use your installed CLI and its own login. They support one-shot delegation and cancellation, not continued child conversations or live tool traces. Approval requests are rejected; no permission bypass is enabled. Client-side filesystem and terminal services are unavailable. Separate processes are not a security sandbox.',
+          missingAgent: 'Not saved: install the selected ACP CLI first, then check again.', unsupportedShim: 'Not saved: Windows .cmd launchers are not supported for ACP yet.',
+        },
+        zh: {
+          title: '扩展中心', subtitle: '精选 Agent 与 Skills。', local: 'Agent 扩展', check: '检查本机', checking: '正在检查…',
+          agentTab: 'Agent', skillTab: 'Skills', skillHeading: '精选 Skills', skillRefresh: '刷新状态',
+          skillRisk: 'Skills 中的指令会影响 agent 的决策及工具使用。安装本身不执行脚本，但 Skill 不是沙箱。安装前请查看完整内容，不会向下载站点发送 API Key。',
+          skillPreview: '下载并查看内容', skillInstall: '安装已查看的版本', skillRemove: '卸载', skillConfirmRemove: '确认卸载', skillCancel: '取消',
+          skillConsent: '我已查看这些指令，同意 Harness 将此 Skill 提供给我的 agent 使用。',
+          skillWaiting: '正在处理…', skillFailed: '操作失败，请检查网络后重试。如果目标已存在或内容被修改，请保留文件并检查桌面 Skills 目录；安装器不会覆盖它。',
+          skillLoadFailed: '无法读取 Skill 状态。请在当前操作结束后重试；链接目录或不可读目录需要手动检查。',
+          skillInstalled: '已安装。请新建会话，输入 /frontend-design 并选择 Skill 候选项。同名项目 Skill 的优先级可能更高。此状态仅确认文件，不代表已完成模型调用。',
+          skillRemoved: '已卸载，不改变现有对话历史。文件可从以下位置找回：',
+          skillVersion: '固定提交', skillFiles: '文件及 SHA-256', skillState: '安装状态', 'not-installed': '未安装', installed: '已安装 · 文件已校验', conflict: '存在冲突 · 文件保持不变',
+          skillRemoveHelp: '将此已校验的扩展移出 Skills 目录并保留到恢复目录？此操作不会清除已有对话历史。',
+          browse: '发现扩展', selected: '已选择', type: '类型', all: '全部适配器', search: '搜索扩展', empty: '没有符合筛选条件的扩展。', clear: '清除筛选', reset: '放弃修改',
+          results: '{count} 个扩展', selection: '已选择 {count} 个，下次启动生效', dirty: '有未保存的修改', clean: '没有未保存的修改', choice: '下次启动时使用', source: '适配器来源', sourceName: 'DeepSeek Harness 上游', tool: '委派工具', setup: '详情与权限',
+          idle: '仅在点击后执行检查，不启动模型任务。', done: '检查完成。以下是所检查的执行运行时状态，不代表已接入 Harness 或完成模型调用。',
+          failure: '检查未能完成。请等待当前检查结束后重试。',
+          boundary: 'Codex 与 Claude Code 检查使用应用自带的固定版本执行运行时；Kimi 与 Qoder 检查使用本机 CLI。检查不继承 API Key 和 Token 环境变量；仅使用 API 的配置可能需要在终端中另行核对。不会将凭据复制到 Harness。',
+          enableTitle: '启用任务委派', enableHelp: '为独立的「本地代理」预设选择 agent。委派任务可能消耗对应账户额度，并按提供方的无人值守权限策略访问会话工作区。标准会话保持不变。保存后在下次运行时启动时生效，不影响当前任务。',
+          save: '保存修改', saved: '已保存。请先结束运行中的任务，在应用菜单选择「重启本地运行时」，再新建使用「本地代理」预设的会话，要求它委派给选中的 agent。取消勾选并保存可停用，同样需要重启生效。',
+          saveFailed: '保存失败。请确认内置提供方完整，且当前没有正在执行的检查。',
+          preferencesFailed: '无法读取已保存的选择。为保护当前配置，已禁用保存。',
+          catalog: '精选预览版', catalogBody: '目录随应用提供。查看及安装 Skill 时，只从 GitHub 下载固定版本的文本文件。暂不支持开放投稿、任意软件包、MCP 安装、自动更新或版本回滚。',
+          runtimeSource: '执行来源', bundled: '应用内置运行时', 'local-cli': '本机 CLI', version: '执行运行时版本', path: '检查的程序路径', auth: '本地登录', connection: 'Harness 启用状态', unverified: '此处不报告运行状态，保存的选择需重启生效。',
+          terminal: '请在自己的终端完成登录，然后重新检查。选中下方命令即可复制。授权由 CLI 管理；状态检查成功不代表额度充足，也不代表已通过真实模型调用。',
+          install: '如果未找到程序，请先安装官方 CLI。此处不会自动安装或登录。',
+          sdkInstall: '应用已提供此运行时。只有需要登录命令时才需安装官方 CLI。若内置运行时无法启动，请修复或更新应用。',
+          missing: '未找到', runnable: '运行时可启动', unavailable: '无法运行', unrecognized: '无法识别版本', timeout: '检查超时', 'manual-check': '请在终端检查 Windows 启动脚本',
+          unchecked: '未检查', authenticated: 'CLI 报告已登录', 'signed-out': '需要登录', unknown: '无法确认',
+          transport: '接入方式', sdk: '内置适配器', acp: '本机 ACP · 实验性', 'manual-auth': '请在官方 CLI 中确认',
+          acpLimits: 'ACP 条目使用本机已安装的 CLI 及其登录状态，支持单次委派与取消，暂不支持持续追问子会话或实时工具过程。审批请求会被拒绝，不开启权限绕过；不提供客户端文件系统和终端服务。独立进程不等于安全沙箱。',
+          missingAgent: '未保存：请先安装选中的 ACP CLI，然后重新检查。', unsupportedShim: '未保存：ACP 暂不支持 Windows 的 .cmd 启动脚本。',
+        },
+      }
+      const language = navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en'
+      const t = key => dictionaries[language][key]
+      document.documentElement.lang = language === 'zh' ? 'zh-CN' : 'en'
+      document.title = `${t('title')} · Harness Desktop`
+      for (const element of document.querySelectorAll('[data-copy]')) element.textContent = t(element.dataset.copy)
+      document.querySelector('#search').setAttribute('aria-label', t('search'))
+      document.querySelector('#search').placeholder = t('search')
+      document.querySelector('.save-bar').setAttribute('aria-label', t('enableTitle'))
+      let entries = []
+      let original = {}
+      let ready = false
+      let busy = false
+      let selectedOnly = false
+      const cards = new Map()
+      function element(tag, text, className) {
+        const node = document.createElement(tag)
+        if (text !== undefined) node.textContent = text
+        if (className) node.className = className
+        return node
+      }
+      function renderCatalog() {
+        const root = document.querySelector('#agents')
+        for (const entry of entries) {
+          const card = element('article', undefined, 'agent')
+          card.setAttribute('aria-label', entry.name)
+          const heading = element('div', undefined, 'agent-heading')
+          const badge = element('span', t('unchecked'), 'badge')
+          heading.append(element('h3', entry.name), element('span', t(entry.transport), 'badge'))
+          const choice = element('input')
+          choice.type = 'checkbox'
+          choice.setAttribute('aria-label', entry.name)
+          choice.disabled = true
+          choice.addEventListener('change', () => { saved.textContent = ''; refresh() })
+          const label = element('label', undefined, 'choice')
+          label.append(choice, document.createTextNode(t('choice')))
+          const data = element('dl')
+          const fields = {}
+          for (const [key, value] of [['source', t('sourceName')], ['tool', entry.tool], ['runtimeSource', t(entry.transport === 'sdk' ? 'bundled' : 'local-cli')], ['version', '—'], ['path', '—'], ['auth', t('unchecked')], ['connection', t('unverified')]]) {
+            fields[key] = element('dd', value, key === 'path' ? 'path' : undefined)
+            data.append(element('dt', t(key)), fields[key])
+          }
+          const details = element('details')
+          details.append(element('summary', t('setup')), data, element('p', t('boundary'), 'muted'), element('p', t(entry.transport === 'sdk' ? 'sdkInstall' : 'install'), 'muted'), element('pre', entry.docs), element('p', t('terminal'), 'muted'), element('pre', entry.login), element('p', t('source'), 'muted'), element('pre', entry.source))
+          if (entry.transport === 'acp') details.append(element('p', t('acpLimits'), 'muted'))
+          card.append(heading, element('p', entry.summary[language], 'description'), badge, label, details)
+          root.append(card)
+          cards.set(entry.id, { root: card, choice, badge, fields })
+        }
+      }
+      const save = document.querySelector('#save')
+      const saved = document.querySelector('#saved')
+      const draft = () => Object.fromEntries([...cards].map(([id, card]) => [id, card.choice.checked]))
+      function filter() {
+        const query = document.querySelector('#search').value.trim().toLowerCase()
+        const category = document.querySelector('#category').value
+        let count = 0
+        for (const entry of entries) {
+          const card = cards.get(entry.id)
+          const matches = `${entry.name} ${entry.summary.en} ${entry.summary.zh} ${entry.tool} ${entry.transport}`.toLowerCase().includes(query)
+          card.root.hidden = !matches || (selectedOnly && !card.choice.checked) || (category !== 'all' && entry.transport !== category)
+          if (!card.root.hidden) count++
+        }
+        document.querySelector('#results').textContent = t('results').replace('{count}', count)
+        document.querySelector('#empty').hidden = !ready || count !== 0
+        document.querySelector('#browse').setAttribute('aria-pressed', String(!selectedOnly))
+        document.querySelector('#selected').setAttribute('aria-pressed', String(selectedOnly))
+      }
+      function refresh() {
+        const value = draft()
+        const dirty = entries.some(entry => value[entry.id] !== (original[entry.id] === true))
+        save.disabled = !ready || busy || !dirty
+        document.querySelector('#reset').disabled = !ready || busy || !dirty
+        document.querySelector('#check').disabled = !ready || busy
+        for (const card of cards.values()) card.choice.disabled = !ready || busy
+        document.querySelector('#selection').textContent = `${t('selection').replace('{count}', Object.values(value).filter(Boolean).length)} · ${t(dirty ? 'dirty' : 'clean')}`
+        filter()
+      }
+      document.querySelector('#search').addEventListener('input', filter)
+      document.querySelector('#category').addEventListener('change', filter)
+      document.querySelector('#browse').addEventListener('click', () => { selectedOnly = false; filter() })
+      document.querySelector('#selected').addEventListener('click', () => { selectedOnly = true; filter() })
+      document.querySelector('#clear').addEventListener('click', () => {
+        document.querySelector('#search').value = ''
+        document.querySelector('#category').value = 'all'
+        selectedOnly = false
+        filter()
+        document.querySelector('#search').focus()
+      })
+      document.querySelector('#reset').addEventListener('click', () => {
+        for (const [id, card] of cards) card.choice.checked = original[id] === true
+        saved.textContent = ''
+        refresh()
+      })
+      async function loadPreferences() {
+        try {
+          entries = await window.__TAURI__.core.invoke('desktop_agent_catalog')
+          renderCatalog()
+          original = await window.__TAURI__.core.invoke('desktop_agent_preferences')
+          for (const [id, card] of cards) card.choice.checked = original[id] === true
+          ready = true
+          refresh()
+        } catch { saved.textContent = t('preferencesFailed') }
+      }
+      void loadPreferences()
+      save.addEventListener('click', async () => {
+        const value = draft()
+        busy = true
+        refresh()
+        try {
+          await window.__TAURI__.core.invoke('desktop_agent_preferences', { value })
+          original = value
+          saved.textContent = t('saved')
+        } catch (error) {
+          const category = typeof error === 'string' ? error.split(':')[0] : ''
+          saved.textContent = t(category === 'agent-not-installed' ? 'missingAgent' : category === 'agent-shim-unsupported' ? 'unsupportedShim' : 'saveFailed')
+        }
+        finally { busy = false; refresh() }
+      })
+      document.querySelector('#check').addEventListener('click', async () => {
+        const button = document.querySelector('#check')
+        const progress = document.querySelector('#progress')
+        const error = document.querySelector('#error')
+        busy = true
+        refresh()
+        button.textContent = t('checking')
+        progress.textContent = t('checking')
+        error.hidden = true
+        try {
+          const agents = await window.__TAURI__.core.invoke('desktop_local_agents')
+          for (const agent of agents) {
+            const card = cards.get(agent.id)
+            card.badge.textContent = t(agent.state)
+            card.badge.dataset.state = agent.state
+            card.fields.version.textContent = agent.version || '—'
+            card.fields.path.textContent = agent.executable || '—'
+            card.fields.runtimeSource.textContent = t(agent.runtimeSource)
+            card.fields.auth.textContent = t(agent.auth)
+          }
+          progress.textContent = t('done')
+        } catch {
+          progress.textContent = ''
+          error.textContent = t('failure')
+          error.hidden = false
+        } finally {
+          busy = false
+          refresh()
+          button.textContent = t('check')
+        }
+      })
+      let skillBusy = false
+      let skillLoaded = false
+      function lockSkills(value) {
+        skillBusy = value
+        document.querySelector('#skill-refresh').disabled = value
+        for (const control of document.querySelectorAll('#skills button, #skills input')) control.disabled = value
+      }
+      async function loadSkills() {
+        if (skillBusy) return
+        lockSkills(true)
+        const status = document.querySelector('#skill-status')
+        status.textContent = t('skillWaiting')
+        try {
+          const listings = await window.__TAURI__.core.invoke('desktop_skill_catalog')
+          document.querySelector('#skills').replaceChildren()
+          for (const entry of listings) renderSkill(entry)
+          skillLoaded = true
+          status.textContent = ''
+        } catch { status.textContent = t('skillLoadFailed') }
+        finally { lockSkills(false) }
+      }
+      function renderSkill(entry) {
+        const card = element('article', undefined, 'agent')
+        card.setAttribute('aria-label', entry.name)
+        const state = element('p', t(entry.state), 'badge')
+        const details = element('details')
+        details.append(element('summary', t('skillFiles')), element('pre', entry.files.map(file => `${file.name}\n${file.sha256}`).join('\n\n')))
+        const actions = element('div', undefined, 'skill-actions')
+        const preview = element('button', t('skillPreview'))
+        const remove = element('button', t('skillRemove'))
+        actions.append(preview, remove)
+        const review = element('div', undefined, 'skill-preview')
+        const confirmation = element('div')
+        const message = element('p', undefined, 'skill-message')
+        message.setAttribute('role', 'status')
+        card.append(element('h3', entry.name), element('p', entry.summary[language], 'muted'), element('p', `${entry.author} · ${entry.license}`), state, element('p', t('skillVersion')), element('pre', entry.revision), element('pre', `https://github.com/${entry.repository}/tree/${entry.revision}/skills/${entry.id}`), details, actions, review, confirmation, message)
+        document.querySelector('#skills').append(card)
+        function updateActions() {
+          remove.hidden = entry.state !== 'installed'
+          for (const install of review.querySelectorAll('button')) install.hidden = entry.state !== 'not-installed'
+        }
+        async function operate(action) {
+          if (skillBusy) return
+          lockSkills(true)
+          message.textContent = t('skillWaiting')
+          try {
+            const result = await window.__TAURI__.core.invoke('desktop_skill_action', { id: entry.id, revision: entry.revision, action })
+            entry.state = result.state
+            state.textContent = t(result.state)
+            confirmation.replaceChildren()
+            if (action === 'preview') {
+              review.replaceChildren()
+              for (const [name, body] of Object.entries(result.content)) {
+                const file = element('details')
+                file.open = name === 'SKILL.md'
+                file.append(element('summary', name), element('pre', body))
+                review.append(file)
+              }
+              const consent = element('input')
+              consent.type = 'checkbox'
+              const label = element('label', undefined, 'choice')
+              label.append(consent, document.createTextNode(t('skillConsent')))
+              const install = element('button', t('skillInstall'))
+              install.hidden = true
+              consent.addEventListener('change', () => { install.hidden = !consent.checked || entry.state !== 'not-installed' })
+              install.addEventListener('click', () => { if (consent.checked) void operate('install') })
+              review.append(label, install)
+              message.textContent = ''
+            } else {
+              review.replaceChildren()
+              message.textContent = action === 'install' ? t('skillInstalled') : `${t('skillRemoved')} ${result.recovery}`
+            }
+          } catch { message.textContent = t('skillFailed') }
+          finally { lockSkills(false); remove.hidden = entry.state !== 'installed' }
+        }
+        preview.addEventListener('click', () => { void operate('preview') })
+        remove.addEventListener('click', () => {
+          confirmation.replaceChildren(element('p', t('skillRemoveHelp')))
+          const confirm = element('button', t('skillConfirmRemove'))
+          const cancel = element('button', t('skillCancel'))
+          confirm.addEventListener('click', () => { void operate('uninstall') })
+          cancel.addEventListener('click', () => confirmation.replaceChildren())
+          confirmation.append(confirm, cancel)
+        })
+        updateActions()
+      }
+      document.querySelector('#skill-refresh').addEventListener('click', () => { void loadSkills() })
+      for (const kind of ['agents', 'skills']) {
+        document.querySelector(`#${kind}-tab`).addEventListener('click', () => {
+          const skills = kind === 'skills'
+          document.querySelector('#agent-view').hidden = skills
+          document.querySelector('#skill-view').hidden = !skills
+          document.querySelector('#agents-tab').setAttribute('aria-pressed', String(!skills))
+          document.querySelector('#skills-tab').setAttribute('aria-pressed', String(skills))
+          if (skills && !skillLoaded) void loadSkills()
+        })
+      }
+    </script>
+  </body>
+</html>

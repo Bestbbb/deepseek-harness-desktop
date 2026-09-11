@@ -6,13 +6,18 @@ import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
 import { SlotRegistry } from '@deepseek-ai/dsh-client-ui-renderer/client'
 import { resolveSlotLabel } from '@deepseek-ai/dsh-client-ui-slots'
 import { usePinnedBrowserLanguages } from '@deepseek-ai/dsh-client-test-runtime'
+import { apply as connectionApply, type ConnectionHandle } from '@deepseek-ai/dsh-client-connection/client'
 import { apply, inject, NS } from '../src/client/index.ts'
 import { PluginInventorySettingsTab } from '../src/client/PluginInventorySettingsTab.tsx'
 import type { PluginInventorySettingsTabInjected } from '../src/client/PluginInventorySettingsTab.tsx'
 import { apply as hostApply } from '../src/index.ts'
 
 usePinnedBrowserLanguages('zh-CN')
-afterEach(cleanup)
+const contexts: Context[] = []
+afterEach(async () => {
+  cleanup()
+  await Promise.all(contexts.splice(0).map(ctx => ctx.fiber.dispose()))
+})
 
 const EMPTY = { entries: [] }
 type ListResult =
@@ -21,6 +26,8 @@ type ListResult =
 
 async function bench() {
   const ctx = new Context()
+  contexts.push(ctx)
+  await ctx.plugin({ apply: connectionApply }).await()
   await ctx.plugin(SlotRegistry).await()
   const locale = new LocaleRuntime(ctx)
   ctx.provide('locale', locale)
@@ -49,7 +56,7 @@ describe('ui-settings-plugin-inventory browser plugin', () => {
   })
 
   it('declares only the services used by the Settings Remote contribution', () => {
-    expect(inject).toEqual(['slots', 'locale', 'remote', 'remote.pluginInventory'])
+    expect(inject).toEqual(['slots', 'locale', 'remote', 'remote.pluginInventory', 'connection'])
   })
 
   it('registers a localized tab without reading the Remote eagerly', async () => {
@@ -65,6 +72,7 @@ describe('ui-settings-plugin-inventory browser plugin', () => {
     expect(b.list).not.toHaveBeenCalled()
 
     const injected = (entry.inject as unknown as () => PluginInventorySettingsTabInjected)()
+    expect(injected.hooks.connectionGeneration).toBe((b.ctx.get('connection') as ConnectionHandle).generation)
     await expect(injected.list()).resolves.toEqual(EMPTY)
     expect(b.list).toHaveBeenCalledOnce()
     b.list.mockResolvedValueOnce({ ok: false, error: { code: 'REMOTE_ERROR', message: 'unavailable' } })

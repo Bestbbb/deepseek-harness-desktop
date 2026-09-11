@@ -594,6 +594,61 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'bundlePreparation',
+    summary: 'Verify catalog compatibility and stage reviewed bytes without importing package code.',
+    description: 'Verify catalog compatibility and stage reviewed bytes without importing package code.',
+    methods: [
+      {
+        signature: 'list(): readonly BundleCandidate[]',
+        description: 'List review records and every declared compatibility mismatch; performs no artifact I/O.',
+        parameters: [],
+        returns: 'Catalog-order candidates, not installation or runtime status.',
+      },
+      {
+        signature: 'async listOperations(): Promise<readonly PreparationOperation[]>',
+        description: 'Read persisted attempt metadata without loading plugins or granting activation authority. Unsettled records may belong to another live process; no automatic cleanup or retry occurs.',
+        parameters: [],
+        returns: 'Bounded history with altered receipts and unreadable records explicitly marked.',
+      },
+      {
+        signature: 'async profileBundles(profile: DesktopProfileName): Promise<readonly ProfileBundle[]>',
+        description: 'Read the selected Profile\'s ordered Bundle versions without importing code or changing files.',
+        parameters: [{ name: 'profile', description: 'identity supplied by the native selection owner, never a browser-supplied path.' }],
+        returns: 'Manifest observations with null versions for unreadable packages, not runtime health.',
+      },
+      {
+        signature: 'async prepare(id: BundleCatalogId): Promise<PreparedBundle>',
+        description: 'Stage a catalog-selected tarball in an exclusively created operation directory. Rejects unknown/incompatible entries, overlapping operations, symlinks and mismatched bytes. This does not resolve dependencies, inspect archive contents, install, or activate the Bundle.',
+        parameters: [{ name: 'id', description: 'identity obtained from the current catalog. Recording failures can retain a completed candidate; receipts never grant activation authority.' }],
+        returns: 'Receipt after preparation and optional history publication complete.',
+      },
+      {
+        signature: 'async prepareDependencies(id: BundleCatalogId): Promise<PreparedDependencies>',
+        description: 'Prepare an offline candidate using bundled pnpm and a local subprocess provider. Missing dependencies fail; scripts, hooks and automatic peer installation are disabled. This creates no Profile and performs no activation. Preparation failures remove this operation\'s directory. A subsequent history-publication failure can retain the completed candidate.',
+        parameters: [{ name: 'id', description: 'identity from the current catalog, never a caller-supplied receipt or file path.' }],
+        returns: 'An installed candidate requiring separate composition and activation validation.',
+      },
+      {
+        signature: 'async prepareComposition(id: BundleCatalogId): Promise<PreparedComposition>',
+        description: 'Build a private copy of the configured Profile and check its Bundle patches with dsh --dump-config. Does not boot plugins, evaluate configuration expressions, switch Profiles or restart the app. A history-publication failure can retain the completed candidate without authorizing activation.',
+        parameters: [{ name: 'id', description: 'identity selected from the current catalog.' }],
+        returns: 'A composition receipt after source-configuration checks and boot-free validation.',
+      },
+      {
+        signature: 'async queueActivation(id: BundleCatalogId, profile: DesktopProfileName, version: string | null): Promise<DesktopProfileCandidate>',
+        description: 'Prepare a fresh Profile in the desktop home and queue it for the next full application launch. Does not restart the runtime. After dispatch, transport failures retain all candidate files; native selection must be inspected before retry or cleanup. History describes preparation only.',
+        parameters: [{ name: 'id', description: 'identity selected from the current reviewed catalog.' }, { name: 'profile', description: 'native-selected Profile observed during confirmation.' }, { name: 'version', description: 'observed installed version, or null only when the Bundle was absent.' }],
+        returns: 'Candidate identity after native queue acknowledgement, not a running-plugin claim.',
+      },
+      {
+        signature: 'async queueRemoval(profile: DesktopProfileName, packageName: string, version: string): Promise<DesktopProfileCandidate>',
+        description: 'Remove an observed Profile-owned Bundle in a fresh composition and queue the next full launch. Refuses stale selection, changed versions, built-in packages and overlapping operations. Original configuration, packages and Session data remain intact; unknown queue outcomes retain candidates.',
+        parameters: [{ name: 'profile', description: 'active Profile observed by the caller, checked against native selection.' }, { name: 'packageName', description: 'listed package name, never a path or catalog identity.' }, { name: 'version', description: 'exact observed version to remove.' }],
+        returns: 'Native queue acknowledgement; removal is not active until a successful application restart.',
+      },
+    ],
+  },
+  {
     key: 'clientModules',
     summary: 'The web plugin table service: incremental `dsh.client` scan + wire composition + bundle route + index injection rows.',
     description: 'The web plugin table service: incremental `dsh.client` scan + wire composition + bundle route + index injection rows. Construction runs the activation scan synchronously — a malformed declaration or missing bundle among the already-loaded entries aggregates into one loud throw (FAILED fiber; the boot activation audit reports it).',
@@ -844,6 +899,12 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         returns: 'After the native host completes the operation.',
       },
       {
+        signature: 'abstract openLocalAgents(): Promise<void>',
+        description: 'Open or focus the native local-agent settings window without running checks or changing preferences.',
+        parameters: [],
+        returns: 'After the native host completes the window operation; no agent-readiness claim.',
+      },
+      {
         signature: 'abstract notify(notification: DesktopNotification): Promise<void>',
         description: 'Display an operating-system notification.',
         parameters: [{ name: 'notification', description: 'user-visible title and body.' }],
@@ -854,6 +915,24 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'Enable or disable launch at user login.',
         parameters: [{ name: 'enabled', description: 'desired autostart state.' }],
         returns: 'After the operating system records the state.',
+      },
+      {
+        signature: 'abstract profileSelection(): Promise<DesktopProfileSelection>',
+        description: 'Read the native host\'s persisted startup selection without scanning plugin contents.',
+        parameters: [],
+        returns: 'Active, queued, trial and failed startup identities; no installation-health claim.',
+      },
+      {
+        signature: 'abstract queueProfile(candidate: DesktopProfileCandidate): Promise<void>',
+        description: 'Queue a prepared Profile for the next full application launch; does not interrupt tasks. A transport failure can leave the queue committed: inspect selection before retry or cleanup.',
+        parameters: [{ name: 'candidate', description: 'prepared identity with the expected active predecessor and manifest hash.' }],
+        returns: 'After the native host records the pending selection.',
+      },
+      {
+        signature: 'abstract cancelProfile(profile: DesktopProfileName): Promise<void>',
+        description: 'Cancel the exact pending Profile without deleting its files or changing the active runtime.',
+        parameters: [{ name: 'profile', description: 'pending identity obtained from native selection.' }],
+        returns: 'After the native host clears the pending selection.',
       },
     ],
   },
@@ -3217,6 +3296,14 @@ export const EVENT_API: readonly EventApiEntry[] = [
     parameters: [{ name: 'ref', description: 'the reference whose stored value changed.' }],
   },
   {
+    name: 'desktop/task-notification',
+    mode: 'waterfall',
+    signature: '\'desktop/task-notification\'(outcome: \'completed\' | \'error\', next: () => boolean): boolean',
+    summary: 'Decide whether a live top-level turn may request a background notification.',
+    description: 'Decide whether a live top-level turn may request a background notification. Policies call next() to delegate or return false to suppress delivery; no listener permits delivery. A thrown policy suppresses this notification without changing the committed turn.',
+    parameters: [{ name: 'outcome', description: 'Completion or failure only; no Session identity or task contents.' }, { name: 'next', description: 'Delegate to remaining policies.' }],
+  },
+  {
     name: 'domain/changed',
     mode: 'emit',
     signature: '\'domain/changed\'(change: DomainChanged): void',
@@ -3745,6 +3832,22 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export type BrandedNumber<B extends string> = number & {\n    readonly [BRAND]: B;\n};',
   },
   {
+    name: 'BundleCandidate',
+    declaration: 'export interface BundleCandidate {\n    readonly entry: ReviewedBundle;\n    readonly issues: readonly BundleCompatibilityIssue[];\n}',
+  },
+  {
+    name: 'BundleCatalogId',
+    declaration: 'export type BundleCatalogId = Branded<\'BundleCatalogId\'>;',
+  },
+  {
+    name: 'BundleCompatibilityIssue',
+    declaration: 'export type BundleCompatibilityIssue = \'harness-version\' | \'platform\' | \'artifact-size\';',
+  },
+  {
+    name: 'BundleOperationId',
+    declaration: 'export type BundleOperationId = Branded<\'BundleOperationId\'>;',
+  },
+  {
     name: 'ClientArtifactBaseline',
     declaration: 'export interface ClientArtifactBaseline {\n    readonly path: string;\n    readonly mtimeMs: number;\n    readonly size: number;\n}',
   },
@@ -4011,6 +4114,18 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'DesktopNotification',
     declaration: 'export interface DesktopNotification {\n    readonly title: string;\n    readonly body: string;\n    readonly backgroundOnly?: boolean;\n}',
+  },
+  {
+    name: 'DesktopProfileCandidate',
+    declaration: 'export interface DesktopProfileCandidate {\n    readonly profile: DesktopProfileName;\n    readonly previousProfile: DesktopProfileName;\n    readonly manifestSha256: string;\n}',
+  },
+  {
+    name: 'DesktopProfileName',
+    declaration: 'export type DesktopProfileName = Branded<\'DesktopProfileName\'>;',
+  },
+  {
+    name: 'DesktopProfileSelection',
+    declaration: 'export interface DesktopProfileSelection {\n    readonly schemaVersion: 1;\n    readonly activeProfile: DesktopProfileName;\n    readonly previousProfile: DesktopProfileName | null;\n    readonly pending: DesktopProfileCandidate | null;\n    readonly trial: DesktopProfileCandidate | null;\n    readonly lastFailure: {\n        readonly candidate: DesktopProfileCandidate;\n        readonly reason: \'interrupted\' | \'startup-failed\' | \'invalid-candidate\';\n    } | null;\n}',
   },
   {
     name: 'DesktopStatus',
@@ -4689,8 +4804,24 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export type PostToolDecision = {\n    kind: \'accept\';\n    content?: ContentBlock[];\n    value?: never;\n    additionalContexts?: UserMessage[];\n} | {\n    kind: \'accept\';\n    value: JsonValue;\n    content?: never;\n    additionalContexts?: UserMessage[];\n} | {\n    kind: \'block\';\n    feedback: ContentBlock[];\n    additionalContexts?: UserMessage[];\n};',
   },
   {
+    name: 'PreparationKind',
+    declaration: 'export type PreparationKind = \'artifact\' | \'dependencies\' | \'composition\' | \'removal\';',
+  },
+  {
+    name: 'PreparationOperation',
+    declaration: 'export interface PreparationOperation {\n    readonly id: BundleOperationId;\n    readonly state: \'preparing\' | \'unsettled\' | \'prepared\' | \'failed\' | \'unreadable\' | \'unavailable\';\n    readonly entry?: {\n        readonly id: BundleCatalogId;\n        readonly packageName: string;\n        readonly version: string;\n        readonly title: string;\n    };\n    readonly removed?: {\n        readonly packageName: string;\n        readonly version: string;\n    };\n    readonly kind?: PreparationKind;\n    readonly startedAt?: string;\n    readonly preparedState?: PreparedBundle[\'state\'] | PreparedDependencies[\'state\'] | PreparedComposition[\'state\'] | PreparedRemoval[\'state\'];\n}',
+  },
+  {
     name: 'PreparedAdapterCall',
     declaration: 'export interface PreparedAdapterCall {\n    readonly model: LlmResolvedModelInfo;\n    stream(options: GenerateOptions): AsyncIterable<StreamChunk>;\n}',
+  },
+  {
+    name: 'PreparedBundle',
+    declaration: 'export interface PreparedBundle {\n    readonly schemaVersion: 1;\n    readonly state: \'prepared-not-enabled\';\n    readonly entry: ReviewedBundle;\n    readonly hostVersion: string;\n    readonly platform: string;\n    readonly artifactPath: string;\n    readonly receiptPath: string;\n}',
+  },
+  {
+    name: 'PreparedComposition',
+    declaration: 'export interface PreparedComposition {\n    readonly schemaVersion: 1;\n    readonly state: \'composition-checked-not-enabled\';\n    readonly candidate: PreparedDependencies;\n    readonly harnessHome: string;\n    readonly profileName: string;\n    readonly profileDirectory: string;\n    readonly sourceProfile: string;\n    readonly sourceFingerprint: string;\n    readonly dumpPath: string;\n    readonly lockfilePath: string;\n    readonly receiptPath: string;\n}',
   },
   {
     name: 'PreparedDeepSeekLlmApiExtension',
@@ -4701,12 +4832,20 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface PreparedDeepSeekLlmApiExtensions {\n    readonly fields: Readonly<Partial<DeepSeekLlmApiExtensionMap>>;\n    accept(): Promise<void>;\n}',
   },
   {
+    name: 'PreparedDependencies',
+    declaration: 'export interface PreparedDependencies {\n    readonly schemaVersion: 1;\n    readonly state: \'dependencies-prepared-not-enabled\';\n    readonly prepared: PreparedBundle;\n    readonly candidateDirectory: string;\n    readonly packageDirectory: string;\n    readonly lockfilePath: string;\n    readonly receiptPath: string;\n    readonly packageManagerVersion: string;\n}',
+  },
+  {
     name: 'PreparedLlmCall',
     declaration: 'export interface PreparedLlmCall {\n    readonly config: LlmCallConfig;\n    readonly retryPolicy: ResolvedRetryPolicy;\n    readonly context?: LlmModelContext;\n    readonly inputModalities?: readonly ModelModality[];\n    readonly adapterDefaults: LlmCallConfigAdapterDefaults;\n    stream(options: GenerateOptions): AsyncIterable<StreamChunk>;\n}',
   },
   {
     name: 'PreparedReferencedMessage',
     declaration: 'export interface PreparedReferencedMessage {\n    content: ContentBlock[];\n    additionalContext?: UserMessage;\n}',
+  },
+  {
+    name: 'PreparedRemoval',
+    declaration: 'export interface PreparedRemoval extends Omit<PreparedComposition, \'candidate\' | \'state\'> {\n    readonly state: \'removal-checked-not-enabled\';\n    readonly removed: {\n        readonly packageName: string;\n        readonly version: string;\n    };\n}',
   },
   {
     name: 'PrepareSessionOptions',
@@ -4731,6 +4870,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'PreToolDecision',
     declaration: 'export type PreToolDecision = {\n    kind: \'allow\';\n} | {\n    kind: \'deny\';\n    reason: string;\n} | {\n    kind: \'ask\';\n    reason?: string;\n};',
+  },
+  {
+    name: 'ProfileBundle',
+    declaration: 'export interface ProfileBundle {\n    readonly packageName: string;\n    readonly version: string | null;\n    readonly removable: boolean;\n}',
   },
   {
     name: 'ProjectionChangeListener',
@@ -4883,6 +5026,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'ResumeAgentOptions',
     declaration: 'export interface ResumeAgentOptions {\n    readonly resumeSessionId: SessionId;\n    readonly agentOptions?: AgentOptions;\n    readonly signal?: AbortSignal;\n    readonly setup?: AgentSetup;\n}',
+  },
+  {
+    name: 'ReviewedBundle',
+    declaration: 'export interface ReviewedBundle {\n    readonly id: BundleCatalogId;\n    readonly packageName: string;\n    readonly version: string;\n    readonly title: string;\n    readonly publisher: string;\n    readonly source: string;\n    readonly harnessVersions: readonly string[];\n    readonly platforms: readonly string[];\n    readonly artifact: {\n        readonly file: string;\n        readonly sha256: string;\n        readonly size: number;\n    };\n}',
   },
   {
     name: 'RunnerFailureRule',

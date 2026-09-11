@@ -1,0 +1,23 @@
+- heading "Add capabilities" [level=3]
+- paragraph: Reviewed Bundles can add interfaces, tools and agent behavior.
+- button "Refresh status"
+- paragraph: Host plugins run with the same access as Harness. Review the publisher and source before installing.
+- group "Marketplace views":
+  - button "Discover" [pressed]
+  - button "Installed"
+- region "Built-in local agent connections":
+  - group: Built-in local agent connections
+  - button "Configure local agents"
+- paragraph:
+  - text: "Current combination:"
+  - code: web
+- list:
+  - listitem:
+    - heading "Reviewed example" [level=4]
+    - paragraph:
+      - code: marketplace-web-fixture
+      - text: · 1.0.0
+    - paragraph: "Publisher: Harness Desktop tests"
+    - link "View source":
+      - /url: https://github.com/Bestbbb/deepseek-harness-desktop
+    - button "Review installation"

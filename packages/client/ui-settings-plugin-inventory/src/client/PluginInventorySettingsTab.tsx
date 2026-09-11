@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useState, type ReactNode } from 'react'
 import type { PluginInventorySnapshot } from '@deepseek-ai/dsh-api-remotes/client'
+import type { ConnectionGenerationState } from '@deepseek-ai/dsh-client-connection/client'
 import {
   IconChevronDownOutline14,
   IconSearchOutline16,
@@ -17,6 +18,10 @@ type AgentPresetRow = AgentPresetGroup['rows'][number]
 export interface PluginInventorySettingsTabInjected {
   /** Read a current Host inventory snapshot. */
   list: () => Promise<PluginInventorySnapshot>
+  hooks: {
+    /** Connection-owned generation; the renderer binds its subscription. */
+    connectionGeneration: ConnectionGenerationState
+  }
   /**
    * Display name for one preset: shipped presets resolve through the
    * agent-preset dictionaries, user-authored ones keep their own metadata.
@@ -33,10 +38,11 @@ export type PluginInventorySettingsTabProps =
 
 type Translate = PluginInventorySettingsTabProps['t']
 
-type ViewState =
-  | { readonly status: 'loading' }
-  | { readonly status: 'error' }
+type ViewState = (
+  | { readonly status: 'loading'; readonly snapshot?: PluginInventorySnapshot | undefined }
+  | { readonly status: 'error'; readonly snapshot?: PluginInventorySnapshot | undefined }
   | { readonly status: 'ready'; readonly snapshot: PluginInventorySnapshot }
+) & { readonly generation: number | undefined }
 
 const PHASE_KEYS = {
   pending: 'pending',
@@ -167,7 +173,8 @@ function StateTag({ kind, label }: { readonly kind: string; readonly label: stri
 }
 
 /** Render the read-only plugin inventory: agent presets first, then the global plane. */
-export function PluginInventorySettingsTab({ list, presetName, t }: PluginInventorySettingsTabProps): ReactNode {
+export function PluginInventorySettingsTab({ list, useConnectionGeneration, presetName, t }: PluginInventorySettingsTabProps): ReactNode {
+  const generation = useConnectionGeneration(value => value?.id)
   const sectionId = useId()
   const [request, setRequest] = useState(0)
   const [query, setQuery] = useState('')
@@ -176,20 +183,27 @@ export function PluginInventorySettingsTab({ list, presetName, t }: PluginInvent
   const [switcherOpen, setSwitcherOpen] = useState(false)
   const [presetOpen, setPresetOpen] = useState<boolean | null>(null)
   const [globalOpen, setGlobalOpen] = useState<boolean | null>(null)
-  const [state, setState] = useState<ViewState>({ status: 'loading' })
+  const [result, setState] = useState<ViewState>({ status: 'loading', generation })
+  const state: ViewState = result.generation === generation ? result : { status: 'loading', generation }
 
   useEffect(() => {
+    if (generation === undefined) return
     let current = true
     void Promise.resolve().then(() => list()).then(
-      (snapshot) => { if (current) setState({ status: 'ready', snapshot }) },
-      () => { if (current) setState({ status: 'error' }) },
+      (snapshot) => { if (current) setState({ status: 'ready', snapshot, generation }) },
+      () => {
+        if (current) setState(previous => ({
+          status: 'error', generation,
+          snapshot: previous.generation === generation ? previous.snapshot : undefined,
+        }))
+      },
     )
     return () => { current = false }
-  }, [list, request])
+  }, [list, generation, request])
 
   const normalizedQuery = query.trim().toLocaleLowerCase()
   const searching = normalizedQuery.length > 0
-  const snapshot = state.status === 'ready' ? state.snapshot : undefined
+  const snapshot = state.snapshot
   const presets = snapshot?.agentPresets ?? []
   const selected = presets.find(preset => preset.id === chosenPreset) ?? fallbackPreset(presets)
 
@@ -233,7 +247,7 @@ export function PluginInventorySettingsTab({ list, presetName, t }: PluginInvent
     && otherPresetMatches.length === 0
 
   const retry = (): void => {
-    setState({ status: 'loading' })
+    setState({ status: 'loading', snapshot: state.snapshot, generation })
     setRequest(value => value + 1)
   }
   const toggleRow = (key: string): void => {
@@ -274,8 +288,8 @@ export function PluginInventorySettingsTab({ list, presetName, t }: PluginInvent
           entryId={row.entryId}
           facts={[
             [t('fromPreset'), presetName(preset)],
-            [t('configuration'), stateText],
-            ...row.fiberPhase === null ? [] : [[t('runtime'), phaseLabel(row.fiberPhase, t)] as const],
+            [t('configuration'), row.enabled === true ? t('enabledTag') : row.enabled === false ? t('disabledTag') : t('conditionalTag')],
+            [t('runtime'), phaseLabel(row.fiberPhase, t)],
             ...row.condition === undefined ? [] : [[t('condition'), <code key="condition">{row.condition}</code>] as const],
           ]}
         />
@@ -345,10 +359,16 @@ export function PluginInventorySettingsTab({ list, presetName, t }: PluginInvent
 
   return (
     <div className={css.section} aria-busy={state.status === 'loading'}>
-      {state.status === 'loading' ? <p className={css.status}>{t('loading')}</p> : null}
+      <div className={css.toolbar} data-plugin-inventory-toolbar>
+        <p className={css.status}>{t('stateHelp')}</p>
+        <button className={css.refresh} type="button" disabled={state.status === 'loading'} onClick={retry}>
+          {t('refresh')}
+        </button>
+      </div>
+      {state.status === 'loading' ? <p className={css.status} role="status">{t(generation === undefined ? 'waitingConnection' : 'loading')}</p> : null}
       {state.status === 'error' ? (
         <div className={css.failure}>
-          <p role="alert">{t('error')}</p>
+          <p role="alert">{t(snapshot === undefined ? 'error' : 'staleError')}</p>
           <button type="button" onClick={retry}>{t('retry')}</button>
         </div>
       ) : null}

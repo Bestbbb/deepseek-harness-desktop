@@ -55,6 +55,11 @@ const desktopReleasePackages = new Set([
   '@deepseek-ai/dsh-desktop-runtime',
   '@deepseek-ai/dsh-desktop',
   '@deepseek-ai/dsh-desktop-native',
+  '@deepseek-ai/dsh-bundle-preparation',
+  '@deepseek-ai/dsh-bundle-marketplace',
+  '@deepseek-ai/dsh-focus-timer',
+  '@deepseek-ai/dsh-notification-controls',
+  '@deepseek-ai/dsh-delegation-launcher',
 ])
 /** Private packages that participate in workspace checks but not releases. */
 const experimentalPackageDirectory = /^packages\/experimental\/[^/]+$/

@@ -1,0 +1,12 @@
+- heading "Add capabilities" [level=3]
+- paragraph: Reviewed Bundles can add interfaces, tools and agent behavior.
+- button "Refresh status"
+- paragraph: Host plugins run with the same access as Harness. Review the publisher and source before installing.
+- group "Marketplace views":
+  - button "Discover" [pressed]
+  - button "Installed"
+- paragraph:
+  - text: "Current combination:"
+  - code: web
+- paragraph: No reviewed Bundles are available in this catalog.
+- list

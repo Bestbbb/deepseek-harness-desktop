@@ -1,0 +1,2 @@
+- paragraph: Enabled means configuration permits loading, not that the plugin is running or an account is signed in.
+- button "Refresh status"

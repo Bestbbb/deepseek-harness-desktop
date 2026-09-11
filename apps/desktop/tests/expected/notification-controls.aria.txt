@@ -1,0 +1,13 @@
+- group:
+  - text: Configure notifications
+  - paragraph: Control the desktop’s existing task notifications. Changes apply to future task completions.
+  - group "Background task notifications":
+    - text: Background task notifications
+    - paragraph:
+      - checkbox "Notify when a task finishes"
+      - text: Notify when a task finishes
+    - paragraph:
+      - checkbox "Notify when a task fails"
+      - text: Notify when a task fails
+  - paragraph: Leave the app in the background while a task runs. Notifications require OS permission and omit task text. Canceled tasks and subagents do not notify.
+  - paragraph: Removing this plugin restores the desktop’s default notifications; it does not mute them. Your saved choices are retained for reinstallation.

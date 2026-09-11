@@ -30,6 +30,10 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "tar": "7.5.22",
+    "@deepseek-ai/dsh-desktop": "workspace:^",
+    "@deepseek-ai/dsh-subagent": "workspace:^",
+    "@deepseek-ai/dsh-jobs": "workspace:^",
     "@deepseek-ai/cordis-plugin-group": "workspace:^",
     "@deepseek-ai/dsh-client-modules": "workspace:^",
     "@deepseek-ai/dsh-client-store": "workspace:^",

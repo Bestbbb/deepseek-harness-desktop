@@ -1,0 +1,58 @@
+/** Locale-owned human delegation controls and account-use warnings. */
+export const en = {
+  title: 'Delegate task', open: 'Delegate a task', close: 'Close', provider: 'Agent provider', task: 'Task',
+  placeholder: 'Describe the task and expected result.', choose: 'Select a loaded provider',
+  intro: 'Runs in the selected session workspace using the provider’s configured access. Provider and parent-model quota may be used. Installation does not enable or sign in to an agent.',
+  consent: 'I authorize this task and its possible account usage. Some providers also receive the parent conversation.',
+  send: 'Start delegation', sending: 'Submitting…', loading: 'Reading loaded providers…', refresh: 'Refresh providers',
+  noSession: 'Open a session in the intended workspace first.',
+  disconnected: 'Reconnect before submitting a task.',
+  empty: 'No subagent providers are loaded. Configure a provider and restart the runtime.',
+  failed: 'Could not read providers. Refresh to try again.',
+  unconfirmed: 'The submission was not confirmed. Check the conversation and background jobs before submitting another task; it may already be running.',
+  submitted: 'Command result (not the agent’s final answer):',
+  destination: 'Target session', risk: 'Review before starting',
+  tasks: 'Session subagent tasks', noTasks: 'No subagent tasks in this session.',
+  'job.running': 'Running', 'job.stopping': 'Stopping — waiting for cleanup', 'job.completed': 'Completed',
+  'job.failed': 'Failed', 'job.killed': 'Canceled',
+  readResult: 'Read result', cancelTask: 'Cancel task', taskBusy: 'Waiting for confirmation…',
+  cancelReview: 'Confirm task cancellation', cancelWarning: 'Stop this task? Unfinished work may be lost.',
+  confirmCancel: 'Confirm cancel', keepTask: 'Keep running',
+  'cancel.requested': 'Cancellation requested. The live status shows when cleanup finishes.',
+  'cancel.already-finished': 'The task had already finished.',
+  'cancel.unconfirmed': 'Cancellation was not confirmed. Inspect the live status before trying again.',
+  emptyResult: 'No text output was returned.', truncatedResult: 'Output was truncated to the configured byte limit.',
+  resultPending: 'The task is still running; read its result after it finishes.',
+  resultUnavailable: 'Could not read the result. The task may be unavailable in this session or runtime.',
+} as const
+
+/** Keys shared by the two editor dictionaries. */
+export type DelegationKey = keyof typeof en
+
+/** Simplified Chinese labels. */
+export const zh: Record<DelegationKey, string> = {
+  title: '委派任务', open: '委派一个任务', close: '关闭', provider: 'Agent 提供方', task: '任务',
+  placeholder: '描述任务及期望结果。', choose: '选择已加载的提供方',
+  intro: '使用所选会话的工作区及提供方配置的访问权限执行，可能消耗提供方和父级模型的额度。安装此插件不会启用 agent 或执行登录。',
+  consent: '我授权执行此任务及可能产生的账户用量；部分提供方还会接收父会话内容。',
+  send: '开始委派', sending: '正在提交…', loading: '正在读取已加载的提供方…', refresh: '刷新提供方',
+  noSession: '请先在目标工作区打开一个会话。',
+  disconnected: '请重新连接后再提交任务。',
+  empty: '没有已加载的 subagent 提供方，请配置提供方并重启运行时。',
+  failed: '无法读取提供方，请刷新重试。',
+  unconfirmed: '未确认提交结果。请先检查会话和后台任务，再决定是否提交其他任务；该任务可能已经运行。',
+  submitted: '命令结果（不是 agent 的最终回答）：',
+  destination: '目标会话', risk: '启动前确认',
+  tasks: '会话子代理任务', noTasks: '此会话暂无子代理任务。',
+  'job.running': '运行中', 'job.stopping': '正在停止，等待清理完成', 'job.completed': '已完成',
+  'job.failed': '失败', 'job.killed': '已取消',
+  readResult: '读取结果', cancelTask: '取消任务', taskBusy: '正在等待确认…',
+  cancelReview: '确认取消任务', cancelWarning: '停止此任务？尚未完成的工作可能丢失。',
+  confirmCancel: '确认取消', keepTask: '继续运行',
+  'cancel.requested': '已请求取消；清理完成后实时状态会更新。',
+  'cancel.already-finished': '该任务已经结束。',
+  'cancel.unconfirmed': '未确认取消结果，请先查看实时状态再决定是否重试。',
+  emptyResult: '任务没有返回文本输出。', truncatedResult: '输出已按配置的字节限制截断。',
+  resultPending: '任务仍在运行，请结束后再读取结果。',
+  resultUnavailable: '无法读取结果，该任务可能不属于此会话或已不在当前运行时中。',
+}

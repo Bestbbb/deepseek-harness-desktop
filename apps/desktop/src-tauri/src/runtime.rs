@@ -26,6 +26,10 @@ const STARTUP_TIMEOUT: Duration = Duration::from_secs(45);
 const HEALTHY_INTERVAL: Duration = Duration::from_secs(60);
 const MAX_ATTEMPTS: u32 = 3;
 
+#[cfg(test)]
+#[path = "runtime_profile_tests.rs"]
+mod profile_tests;
+
 #[derive(Clone)]
 pub struct RuntimeConfig {
     pub node: PathBuf,
@@ -33,9 +37,13 @@ pub struct RuntimeConfig {
     pub patch: PathBuf,
     pub working_directory: PathBuf,
     pub desktop_native_entry: PathBuf,
+    pub marketplace: super::bundle_marketplace::Paths,
+    pub integrations: super::local_agents::IntegrationPaths,
     pub dsh_home: PathBuf,
     pub bridge_url: String,
     pub bridge_token: String,
+    pub startup: Arc<super::startup::StartupReadiness>,
+    pub profiles: Arc<super::profiles::ProfileControl>,
 }
 
 pub enum RuntimeEvent {
@@ -108,7 +116,24 @@ fn supervise(
     loop {
         publish(RuntimeEvent::Starting(failures + 1));
         let port = stable_port.unwrap_or(0);
-        let (mut child, output) = match spawn_runtime(&config, port) {
+        let launch = || {
+            let profile = config.profiles.launch_profile()?;
+            let spawn = || {
+                let startup = config.startup.begin()?;
+                let (child, output) = spawn_runtime(&config, port, startup.token(), &profile)?;
+                Ok::<_, String>((startup, child, output))
+            };
+            match spawn() {
+                Ok((startup, child, output)) => Ok((profile, startup, child, output)),
+                Err(error) => {
+                    if let Err(recovery) = config.profiles.reject(&profile) {
+                        publish(RuntimeEvent::Error(recovery));
+                    }
+                    Err(error)
+                }
+            }
+        };
+        let (profile, startup, mut child, output) = match launch() {
             Ok(value) => value,
             Err(error) => {
                 publish(RuntimeEvent::Error(error));
@@ -158,7 +183,11 @@ fn supervise(
                     }
                 }
             }
-            if !ready && pending_url.as_ref().is_some_and(listener_open) {
+            if !ready && runtime_ready(&startup, pending_url.as_ref()) {
+                if let Err(error) = config.profiles.commit(&profile) {
+                    publish(RuntimeEvent::Error(error));
+                    break;
+                }
                 ready = true;
                 ready_at = Some(Instant::now());
                 if let Some(url) = pending_url.take() {
@@ -167,7 +196,8 @@ fn supervise(
             }
             if startup_expired(ready, started.elapsed()) {
                 publish(RuntimeEvent::Error(
-                    "The local runtime did not become ready within 45 seconds.".to_owned(),
+                    "The local runtime did not confirm successful startup within 45 seconds."
+                        .to_owned(),
                 ));
                 break;
             }
@@ -195,8 +225,14 @@ fn supervise(
             return;
         }
         child.terminate();
+        drop(startup);
         if channel_disconnected {
             return;
+        }
+        if !ready {
+            if let Err(error) = config.profiles.reject(&profile) {
+                publish(RuntimeEvent::Error(error));
+            }
         }
         if manual_retry {
             failures = 0;
@@ -216,6 +252,10 @@ fn listener_open(url: &Url) -> bool {
     let Some(port) = url.port() else { return false };
     let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), port);
     TcpStream::connect_timeout(&address, Duration::from_millis(20)).is_ok()
+}
+
+fn runtime_ready(startup: &super::startup::StartupAttempt, url: Option<&Url>) -> bool {
+    startup.confirmed() && url.is_some_and(listener_open)
 }
 
 fn startup_expired(ready: bool, elapsed: Duration) -> bool {
@@ -257,12 +297,15 @@ fn wait_for_restart_or_shutdown(
 fn spawn_runtime(
     config: &RuntimeConfig,
     port: u16,
+    startup_token: &str,
+    profile: &str,
 ) -> Result<(ManagedChild, mpsc::Receiver<OutputEvent>), String> {
     let patch = materialize_patch(config)?;
     let mut command = Command::new(&config.node);
     command
         .arg(&config.entry)
-        .arg("web")
+        .arg("--profile")
+        .arg(profile)
         .arg("--patch")
         .arg(patch)
         .arg("--port")
@@ -272,6 +315,7 @@ fn spawn_runtime(
         .env("DSH_HOME", &config.dsh_home)
         .env("DSH_DESKTOP_BRIDGE_URL", &config.bridge_url)
         .env("DSH_DESKTOP_BRIDGE_TOKEN", &config.bridge_token)
+        .env("DSH_DESKTOP_STARTUP_TOKEN", startup_token)
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
@@ -318,6 +362,13 @@ fn materialize_patch(config: &RuntimeConfig) -> Result<PathBuf, String> {
             .map_err(|error| format!("Could not encode desktop module path: {error}"))?;
         rendered = rendered.replace(placeholder, &yaml_string);
     }
+    rendered = config
+        .marketplace
+        .render(rendered, &config.dsh_home, &config.entry)?;
+    rendered.push_str(&super::local_agents::materialize(
+        &config.dsh_home,
+        &config.integrations,
+    )?);
     let output = config.dsh_home.join("desktop.cordis.yml");
     std::fs::write(&output, rendered).map_err(|error| {
         format!(
@@ -335,6 +386,53 @@ fn module_file_url(path: &Path) -> Result<Url, String> {
             path.display()
         )
     })
+}
+
+/// Run a diagnostic command with bounded output and process-tree cleanup.
+/// Raw output is private to the caller and must not be logged or sent to a WebView.
+pub(crate) fn probe_command(
+    mut command: Command,
+    timeout: Duration,
+) -> Result<(Option<i32>, String, String), String> {
+    use std::io::Read;
+    fn drain(mut reader: impl Read) -> String {
+        let mut saved = Vec::new();
+        let mut buffer = [0_u8; 4096];
+        while let Ok(count) = reader.read(&mut buffer) {
+            if count == 0 {
+                break;
+            }
+            let keep = count.min(16_384_usize.saturating_sub(saved.len()));
+            saved.extend_from_slice(&buffer[..keep]);
+        }
+        String::from_utf8_lossy(&saved).into_owned()
+    }
+    command
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    let mut managed = ManagedChild::spawn(&mut command)?;
+    let stdout = managed.child.stdout.take().expect("probe stdout is piped");
+    let stderr = managed.child.stderr.take().expect("probe stderr is piped");
+    let stdout = thread::spawn(move || drain(stdout));
+    let stderr = thread::spawn(move || drain(stderr));
+    let deadline = Instant::now() + timeout;
+    let result = loop {
+        match managed.child.try_wait() {
+            Ok(Some(status)) => break Ok(status.code()),
+            Err(_) => break Err("probe-failed".to_owned()),
+            Ok(None) if Instant::now() >= deadline => break Err("probe-timeout".to_owned()),
+            Ok(None) => thread::sleep(POLL_INTERVAL),
+        }
+    };
+    managed.terminate();
+    let stdout = stdout
+        .join()
+        .map_err(|_| "probe-reader-failed".to_owned())?;
+    let stderr = stderr
+        .join()
+        .map_err(|_| "probe-reader-failed".to_owned())?;
+    result.map(|code| (code, stdout, stderr))
 }
 
 fn pump_lines<R, F>(reader: R, sender: mpsc::Sender<OutputEvent>, wrap: F)
@@ -423,6 +521,47 @@ impl Drop for ManagedChild {
 #[cfg(test)]
 mod tests {
     use super::{module_file_url, parse_readiness};
+
+    #[test]
+    fn a_bound_listener_does_not_replace_the_launchers_startup_commit() {
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let url = url::Url::parse(&format!("http://{}", listener.local_addr().unwrap())).unwrap();
+        let readiness = std::sync::Arc::new(crate::startup::StartupReadiness::default());
+        let attempt = readiness.begin().unwrap();
+        assert!(!super::runtime_ready(&attempt, Some(&url)));
+        readiness.confirm(attempt.token()).unwrap();
+        assert!(!super::runtime_ready(&attempt, None));
+        assert!(super::runtime_ready(&attempt, Some(&url)));
+        drop(attempt);
+        let next = readiness.begin().unwrap();
+        assert!(!super::runtime_ready(&next, Some(&url)));
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn probes_bound_output_and_terminate_timed_out_processes() {
+        use std::{process::Command, time::Duration};
+        let mut command = Command::new("/bin/sh");
+        command.args(["-c", "printf 'hello'; printf 'private' >&2; exit 7"]);
+        assert_eq!(
+            super::probe_command(command, Duration::from_secs(10)).unwrap(),
+            (Some(7), "hello".into(), "private".into())
+        );
+        let mut command = Command::new("/bin/sh");
+        command.args([
+            "-c",
+            "while :; do printf 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'; done",
+        ]);
+        assert_eq!(
+            super::probe_command(command, Duration::from_millis(100)).unwrap_err(),
+            "probe-timeout"
+        );
+        let mut command = Command::new("/bin/sh");
+        command.args(["-c", "head -c 32768 /dev/zero"]);
+        let (code, stdout, _) = super::probe_command(command, Duration::from_secs(10)).unwrap();
+        assert_eq!(code, Some(0));
+        assert_eq!(stdout.len(), 16384);
+    }
 
     #[test]
     fn startup_has_a_deadline_but_ready_runtimes_do_not() {

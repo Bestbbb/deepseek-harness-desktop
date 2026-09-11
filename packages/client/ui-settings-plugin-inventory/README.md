@@ -35,9 +35,11 @@ Each collapsed card uses the short module name as its title and a small enableme
 
 The switcher is the same selector-pill-plus-menu control the General settings rows use. It lists every roster preset — the default suffixed as such, broken ones marked — and changes only what the list shows: it writes no settings, and selecting a broken preset shows the discovery-reported reason in place of rows. Choosing the default preset or a session's preset stays where it was: the Agent presets section and the new-session screen.
 
-### Retrying a failed read
+### Refreshing plugin state
 
-A failed read renders a generic failure state inside the tab; retrying re-runs the lazy `list()` call without exposing transport details.
+**Refresh status** reads the Host again without changing configuration, search, or disclosure choices. A failed refresh keeps the previous result with an explicit stale-data warning and a retry action; transport details remain hidden. Losing the connection hides that generation's rows, and a replacement connection triggers a fresh read. Late responses from an obsolete read cannot replace the current result. No timer polls the inventory.
+
+An enabled configuration is not proof of a running plugin or a signed-in account. Preset card details show configuration separately from the observed runtime phase, including when startup failed. An absent root Fiber reads as **No running instance observed**, not proof that every instance is stopped.
 
 -----
 
@@ -89,7 +91,7 @@ None; this package neither assembles nor sends a provider request.
 
 These limits define the freshness and reach of the inventory view; they are current package constraints.
 
-- **One snapshot per Settings mount or retry** — the tab does not subscribe to Loader changes or automatically refetch after reconnect; switching tabs preserves the current snapshot, while reopening Settings obtains a new one.
+- **Point-in-time observations** — the tab reads on mount, refresh, retry, and connection replacement, not on individual Loader changes. Switching tabs preserves the current result. This runtime inventory does not establish package installation, compatibility, account readiness, or plugin permissions.
 - **Read-only in both planes** — the tab shows global and preset enablement but mutates neither; enable/disable controls that write a custom preset's own composition file are deliberate follow-up work.
 
 <a id="dev-note"></a>

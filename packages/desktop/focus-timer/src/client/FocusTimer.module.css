@@ -1,0 +1,12 @@
+.trigger { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 8px; min-height: 36px; border: 0; border-radius: 8px; background: transparent; color: var(--dsw-alias-label-secondary); font: inherit; cursor: pointer; }
+.trigger:hover { background: var(--dsw-alias-interactive-bg-hover); color: var(--dsw-alias-label-primary); }
+.trigger:focus-visible, .body input:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
+.trigger svg { flex-shrink: 0; }
+.done { color: var(--dsw-alias-state-business-primary); }
+.body { display: grid; gap: 12px; color: var(--dsw-alias-label-primary); }
+.body p { margin: 0; }
+.time { font-size: 48px; line-height: 1.2; font-variant-numeric: tabular-nums; text-align: center; }
+.body input { box-sizing: border-box; width: 100%; border: 0.5px solid var(--dsw-alias-border-l3); border-radius: 8px; padding: 10px 12px; background: transparent; color: inherit; font: inherit; }
+.hint { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 1.5; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.preference { display: grid; gap: 12px; margin: 0; padding: 12px; border: 0.5px solid var(--dsw-alias-border-l3); border-radius: 8px; }

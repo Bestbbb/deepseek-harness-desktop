@@ -1,0 +1,23 @@
+- heading "添加能力" [level=3]
+- paragraph: 审核组合包可以扩展界面、工具和智能体行为。
+- button "刷新状态"
+- paragraph: Host 插件拥有与 Harness 相同的访问能力。安装前请核对发布者和源码。
+- group "市场视图":
+  - button "发现" [pressed]
+  - button "已安装"
+- region "内置本地智能体接入":
+  - group: 内置本地智能体接入
+  - button "配置本地智能体"
+- paragraph:
+  - text: "当前组合:"
+  - code: web
+- list:
+  - listitem:
+    - heading "Reviewed example" [level=4]
+    - paragraph:
+      - code: marketplace-web-fixture
+      - text: · 1.0.0
+    - paragraph: "发布者: Harness Desktop tests"
+    - link "查看源码":
+      - /url: https://github.com/Bestbbb/deepseek-harness-desktop
+    - button "查看安装详情"

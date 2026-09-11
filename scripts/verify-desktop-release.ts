@@ -40,6 +40,7 @@ export function verifyDesktopRelease(root: string, tag?: string): void {
     'apps/desktop-runtime/package.json',
     'packages/desktop/desktop/package.json',
     'packages/desktop/desktop-native/package.json',
+    'packages/desktop/bundle-preparation/package.json',
     'apps/desktop/src-tauri/tauri.conf.json',
   ]
   const versions = Object.fromEntries(paths.map(path => [path, jsonVersion(root, path)]))

@@ -1,4 +1,4 @@
-/** Derive the desktop deployment's explicit workspace dependencies from its three application roots. */
+/** Derive the desktop deployment's dependencies from its application and curated provider roots. */
 
 import { globSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -16,7 +16,12 @@ interface Manifest {
 const DESKTOP_ROOTS = [
   '@deepseek-ai/dsh',
   '@deepseek-ai/dsh-desktop-native',
+  '@deepseek-ai/dsh-bundle-preparation',
+  '@deepseek-ai/dsh-bundle-marketplace',
   '@deepseek-ai/dsh-web-frontend',
+  '@deepseek-ai/dsh-subagent-codex',
+  '@deepseek-ai/dsh-subagent-claude-code',
+  '@deepseek-ai/dsh-subagent-acp',
 ] as const
 
 /**

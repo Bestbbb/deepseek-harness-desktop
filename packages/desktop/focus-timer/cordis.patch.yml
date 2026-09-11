@@ -1,0 +1,3 @@
+- insert:
+    - id: focus-timer
+      name: '@deepseek-ai/dsh-focus-timer'

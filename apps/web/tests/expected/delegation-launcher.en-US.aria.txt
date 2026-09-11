@@ -1,0 +1,23 @@
+- paragraph:
+  - text: "Target session:"
+  - strong: workspace
+  - code: {{cwd}}/workspace
+- region "Session subagent tasks":
+  - heading "Session subagent tasks" [level=3]
+  - paragraph: No subagent tasks in this session.
+- text: Agent provider
+- combobox "Agent provider":
+  - option "Select a loaded provider"
+  - option "fixture" [selected]
+  - option "fork"
+  - option "spawn"
+- button "Refresh providers"
+- text: Task
+- textbox "Task":
+  - /placeholder: Describe the task and expected result.
+  - text: Inspect the fixture workspace
+- group "Review before starting":
+  - text: Review before starting
+  - checkbox "I authorize this task and its possible account usage. Some providers also receive the parent conversation." [checked]
+  - text: I authorize this task and its possible account usage. Some providers also receive the parent conversation.
+- button "Start delegation"

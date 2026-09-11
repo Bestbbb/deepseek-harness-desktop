@@ -1,0 +1,80 @@
+- main:
+  - heading "Extensions" [level=1]
+  - paragraph: Curated agents and Skills.
+  - button "Agents" [pressed]
+  - button "Skills"
+  - searchbox "Search extensions"
+  - button "Check this computer"
+  - button "Discover" [pressed]
+  - button "Selected"
+  - text: Type
+  - combobox "Type":
+    - option "All adapters" [selected]
+    - option "Bundled adapter"
+    - option "Local ACP · experimental"
+  - region "Agent extensions":
+    - heading "Agent extensions" [level=2]
+    - status: 4 extensions
+    - status: Check complete. Results describe the checked execution runtimes, not active Harness integrations or a model request.
+    - article "Codex":
+      - heading "Codex" [level=3]
+      - text: Bundled adapter
+      - paragraph: Delegate coding tasks through the bundled Codex adapter.
+      - text: Runtime can start
+      - checkbox "Codex"
+      - text: Use on next launch
+      - group:
+        - text: Details & permissions
+        - term: Adapter source
+        - definition: DeepSeek Harness upstream
+        - term: Delegation tool
+        - definition: subagent_codex
+        - term: Execution source
+        - definition: Bundled runtime
+        - term: Execution runtime version
+        - definition: 0.149.1
+        - term: Checked executable
+        - definition: /test/bundled/codex.js
+        - term: Local login
+        - definition: CLI reports signed in
+        - term: Harness activation
+        - definition: Not reported here. Saved selections apply after restart.
+        - paragraph: Codex and Claude Code checks use the app’s pinned execution runtimes; Kimi and Qoder checks use your local CLI. Checks exclude inherited API-key and token variables; API-only setups may need a separate check in your terminal. No credentials are copied into Harness.
+        - paragraph: The app supplies this runtime. Install the official CLI only if you need its login command. If the bundled runtime cannot start, repair or update the app.
+        - text: https://developers.openai.com/codex/cli/
+        - paragraph: Run login in your own terminal, then check again. Select the command below to copy it. The CLI owns authorization; a successful status check does not verify quota or a real model request.
+        - text: codex login
+        - paragraph: Adapter source
+        - text: https://github.com/deepseek-ai/deepseek-harness/tree/master/packages/subagent/subagent-codex
+    - article "Claude Code":
+      - heading "Claude Code" [level=3]
+      - text: Bundled adapter
+      - paragraph: Use Claude Code delegation alongside your Harness sessions.
+      - text: Could not run
+      - checkbox "Claude Code"
+      - text: Use on next launch
+      - group: Details & permissions
+    - article "Kimi Code":
+      - heading "Kimi Code" [level=3]
+      - text: Local ACP · experimental
+      - paragraph: Connect your installed Kimi CLI for one-shot ACP delegation.
+      - text: Runtime can start
+      - checkbox "Kimi Code"
+      - text: Use on next launch
+      - group: Details & permissions
+    - article "Qoder":
+      - heading "Qoder" [level=3]
+      - text: Local ACP · experimental
+      - paragraph: Connect your installed Qoder CLI through the ACP adapter.
+      - text: Not found
+      - checkbox "Qoder"
+      - text: Use on next launch
+      - group: Details & permissions
+  - region "Enable delegation":
+    - paragraph: 0 selected for next launch · No unsaved changes
+    - button "Discard changes" [disabled]
+    - button "Save changes" [disabled]
+  - paragraph: Select agents for the separate “Local agents” preset. Delegated tasks may use your provider quota and access the session workspace under each provider’s unattended permission policy. Standard sessions stay unchanged. Saving applies at the next runtime start, not to a running task.
+  - region "Curated preview":
+    - heading "Curated preview" [level=2]
+    - paragraph: The catalog ships with the app. Skill review and installation download only pinned text files from GitHub. Open submissions, arbitrary packages, MCP installation, automatic updates, and version rollback are not available.
