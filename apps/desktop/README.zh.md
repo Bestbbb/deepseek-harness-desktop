@@ -51,6 +51,8 @@ Kimi/Qoder 使用独立安装的本地程序，不内置其运行环境。保存
 
 ## 精选 Skill 安装
 
+在 macOS 和 Windows 上，发布 Skill 拒绝已占用的目标（包括空目录），即使该目标由另一个安装器在准备期间创建也不例外。
+
 打开「扩展中心… → Skills」。目录随应用提供，其 [manifest（元数据清单）](loading/skills.json)固定各来源提交、文本文件和 SHA-256。「下载并查看内容」从 GitHub 获取并显示原始 Skill（技能）、许可证和署名文本，不执行安装。勾选同意后才显示「安装已查看的版本」。安装重新获取同一固定版本的内容，逐文件校验后，将完整扩展放入隔离桌面主目录的 `skills/frontend-design`。它不执行脚本或包管理器生命周期钩子，也不向下载站点发送 Harness API Key。Skill 指令仍可能影响 agent 的工具使用；同意安装不等于安全沙箱。
 
 现有[文件系统 Skill 提供方](../../packages/skill/skill-filesystem/README.zh.md)发现已安装文件。新建标准会话可以列出并加载 `frontend-design`；项目及作用域内的 Skills 保持原有优先级。扩展中的「已安装」状态仅校验文件及归属，不代表模型行为或当前会话选择。安装和移除不会清除对话历史中已保留的指令。

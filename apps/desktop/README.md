@@ -51,6 +51,8 @@ The generated `desktop-presets/desktop-local-agents` directory is application-ow
 
 ## Curated Skill installation
 
+On macOS and Windows, publishing a Skill refuses an occupied destination, including an empty directory, even when another installer creates it during preparation.
+
 Open **Extensions… → Skills**. The catalog ships with the app; its [manifest](loading/skills.json) pins each source revision, text file, and SHA-256. **Review download** fetches and displays the original Skill, license, and attribution text from GitHub without installing anything. Check the consent box to expose **Install reviewed version**. Installation fetches the same pinned bytes again and verifies every file before publishing the complete bundle into the isolated desktop home at `skills/frontend-design`. It executes no scripts or package-manager lifecycle hooks and never sends Harness API keys to the download host. Skill instructions can still influence agent tool use; consent is not a security sandbox.
 
 The existing [filesystem Skill provider](../../packages/skill/skill-filesystem/README.md) discovers the installed files. A new standard session can list and load `frontend-design`; project and scoped Skills retain their normal priority. The extension's **Installed** state verifies files and ownership, not model behavior or current-session selection. Installation and removal do not erase instructions already retained in conversation history.

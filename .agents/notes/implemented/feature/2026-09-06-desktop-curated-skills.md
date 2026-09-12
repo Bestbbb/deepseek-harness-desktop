@@ -16,11 +16,13 @@ Downloads reject redirects, use bounded response sizes and deadlines, and carry 
 
 The [agent opt-in decision](2026-09-06-desktop-local-agent-opt-ins.md) still owns SDK/ACP activation and next-launch preferences. The [profile bundle decision](../../archived/simplification/2026-08-09-remove-repository-plugin.md) still owns executable third-party Plugin installation. A directory of text instructions is not a Cordis Plugin or profile patch; this installer does not recreate repository-plugin wrappers or preparation executables.
 
+Windows publication uses `MoveFileExW` without replacement or cross-volume copy flags. Canonical parent paths preserve long-path support. Rust's `fs::rename` can replace empty directories on Windows filesystems that support `FileRenameInfoEx`, so it cannot enforce the installer's no-replacement rule. The occupied-directory regression and simultaneous publishers exercise the native operation rather than a preflight existence check. See the [Win32 move options](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-movefileexw).
+
 ## Alternatives considered
 
 **Download moving branch heads or accept arbitrary repositories.** Rejected because the inspected instructions could differ from the installed content, and undeclared resources or executable dependencies would bypass the curated scope.
 
-**Write directly into the live Skill directory.** Rejected because discovery could observe a partial bundle. Ordinary Unix rename is also insufficient because it can replace an existing empty directory; publication must reject any occupied destination.
+**Write directly into the live Skill directory.** Rejected because discovery could observe a partial bundle. Ordinary filesystem rename is also insufficient because it can replace an existing empty directory; publication must reject any occupied destination.
 
 **Delete installed directories recursively.** Rejected because local edits and unrelated files belong to the user. Verification refuses changed bundles, and recovery storage makes ordinary removal reversible by the user.
 

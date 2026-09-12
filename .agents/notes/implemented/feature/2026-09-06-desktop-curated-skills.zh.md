@@ -16,11 +16,13 @@ Status: implemented
 
 [Agent 启用选择决策](2026-09-06-desktop-local-agent-opt-ins.zh.md)继续管理 SDK/ACP（Agent Client Protocol）启用及下次启动偏好。[Profile 组合包决策](../../archived/simplification/2026-08-09-remove-repository-plugin.md)继续管理可执行第三方插件的安装。文本指令目录不是 Cordis 插件或 profile 补丁；此安装器不重建 repository-plugin 包装层或准备程序。
 
+Windows 发布使用 `MoveFileExW`，不启用替换或跨卷复制标志。规范化的父目录路径保留长路径支持。在支持 `FileRenameInfoEx` 的 Windows 文件系统上，Rust 的 `fs::rename` 可能替换空目录，因此无法执行安装器的禁止替换规则。已占用目录回归测试和同时发布测试验证原生操作，而非事先检查目标是否存在。参见 [Win32 移动选项](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-movefileexw)。
+
 ## 考虑过的替代方案
 
 **下载持续变化的分支或接受任意仓库。** 否决，因为已查看指令可能与安装内容不同，且未声明资源或可执行依赖会绕过精选范围。
 
-**直接写入生效的 Skill 目录。** 否决，因为发现机制可能读到不完整扩展。普通 Unix 重命名同样不足，因为它可能替换已存在的空目录；发布必须拒绝所有已占用目标。
+**直接写入生效的 Skill 目录。** 否决，因为发现机制可能读到不完整扩展。普通文件系统重命名同样不足，因为它可能替换已存在的空目录；发布必须拒绝所有已占用目标。
 
 **递归删除已安装目录。** 否决，因为本地修改和无关文件属于用户。校验拒绝被修改的扩展，恢复目录让用户能够找回普通移除操作涉及的文件。
 

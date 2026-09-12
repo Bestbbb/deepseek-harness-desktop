@@ -204,8 +204,27 @@ fn publish_directory(source: &Path, target: &Path) -> Result<(), String> {
 
 #[cfg(windows)]
 fn publish_directory(source: &Path, target: &Path) -> Result<(), String> {
-    // Windows directory rename refuses any existing destination, including an empty directory.
-    fs::rename(source, target).map_err(|_| "skill-publish-failed".into())
+    use std::os::windows::ffi::OsStrExt;
+    use windows_sys::Win32::Storage::FileSystem::MoveFileExW;
+
+    // Canonical parents retain extended-length paths; the destination must not exist yet.
+    let source = fs::canonicalize(source).map_err(|_| "skill-invalid-path")?;
+    let target = fs::canonicalize(target.parent().ok_or("skill-invalid-path")?)
+        .map_err(|_| "skill-invalid-path")?
+        .join(target.file_name().ok_or("skill-invalid-path")?);
+    let mut source: Vec<u16> = source.as_os_str().encode_wide().collect();
+    let mut target: Vec<u16> = target.as_os_str().encode_wide().collect();
+    if source.contains(&0) || target.contains(&0) {
+        return Err("skill-invalid-path".into());
+    }
+    source.push(0);
+    target.push(0);
+    // No REPLACE_EXISTING or COPY_ALLOWED: one same-volume move must reject occupied targets.
+    let result = unsafe { MoveFileExW(source.as_ptr(), target.as_ptr(), 0) };
+    if result == 0 {
+        return Err("skill-publish-failed".into());
+    }
+    Ok(())
 }
 
 fn install(
@@ -479,6 +498,29 @@ mod tests {
         assert!(publish_directory(&source, &target).is_err());
         assert!(source.is_dir());
         assert!(target.is_dir());
+    }
+
+    #[test]
+    fn publication_preserves_occupied_unicode_paths() {
+        let root = tempfile::tempdir().unwrap();
+        let source = root.path().join("待安装 source");
+        let target = root.path().join("用户 target");
+        fs::create_dir(&source).unwrap();
+        fs::write(source.join("SKILL.md"), "reviewed bytes").unwrap();
+        fs::write(&target, "user bytes").unwrap();
+        assert!(publish_directory(&source, &target).is_err());
+        assert_eq!(fs::read_to_string(&target).unwrap(), "user bytes");
+        fs::remove_file(&target).unwrap();
+        fs::create_dir(&target).unwrap();
+        fs::write(target.join("notes.txt"), "user bytes").unwrap();
+        assert!(publish_directory(&source, &target).is_err());
+        assert_eq!(fs::read_to_string(target.join("notes.txt")).unwrap(), "user bytes");
+        fs::remove_file(target.join("notes.txt")).unwrap();
+        assert!(publish_directory(&source, &target).is_err());
+        fs::remove_dir(&target).unwrap();
+        publish_directory(&source, &target).unwrap();
+        assert!(!source.exists());
+        assert_eq!(fs::read_to_string(target.join("SKILL.md")).unwrap(), "reviewed bytes");
     }
 
     #[test]
