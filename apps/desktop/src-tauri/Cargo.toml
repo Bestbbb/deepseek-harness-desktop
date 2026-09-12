@@ -16,6 +16,7 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 base64 = "0.22"
 ctrlc = { version = "3", features = ["termination"] }
+dunce = "1"
 libc = "0.2"
 log = "0.4"
 rand = "0.9"

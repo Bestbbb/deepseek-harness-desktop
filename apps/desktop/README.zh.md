@@ -6,6 +6,8 @@
 
 ## 架构
 
+Windows 上启动 Node 时，仅在保持文件身份不变的情况下将规范脚本路径转换为兼容的普通路径；需要扩展语法的路径保持不变。
+
 应用会立即用系统 WebView 打开本地加载页。Rust supervisor 启动随包分发的官方 Node.js 可执行文件和生产 `dsh web` 完整依赖闭包，等待启动器提交成功启动且回环地址真正开始监听，再把同一个 WebView 导航到稳定的 Harness 地址。[原生提供方](../../packages/desktop/desktop-native/README.zh.md)分别确认每个子进程；端口已监听但插件树尚未完成启动不满足条件。
 
 浏览器访问和原生操作使用相互独立的凭据：

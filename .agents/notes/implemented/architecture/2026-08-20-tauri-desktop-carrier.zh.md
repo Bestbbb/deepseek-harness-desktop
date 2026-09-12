@@ -10,6 +10,8 @@ DeepSeek Harness 需要可安装的 macOS 和 Windows 应用，但不应把 Elec
 
 ## 决策
 
+Node 脚本参数通过 [`dunce::simplified`](https://docs.rs/dunce/latest/dunce/fn.simplified.html) 转换 Windows verbatim 磁盘路径，仅在普通表示仍指向同一文件时进行转换。元数据目录包含关系检查保留规范路径。打包测试根目录先使用兼容的规范路径，再拼接相对路径；打包 Codex 探测执行规范的包装器路径。无条件删除前缀会改变保留名称和长路径的行为。
+
 `apps/desktop` 是 Tauri 2 桌面载体。Rust 负责窗口、托盘、原生菜单与标准快捷键、单实例、窗口状态持久化、通知、开机启动、更新器接入点、脱敏诊断导出、原生 bridge 和子进程生命周期；界面继续使用操作系统 WebView 中的现有 React Web profile。Harness 运行时仍是 TypeScript，由 Tauri resource 中随包分发的官方平台 Node.js 22.22.0 执行。
 
 `apps/desktop-runtime` 是生产部署根。它的 manifest（元数据清单）显式闭合 workspace 运行时依赖图，避免 `pnpm deploy --prod --legacy` 静默遗漏只通过 peer 引入的 Harness 包。[依赖生成器](../../../../scripts/sync-desktop-runtime.ts)根据生产依赖图生成清单，[闭包校验器](../../../../scripts/verify-runtime-closure.ts)检查 Profile 可达性。[运行时准备脚本](../../../../apps/desktop/scripts/prepare-runtime.mjs)校验官方 Node 归档的 checksum，并写入运行时清单。每个目标操作系统自行构建运行时与安装包，不在平台之间复制二进制文件。

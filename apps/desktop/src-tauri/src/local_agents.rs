@@ -554,7 +554,7 @@ fn inspect_bundled(
         inspect_executable(
             result,
             node,
-            &[path.as_os_str().to_owned()],
+            &[dunce::simplified(&path).as_os_str().to_owned()],
             &path,
             directories,
             home,
@@ -757,10 +757,10 @@ mod tests {
     #[test]
     #[ignore = "Requires desktop:prepare; checks packaged versions only, never login or inference"]
     fn packaged_agent_versions_without_host_cli_or_user_credentials() {
-        let runtime = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("../resources/runtime")
-            .canonicalize()
-            .unwrap();
+        let runtime = dunce::canonicalize(
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../resources/runtime"),
+        )
+        .unwrap();
         let probes = ProbePaths {
             manifest: runtime.join("agent-runtimes.json"),
             root: runtime.clone(),
@@ -786,7 +786,7 @@ mod tests {
                 .env("PATH", node.parent().unwrap())
                 .env("NO_COLOR", "1");
             if id == "codex" {
-                command.arg(&path);
+                command.arg(dunce::simplified(&path));
             }
             command.arg("--version");
             let (code, output, _) =
@@ -1054,9 +1054,7 @@ mod tests {
     #[test]
     #[ignore = "Requires desktop:prepare; boots the packaged Web profile without inference"]
     fn packaged_provider_and_preset_smoke() {
-        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("../../..")
-            .canonicalize()
+        let root = dunce::canonicalize(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../.."))
             .unwrap();
         let runtime = root.join("apps/desktop/resources/runtime");
         let packages = runtime.join("app/node_modules/@deepseek-ai");
@@ -1141,7 +1139,7 @@ mod tests {
                 &[],
             );
             command
-                .arg(packages.join("dsh/lib/bin.js"))
+                .arg(dunce::simplified(&packages.join("dsh/lib/bin.js")))
                 .args(["web", "--patch"])
                 .arg(file)
                 .args(["--no-open", "--port", "0"])

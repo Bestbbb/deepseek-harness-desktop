@@ -303,7 +303,7 @@ fn spawn_runtime(
     let patch = materialize_patch(config)?;
     let mut command = Command::new(&config.node);
     command
-        .arg(&config.entry)
+        .arg(dunce::simplified(&config.entry))
         .arg("--profile")
         .arg(profile)
         .arg("--patch")

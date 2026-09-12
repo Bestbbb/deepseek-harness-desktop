@@ -375,9 +375,7 @@ mod tests {
     }
 
     fn packaged_smoke(home: &Path, present: bool, text: &str) {
-        let root = Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../../..")
-            .canonicalize()
+        let root = dunce::canonicalize(Path::new(env!("CARGO_MANIFEST_DIR")).join("../../.."))
             .unwrap();
         let runtime = root.join("apps/desktop/resources/runtime");
         let node = runtime
@@ -396,7 +394,7 @@ mod tests {
             }
         }
         command
-            .arg(runtime.join("app/node_modules/@deepseek-ai/dsh/lib/bin.js"))
+            .arg(dunce::simplified(&runtime.join("app/node_modules/@deepseek-ai/dsh/lib/bin.js")))
             .args(["web", "--patch"])
             .arg(patch)
             .args(["--no-open", "--port", "0"])

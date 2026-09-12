@@ -10,6 +10,8 @@ DeepSeek Harness needs installable macOS and Windows applications without making
 
 ## Decision
 
+Node script arguments use [`dunce::simplified`](https://docs.rs/dunce/latest/dunce/fn.simplified.html) to convert Windows verbatim disk paths only when their ordinary representation identifies the same file. Metadata containment checks retain canonical paths. Packaged test roots use compatible canonical paths before appending relative paths; packaged Codex probes execute the canonical wrapper path. Removing a prefix unconditionally would change reserved-name and long-path behavior.
+
 `apps/desktop` is a Tauri 2 carrier. Rust owns the window, tray, native menu and standard shortcuts, single-instance behavior, window-state persistence, notifications, autostart, updater integration point, redacted diagnostic export, native bridge, and child-process lifecycle. It displays the existing React Web profile in the operating system WebView. The Harness runtime remains TypeScript and runs under the official platform Node.js 22.22.0 executable bundled as a Tauri resource.
 
 `apps/desktop-runtime` names the production deployment root. Its manifest explicitly closes the workspace runtime graph so `pnpm deploy --prod --legacy` cannot silently omit peer-only Harness packages. [The dependency generator](../../../../scripts/sync-desktop-runtime.ts) derives this list from the production graph; [the closure verifier](../../../../scripts/verify-runtime-closure.ts) checks profile reachability. [Runtime preparation](../../../../apps/desktop/scripts/prepare-runtime.mjs) checksum-verifies the official Node archive and writes a runtime manifest. The target OS builds its own runtime and installer; binaries are never cross-copied between platforms.

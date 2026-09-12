@@ -126,7 +126,7 @@ fn queue_overlay(
     let mut pack = Command::new(&config.node);
     pack.env_clear()
         .current_dir(&fixture)
-        .arg(&manager)
+        .arg(dunce::simplified(&manager))
         .args(["pack", "--pack-destination"])
         .arg(&artifacts)
         .env("HOME", home)
@@ -237,9 +237,7 @@ fn prepare_candidate(
 #[test]
 #[ignore = "Requires desktop:prepare; exercises real packaged Profile selection and recovery without inference"]
 fn packaged_profile_selection_and_recovery() {
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("../../..")
-        .canonicalize()
+    let root = dunce::canonicalize(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../.."))
         .unwrap();
     let runtime = root.join("apps/desktop/resources/runtime");
     let packages = runtime.join("app/node_modules/@deepseek-ai");

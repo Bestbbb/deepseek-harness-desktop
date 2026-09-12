@@ -926,6 +926,7 @@ version = "0.1.5-rc.2"
 dependencies = [
  "base64 0.22.1",
  "ctrlc",
+ "dunce",
  "libc",
  "log",
  "rand",
