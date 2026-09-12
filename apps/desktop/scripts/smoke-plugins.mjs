@@ -539,7 +539,7 @@ async function inspectDelegation(page, settings, card, run, addressFile) {
   assert.equal((await control('state'))[1].disposed, true)
   const aria = `${await panel.locator('[data-delegation-launcher]').ariaSnapshot()}\n`
     .replaceAll(await realpath(temporary), '{{temporary}}').replaceAll(temporary, '{{temporary}}')
-  const expected = join(desktop, 'tests/expected/delegation-tasks.aria.txt')
+  const expected = join(desktop, `tests/expected/delegation-tasks${process.platform === 'win32' ? '.windows' : ''}.aria.txt`)
   if (process.env.DSH_DESKTOP_RECORD_EXPECTED === '1') await writeFile(expected, aria)
   else assert.equal(aria, await readFile(expected, 'utf8'))
   if (process.env.DSH_DESKTOP_CAPTURE_PREVIEW === '1') {
