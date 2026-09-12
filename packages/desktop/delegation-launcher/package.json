@@ -15,7 +15,9 @@
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",
   "exports": {
-    "./types": "./lib/types/types.d.ts",
+    "./types": {
+      "types": "./lib/types/types.d.ts"
+    },
     ".": {
       "types": "./lib/types/index.d.ts",
       "default": "./lib/index.js"
