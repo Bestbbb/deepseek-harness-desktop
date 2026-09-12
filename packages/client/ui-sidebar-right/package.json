@@ -61,12 +61,12 @@
     "@deepseek-ai/dsh-client-ui-slots": "workspace:^",
     "@deepseek-ai/dsh-session": "workspace:^",
     "@testing-library/react": "^16.1.0",
-    "@types/picomatch": "^4.0.2",
-    "@types/react": "~18.3.1",
-    "@types/react-dom": "~18.3.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "picomatch": "^4.0.4",
+    "@types/picomatch": "^4.0.3",
+    "@types/react": "~19.2.18",
+    "@types/react-dom": "~19.2.4",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "picomatch": "^4.0.5",
     "clsx": "^2.0.0"
   },
   "files": [

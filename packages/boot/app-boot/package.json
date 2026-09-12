@@ -29,7 +29,7 @@
   "dependencies": {
     "@deepseek-ai/dsh-atomic-write": "workspace:^",
     "@deepseek-ai/dsh-package-manifest": "workspace:^",
-    "js-yaml": "^4.2.0",
+    "js-yaml": "^5.2.3",
     "resolve.exports": "^2.0.3"
   },
   "peerDependencies": {
@@ -58,6 +58,6 @@
     "@deepseek-ai/dsh-system-prompt": "workspace:^",
     "@types/js-yaml": "^4.0.9",
     "@deepseek-ai/cordis": "workspace:^",
-    "chokidar": "4.0.3"
+    "chokidar": "5.0.0"
   }
 }
