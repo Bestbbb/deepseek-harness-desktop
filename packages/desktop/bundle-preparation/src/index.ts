@@ -207,8 +207,7 @@ export class BundlePreparation extends Service {
       signal.throwIfAborted()
       this.ensureOpen()
       await assertBundleVersion(composition, installer.maxManifestBytes, profile, result.candidate.prepared.entry.packageName, version)
-      queued = { profile: destination, previousProfile: profile,
-        manifestSha256: createHash('sha256').update(await boundedFile(join(result.profileDirectory, 'package.json'), installer.maxManifestBytes)).digest('hex') }
+      queued = await this.profileCandidate(result.profileDirectory, installer.maxManifestBytes, destination, profile)
       signal.throwIfAborted()
       // Queue transport can commit before its reply is lost; prepared files must outlive rejection.
       await desktop.queueProfile(queued)
@@ -266,13 +265,19 @@ export class BundlePreparation extends Service {
     }, async (result, signal) => {
       signal.throwIfAborted()
       this.ensureOpen()
-      queued = { profile: destination, previousProfile: profile,
-        manifestSha256: createHash('sha256').update(await boundedFile(join(result.profileDirectory, 'package.json'), installer.maxManifestBytes)).digest('hex') }
+      queued = await this.profileCandidate(result.profileDirectory, installer.maxManifestBytes, destination, profile)
       signal.throwIfAborted()
       // Native persistence may succeed even when its acknowledgement is lost.
       await desktop.queueProfile(queued)
     })
     return queued
+  }
+
+  private async profileCandidate(
+    directory: string, maxManifestBytes: number, profile: DesktopProfileName, previousProfile: DesktopProfileName,
+  ): Promise<DesktopProfileCandidate> {
+    const manifest = await boundedFile(join(directory, 'package.json'), maxManifestBytes)
+    return { profile, previousProfile, manifestSha256: createHash('sha256').update(manifest).digest('hex') }
   }
 
   private async prepareInstalled<T extends PreparedDependencies | PreparedComposition>(

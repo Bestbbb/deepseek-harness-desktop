@@ -5,6 +5,9 @@
 - group "Marketplace views":
   - button "Discover" [pressed]
   - button "Installed"
+- region "Built-in local agent connections":
+  - group: Built-in local agent connections
+  - button "Configure local agents"
 - paragraph:
   - text: "Current combination:"
   - code: web

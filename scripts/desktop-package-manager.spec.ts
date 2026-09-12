@@ -5,7 +5,7 @@ import { expect, it } from 'vitest'
 it('runs relocated pnpm without a developer PATH and refuses replacing prepared files', () => {
   const result = spawnSync(process.execPath, ['--input-type=module', '-e', `
     import assert from 'node:assert/strict';
-    import { copyFile, mkdir, mkdtemp, readFile, rename, rm } from 'node:fs/promises';
+    import { copyFile, mkdir, mkdtemp, readFile, rename, rm, symlink } from 'node:fs/promises';
     import { join } from 'node:path';
     import { tmpdir } from 'node:os';
     import { spawnSync } from 'node:child_process';
@@ -16,7 +16,9 @@ it('runs relocated pnpm without a developer PATH and refuses replacing prepared 
       await mkdir(output);
       const version = await preparePackageManager(output);
       const executable = process.platform === 'win32' ? 'node.exe' : 'node';
-      await copyFile(process.execPath, join(output, 'node', executable));
+      // Homebrew Node resolves dylibs relative to its executable; this fixture relocates launchers, not that installation.
+      const installNode = process.platform === 'win32' ? copyFile : symlink;
+      await installNode(process.execPath, join(output, 'node', executable));
       const moved = join(temporary, 'relocated runtime');
       await rename(output, moved);
       const bin = join(moved, 'node');

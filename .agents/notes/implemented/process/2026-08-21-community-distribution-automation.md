@@ -16,7 +16,7 @@ The primary CI workflow replaces the upstream enterprise runner matrix with one 
 
 The separate [real-API e2e workflow](../testing/2026-06-19-real-api-e2e-ci.md) is manual-only. Ordinary pushes and pull requests run keyless checks; a maintainer may explicitly run the real suite after configuring `DEEPSEEK_API_KEY_EXTERNAL`. Its preflight still rejects a missing key so a requested real-API run cannot report a false green.
 
-The [Dependabot policy](2026-07-27-dependabot-version-updates.md) retains the 30-day cooldown and weekly schedule. Each configured ecosystem groups all eligible version updates into one pull request and limits version-update pull requests to one open request per ecosystem. Dependabot security updates remain outside that version-update limit and cooldown.
+The [Dependabot policy](../../archived/process/2026-07-27-dependabot-version-updates.md) retains the 30-day cooldown and weekly schedule. Each configured ecosystem groups all eligible version updates into one pull request and limits version-update pull requests to one open request per ecosystem. Dependabot security updates remain outside that version-update limit and cooldown.
 
 The initial ungrouped Dependabot pull requests are closed after this configuration reaches the default branch. Dependency updates are never auto-merged.
 

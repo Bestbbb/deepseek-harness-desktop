@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-06-desktop-curated-skills.md
-2026-09-06-desktop-curated-skills.md: 1dd1f9475c1e2d9eaaaeacb9c63cf17fc2b7c4cc
-2026-09-06-desktop-curated-skills.zh.md: 8bde791a0fd9274cec5835d10a348f53cfe98cba
+2026-09-06-desktop-curated-skills.md: 01016e7b0fc202e061f08022af62cdb8242d6a74
+2026-09-06-desktop-curated-skills.zh.md: 3098a537fbe4d1fe22b925f60a9e3e08b9fb66cc

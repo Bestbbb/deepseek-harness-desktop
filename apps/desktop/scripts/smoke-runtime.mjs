@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 import { EventEmitter, once } from 'node:events'
-import { randomBytes } from 'node:crypto'
+import { createHash, randomBytes } from 'node:crypto'
 import { createServer } from 'node:http'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
@@ -11,7 +11,7 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { createInterface } from 'node:readline'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { constants, zstdCompressSync, zstdDecompressSync } from 'node:zlib'
+import { constants, zstdCompressSync } from 'node:zlib'
 
 const desktopDir = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const runtime = resolve(process.env.DSH_DESKTOP_RUNTIME_OUTPUT ?? join(desktopDir, 'resources/runtime'))
@@ -257,6 +257,16 @@ async function seedLegacySession(version) {
       },
     }
   })
+  const systemId = 'v2-to-v3-system-' + createHash('sha256')
+    .update(JSON.stringify(['session-format-v2-to-v3', id, 1, 'step/start'])).digest('hex')
+  expected.splice(2, 0, {
+    type: 'system/message', seq: 2, time: 101, surfaceOp: 'append',
+    data: { turn: 1, step: 1, message: {
+      id: systemId, role: 'system',
+      source: { kind: 'plugin', plugin: '@deepseek-ai/dsh-system-prompt' }, content: [],
+    } },
+  })
+  expected.forEach((event, seq) => { event.seq = seq })
   const encode = rows => zstdCompressSync(rows.map(row => JSON.stringify(row) + '\n').join(''), {
     params: { [constants.ZSTD_c_checksumFlag]: 1 },
   })
@@ -277,18 +287,11 @@ async function verifyLegacySession(origin, cookie, fixture) {
   assert.equal(body.result.value.hasMore, false)
   assert.deepEqual(body.result.value.records, fixture.expected.map(event => ({ type: 'event', event })))
   assert.deepEqual(await readFile(fixture.sourcePath), fixture.source, 'released Session source must remain byte-identical')
-  const current = await readFile(join(fixture.dir, 'session.v2.jsonl.zstd'))
-  const frames = []
-  for (let offset = 0; offset < current.length;) {
-    // Node's decoder consumes one frame; the log contains a header plus append frames.
-    const { buffer, engine } = zstdDecompressSync(current.subarray(offset), { info: true })
-    assert.ok(engine.bytesWritten > 0 && engine.bytesWritten <= current.length - offset)
-    frames.push(buffer)
-    offset += engine.bytesWritten
+  for (const version of [2, 3]) {
+    await assert.rejects(readFile(join(fixture.dir, `session.v${version}.jsonl.zstd`)), { code: 'ENOENT' },
+      'history reads must not publish successor generations')
   }
-  const rows = Buffer.concat(frames).toString('utf8').trimEnd().split('\n').map(line => JSON.parse(line))
-  assert.deepEqual(rows, [{ ...fixture.header, version: 2, isSeeded: false }, ...fixture.expected])
-  return current
+  return body.result.value.records
 }
 
 try {
@@ -339,6 +342,7 @@ try {
   assert.equal(marketBody.result?.ok, true, JSON.stringify(marketBody))
   assert.deepEqual(marketBody.result.value.entries.map(item => ({ id: item.id, issues: item.issues })), [
     { id: 'focus-timer', issues: [] }, { id: 'notification-controls', issues: [] },
+    { id: 'delegation-launcher', issues: [] },
   ])
   assert.equal(marketBody.result.value.selection.activeProfile, 'web')
 
@@ -364,7 +368,7 @@ try {
   assert.equal((await resumed.json()).result?.ok, true)
   await verifyStream(restarted.origin, cookie)
   for (const [index, fixture] of legacy.entries()) {
-    assert.deepEqual(await verifyLegacySession(restarted.origin, cookie, fixture), migrated[index], 'reopening must reuse the committed current generation')
+    assert.deepEqual(await verifyLegacySession(restarted.origin, cookie, fixture), migrated[index], 'history conversion must remain identical after restart')
   }
   await stopRuntime()
   const failurePatch = join(home, 'failure.patch.yml')

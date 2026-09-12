@@ -14,7 +14,7 @@ The browser inventory binds the Connection service's generation through the Slot
 
 A manual refresh preserves search, disclosures, and the last result while reading. Failure labels the retained result as stale. Preset details report configuration independently from runtime failure, and an absent root Fiber means no running instance was observed. These observations do not constitute installation, compatibility, authentication, or permission checks.
 
-The [preset-scope decision](2026-08-29-plugin-inventory-agent-preset-scopes.md) still owns global versus per-preset provenance. The [plugin-owned settings decision](2026-08-12-plugin-owned-settings-surface.md) still owns configuration cards. The [marketplace proposal](../../proposed/architecture/2026-09-06-desktop-plugin-marketplace.md) remains proposed: inventory freshness does not implement Bundle installation operations.
+The [preset-scope decision](../../archived/architecture/2026-08-29-plugin-inventory-agent-preset-scopes.md) still owns global versus per-preset provenance. The [plugin-owned settings decision](../../archived/architecture/2026-08-12-plugin-owned-settings-surface.md) still owns configuration cards. The [marketplace proposal](../../proposed/architecture/2026-09-06-desktop-plugin-marketplace.md) remains proposed: inventory freshness does not implement Bundle installation operations.
 
 ## Alternatives considered
 

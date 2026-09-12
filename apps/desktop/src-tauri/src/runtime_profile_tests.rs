@@ -150,6 +150,7 @@ fn queue_overlay(
     let catalog = home.join("fixture-catalog.json");
     fs::write(&catalog, serde_json::json!({ "schemaVersion": 1, "entries": [{
         "id": "fixture", "packageName": name, "version": "1.0.0", "title": "Profile fixture", "publisher": "Local test",
+        "details": null,
         "source": "https://github.com/Bestbbb/deepseek-harness-desktop", "harnessVersions": [manifest["harnessVersion"]],
         "platforms": [format!("{}-{}", manifest["platform"].as_str().unwrap(), manifest["arch"].as_str().unwrap())],
         "artifact": { "file": artifact, "size": bytes.len(), "sha256": format!("{:x}", Sha256::digest(&bytes)) }

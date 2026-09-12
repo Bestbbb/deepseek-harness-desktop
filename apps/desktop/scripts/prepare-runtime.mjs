@@ -174,7 +174,16 @@ async function assertRuntimeTarget() {
   }
   await assertNoLinks(join(appOutput, 'node_modules'))
   await run(nodeOutput, [
-    '-e', "for (const name of ['fs-ext', 'node-pty', 'koffi', 'sharp']) require(name)",
+    '--input-type=module', '-e', `
+      import { createRequire } from 'node:module';
+      import { rejects } from 'node:assert/strict';
+      const require = createRequire(import.meta.url);
+      for (const name of ['node-pty', 'koffi', 'sharp']) require(name);
+      if (process.platform !== 'win32') {
+        const { tryLockExclusive } = await import('@deepseek-ai/node-addon-system/flock');
+        await rejects(tryLockExclusive(-1), { code: 'EBADF', syscall: 'flock' });
+      }
+    `,
   ], appOutput)
 }
 
@@ -250,7 +259,7 @@ async function deployRuntime() {
 }
 
 async function rebuildProductionScripts() {
-  for (const name of ['node-pty', 'koffi', 'fs-ext', '@deepseek-ai/dsh-subprocess-local']) {
+  for (const name of ['node-pty', 'koffi', '@deepseek-ai/dsh-subprocess-local']) {
     await rebuildNativePackage(join(appOutput, 'node_modules', name), nodeVersion, targetArch)
   }
 }

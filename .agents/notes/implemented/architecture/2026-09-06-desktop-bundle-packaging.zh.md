@@ -14,7 +14,7 @@ Status: implemented
 
 冒烟测试创建独立主目录和带有 Host 与预构建客户端部分的离线文件包。子进程环境排除账号凭据、Node 注入变量和外部包管理器配置。PATH 中只有打包的可执行文件。安装脚本与 pnpm 钩子均被禁用。会失败的 postinstall fixture（测试前置数据）防止意外启用的生命周期静默通过。浏览器 fixture 使用现有语言与 slot 服务，不向页面插入无关文档。
 
-[移除仓库插件](../simplification/2026-08-09-remove-repository-plugin.zh.md)仍约束唯一的组合包分发路径。其宿主 PATH 假定继续描述独立 CLI；桌面部署显式提供包管理器运行时，不恢复配置时缓存。[桌面载体](2026-08-20-tauri-desktop-carrier.zh.md)、[agent 启用选项](../feature/2026-09-06-desktop-local-agent-opt-ins.zh.md)和[纯数据 skill](../feature/2026-09-06-desktop-curated-skills.zh.md)保留各自独立职责。
+[移除仓库插件](../../archived/simplification/2026-08-09-remove-repository-plugin.md)仍约束唯一的组合包分发路径。其宿主 PATH 假定继续描述独立 CLI；桌面部署显式提供包管理器运行时，不恢复配置时缓存。[桌面载体](2026-08-20-tauri-desktop-carrier.zh.md)、[agent 启用选项](../feature/2026-09-06-desktop-local-agent-opt-ins.zh.md)和[纯数据 skill](../feature/2026-09-06-desktop-curated-skills.zh.md)保留各自独立职责。
 
 ## 考虑过的替代方案
 

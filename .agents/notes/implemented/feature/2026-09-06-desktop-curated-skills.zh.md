@@ -14,7 +14,7 @@ Status: implemented
 
 下载拒绝重定向，对响应大小和请求时间设限，不携带 Harness 账户凭据。安装在私有临时目录校验完整扩展，再通过不替换现有目标的目录重命名，将其放入桌面主目录。现有文件系统 Skill 提供方负责发现、优先级及指令加载。安装不执行脚本、依赖解析器或准备钩子。安装器记录固定文件列表，并拒绝替换已有目标。移除先校验记录及全部文件，再将扩展移入扫描范围外、唯一分配的恢复目录。
 
-[Agent 启用选择决策](2026-09-06-desktop-local-agent-opt-ins.zh.md)继续管理 SDK/ACP（Agent Client Protocol）启用及下次启动偏好。[Profile 组合包决策](../simplification/2026-08-09-remove-repository-plugin.zh.md)继续管理可执行第三方插件的安装。文本指令目录不是 Cordis 插件或 profile 补丁；此安装器不重建 repository-plugin 包装层或准备程序。
+[Agent 启用选择决策](2026-09-06-desktop-local-agent-opt-ins.zh.md)继续管理 SDK/ACP（Agent Client Protocol）启用及下次启动偏好。[Profile 组合包决策](../../archived/simplification/2026-08-09-remove-repository-plugin.md)继续管理可执行第三方插件的安装。文本指令目录不是 Cordis 插件或 profile 补丁；此安装器不重建 repository-plugin 包装层或准备程序。
 
 ## 考虑过的替代方案
 

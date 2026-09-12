@@ -14,7 +14,7 @@ The desktop ships a curated manifest of exact GitHub revisions and SHA-256 hashe
 
 Downloads reject redirects, use bounded response sizes and deadlines, and carry no Harness account credentials. Installation verifies the entire bundle in private temporary storage before a non-replacing directory rename publishes it under the desktop home. The existing filesystem Skill provider owns discovery, priority, and instruction loading. No scripts, dependency resolvers, or preparation hooks run during installation. The installer records the pinned file list and refuses to replace existing destinations. Removal verifies that record and all files, then moves the bundle to uniquely allocated recovery storage outside the scanned root.
 
-The [agent opt-in decision](2026-09-06-desktop-local-agent-opt-ins.md) still owns SDK/ACP activation and next-launch preferences. The [profile bundle decision](../simplification/2026-08-09-remove-repository-plugin.md) still owns executable third-party Plugin installation. A directory of text instructions is not a Cordis Plugin or profile patch; this installer does not recreate repository-plugin wrappers or preparation executables.
+The [agent opt-in decision](2026-09-06-desktop-local-agent-opt-ins.md) still owns SDK/ACP activation and next-launch preferences. The [profile bundle decision](../../archived/simplification/2026-08-09-remove-repository-plugin.md) still owns executable third-party Plugin installation. A directory of text instructions is not a Cordis Plugin or profile patch; this installer does not recreate repository-plugin wrappers or preparation executables.
 
 ## Alternatives considered
 

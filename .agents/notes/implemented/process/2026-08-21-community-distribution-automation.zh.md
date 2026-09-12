@@ -16,7 +16,7 @@ Issue policy 与 Issue lifecycle 工作流文件保留为只能手动运行的�
 
 独立的[真实 API e2e 工作流](../testing/2026-06-19-real-api-e2e-ci.zh.md)只能手动运行。普通 push 和 PR 运行无密钥检查；维护者配置 `DEEPSEEK_API_KEY_EXTERNAL` 后，可以明确触发真实测试套件。它仍通过 preflight 拒绝缺少密钥的运行，因此主动请求的真实 API 测试不会产生虚假的绿色结果。
 
-[Dependabot 策略](2026-07-27-dependabot-version-updates.zh.md)保留 30 天冷却期和每周检查计划。每个已配置的生态会把所有符合条件的版本更新合并到一个 PR 中，并把每个生态同时打开的版本更新 PR 限制为一个。Dependabot 安全更新不受该版本更新数量限制和冷却期约束。
+[Dependabot 策略](../../archived/process/2026-07-27-dependabot-version-updates.md)保留 30 天冷却期和每周检查计划。每个已配置的生态会把所有符合条件的版本更新合并到一个 PR 中，并把每个生态同时打开的版本更新 PR 限制为一个。Dependabot 安全更新不受该版本更新数量限制和冷却期约束。
 
 该配置进入默认分支后，最初未分组的 Dependabot PR 将全部关闭。依赖更新绝不自动合并。
 

@@ -14,7 +14,7 @@ Status: implemented
 
 手动刷新期间保留搜索、展开项与上次结果。失败时明确标记保留结果已过期。预设详情独立展示配置与运行失败，根 Fiber 缺失表示未观测到运行实例。这些观测不构成安装、兼容性、认证或权限检查。
 
-[预设作用域决策](2026-08-29-plugin-inventory-agent-preset-scopes.zh.md)仍拥有全局与各预设的出处规则。[插件自有设置决策](2026-08-12-plugin-owned-settings-surface.zh.md)仍拥有配置卡片。[市场提案](../../proposed/architecture/2026-09-06-desktop-plugin-marketplace.zh.md)仍是提案：清单新鲜度不实现 Bundle 安装操作。
+[预设作用域决策](../../archived/architecture/2026-08-29-plugin-inventory-agent-preset-scopes.md)仍拥有全局与各预设的出处规则。[插件自有设置决策](../../archived/architecture/2026-08-12-plugin-owned-settings-surface.md)仍拥有配置卡片。[市场提案](../../proposed/architecture/2026-09-06-desktop-plugin-marketplace.zh.md)仍是提案：清单新鲜度不实现 Bundle 安装操作。
 
 ## 考虑过的替代方案
 

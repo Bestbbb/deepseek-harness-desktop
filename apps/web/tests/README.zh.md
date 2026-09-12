@@ -16,6 +16,10 @@ DSH_SNAPSHOT=replay corepack pnpm exec vitest run --config vitest.web.perf.confi
 
 `WEB_PERF_RESULT` 报告测量结果，不设置速度阈值。CDP 计时与强制 GC 后的 JavaScript 堆采样描述本次 Chromium 运行，不代表原生 WKWebView/WebView2 延迟或整个桌面的内存。断言失败与清理失败会同时报告；teardown 不会替换最初的错误。
 
+## 完成状态观察
+
+依赖状态的用例使用 Workspace、接纳、附件和模型流屏障，区分可见中间状态与已完成操作。详情关闭等待框架过渡结束；归档验证为 seed Session 设置显式标题，并跨重载跟踪该身份。参见 [CI fixture 同步决策](../../../.agents/notes/implemented/testing/2026-09-08-ci-completion-observations.zh.md)。
+
 ## 这些是 Host 面的测试
 
 它们在根 `tsconfig.host.json` 中做类型检查，而不在 Client aggregate 中，因为它们直接读取 Host 服务：`ctx.connection`、Host 侧 `SessionStore` 与 `ctx.sessionProjectionCache`。运行时驱动浏览器并不使一个文件成为 Client 程序的一部分——两个 face 在相同的键上以不同服务合并 cordis `Context`，因此单个程序无法同时看见两者。把这些文件挪进 Client aggregate 会让每一处 Host 服务访问都无法编译。

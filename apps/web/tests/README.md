@@ -16,6 +16,10 @@ The benchmark checks the stored session count, expands the compact sidebar throu
 
 `WEB_PERF_RESULT` reports measurements without speed thresholds. CDP timings and forced-GC JavaScript heap samples describe this Chromium run, not native WKWebView/WebView2 latency or total desktop memory. A failed assertion and a failed cleanup are both reported; teardown never replaces the original failure.
 
+## Completion observations
+
+State-sensitive cases use Workspace, admission, attachment, and model-stream barriers to separate visible intermediate states from completed operations. Details close waits for frame transitions; archive verification assigns an explicit title to the seeded Session and follows that identity across reload. See the [CI fixture synchronization decision](../../../.agents/notes/implemented/testing/2026-09-08-ci-completion-observations.md).
+
 ## These are Host-face tests
 
 They type-check in the root `tsconfig.host.json`, not in the Client aggregate, because they read Host services directly: `ctx.connection`, the Host `SessionStore`, and `ctx.sessionProjectionCache`. Driving a browser at runtime does not make a file part of the Client program — the two faces merge cordis `Context` under the same keys with different services, so one program cannot see both. Moving these files into the Client aggregate makes every Host-service access fail to compile.

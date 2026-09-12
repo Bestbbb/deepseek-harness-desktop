@@ -27,9 +27,7 @@ tmp/
 .idea
 mise.toml
 dist-exe/
-dist/npm/
-dist/npm-vendor/
-dist/npm-landlock/
+/dist/
 python/sdk-runtime/src/deepseek_harness_runtime/runtime/deepseek-harness-sdk-runtime-*
 python/sdk-runtime/src/deepseek_harness_runtime/runtime/node/
 python/**/__pycache__/
@@ -56,3 +54,4 @@ apps/desktop/src-tauri/icons/ios/
 worktrees/
 .agents/worktrees/
 .typert-*/
+native/system/test/bin/

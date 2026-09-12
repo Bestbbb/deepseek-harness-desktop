@@ -17,6 +17,7 @@
     - paragraph:
       - code: marketplace-web-fixture
       - text: · 1.0.0
+    - paragraph: The reviewer has not supplied usage or access guidance for this Bundle.
     - paragraph: "Publisher: Harness Desktop tests"
     - link "View source":
       - /url: https://github.com/Bestbbb/deepseek-harness-desktop
@@ -24,6 +25,7 @@
 - group "Replace this Bundle version?":
   - strong: Reviewed example
   - paragraph: This prepares a new combination. Your current session keeps running. Enable it by quitting and reopening the app after your tasks finish.
+  - paragraph: The reviewer has not supplied usage or access guidance for this Bundle.
   - paragraph: 0.9.0 → 1.0.0
   - paragraph: Replace exactly the version shown above. The target may be older; the marketplace does not migrate plugin data or guarantee downgrade compatibility. If the selected combination or installed version changes, refresh and review again.
   - button "Replace for next launch"

@@ -4,6 +4,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import { resolvePwshPath } from './packages/shell/pwsh-local/src/resolve.ts'
 import { defineConfig } from 'vitest/config'
 import { standardDecoratorPlugin, vitestExecArgv } from './vitest.shared.ts'
+import { mockedDesktopRemotePlugin } from './scripts/desktop-remote-test-resolution.ts'
 import { COVERAGE_EXEMPT_ENV, coverageExemptHeavySuites } from './scripts/coverage-exempt.ts'
 import { COVERAGE_PARTITION_MODE_ENV } from './scripts/coverage-partitions.ts'
 
@@ -156,7 +157,7 @@ const processBoundTests = [
 ]
 
 export default defineConfig({
-  plugins: [pathsPlugin(), standardDecoratorPlugin()],
+  plugins: [mockedDesktopRemotePlugin(), pathsPlugin(), standardDecoratorPlugin()],
   test: {
     setupFiles: ['./scripts/test-proxy-environment.ts', './scripts/test-invariants.ts'],
     // .tsx: client component specs (jsdom via per-file @vitest-environment pragma).
@@ -166,7 +167,7 @@ export default defineConfig({
     // Node stability; process-bound suites stay separate for inventory control.
     projects: [
       {
-        plugins: [pathsPlugin(), standardDecoratorPlugin()],
+        plugins: [mockedDesktopRemotePlugin(), pathsPlugin(), standardDecoratorPlugin()],
         test: {
           name: 'thread-safe',
           execArgv: vitestExecArgv,
@@ -184,7 +185,7 @@ export default defineConfig({
         },
       },
       {
-        plugins: [pathsPlugin(), standardDecoratorPlugin()],
+        plugins: [mockedDesktopRemotePlugin(), pathsPlugin(), standardDecoratorPlugin()],
         test: {
           name: 'process-bound',
           execArgv: vitestExecArgv,
@@ -330,11 +331,9 @@ export default defineConfig({
         'packages/client/ui-settings-models/src/client/welcome-store.ts',
         'packages/extensions/*/src/**/*.ts',
         'packages/extensions/*/src/**/*.tsx',
-        // Typert generator: correctness is pinned by its fixture suites and
-        // the byte-for-byte catalog reproduction test; per-file coverage
-        // would put whole-workspace compiler analysis under v8
-        // instrumentation — the coverage lane's longest tail.
-        'packages/typert/generator/src/*.ts',
+        // Typert correctness is checked by its uninstrumented suites,
+        // including compiler fixtures and byte-for-byte catalog reproduction.
+        'packages/typert/*/src/**/*.{ts,tsx}',
         // Experimental webworker-runtime is outside the coverage requirement
         // by decision: its correctness signal is its uninstrumented suite and
         // the packer's end-to-end image spec.
