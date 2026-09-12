@@ -111,7 +111,7 @@ it('rejects a Profile changed between the initial manifest and completed package
   await f.put(join(f.directory, 'node_modules/example'), metadata)
   vi.mocked(boundedFile).mockImplementation(async (path, limit) => {
     const bytes = await original.boundedFile(path, limit)
-    if (path.endsWith('node_modules/example/package.json')) await writeFile(f.manifest, '{}')
+    if (path.endsWith(join('node_modules', 'example', 'package.json'))) await writeFile(f.manifest, '{}')
     return bytes
   })
   await expect(f.read()).rejects.toThrow('Profile changed')
