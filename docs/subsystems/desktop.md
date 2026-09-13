@@ -10,6 +10,8 @@ The marketplace declares the root keyed slot `settings.bundleMarketplace.action`
 
 The optional [marketplace plugin](../../packages/desktop/bundle-marketplace/README.md) exposes browser commands over the existing authenticated Remote transport. `MarketplaceEntry` projects catalog identity, title, package/version, publisher, source and compatibility issues without artifact paths. `MarketplaceSnapshot` combines these entries with native `DesktopProfileSelection` and `MarketplaceProfile` observations. Each Profile is either `unavailable` or `read` with ordered `ProfileBundle` values containing `packageName` and a nullable resolved `version`; these are file observations, not running-plugin health. `MarketplaceCommandResult` distinguishes `acknowledged` from `unconfirmed`, which requires a fresh read before retrying. The browser contribution mounts its own Remote namespace and Settings tab without changing the base Web assembly.
 
+`BundleCatalogStatus` reports bundled, online, cached or unavailable metadata, whether remote checking is configured, and the nullable signed revision and expiry. `BundleReviewToken` binds a candidate's complete metadata and catalog revision to installation consent; both `BundleCandidate` and `MarketplaceEntry` carry it. The preparation service rejects changed or expired reviews before preparation and native queue dispatch. `MarketplaceSnapshot.catalog` exposes status without trust keys, cache paths or artifact URLs.
+
 `ProfileBundle.removable` identifies a confirmed direct dependency resolved inside its Profile, excluding installation-owned, indirect and external packages. Removal commands carry the observed active Profile, package name and version; the Host rechecks these observations before preparing a new composition.
 
 The separate [Bundle preparation service](../../packages/desktop/bundle-preparation/README.md) runs in Cordis, not in the native host. Its receipts describe reviewed bytes, offline dependencies or validated Profile composition. Its explicit activation operation prepares a fresh generation and queues it through the native desktop capability; the native host owns startup confirmation and recovery.
@@ -48,6 +50,19 @@ Verify catalog compatibility and stage reviewed bytes without importing package 
  * @returns Catalog-order candidates, not installation or runtime status.
  */
 list(): readonly BundleCandidate[]
+
+/**
+ * Observe catalog provenance and expiry without fetching or exposing deployment paths.
+ * @returns Current authorization to discover candidates, not plugin runtime health.
+ */
+catalogStatus(): BundleCatalogStatus
+
+/**
+ * Check the deployment-pinned online catalog only on explicit request, without installing anything.
+ * Rejects concurrent preparation/refresh; a failed check preserves the previous verified revision.
+ * @returns Completion after verified metadata is cached and selected.
+ */
+async refreshCatalog(): Promise<void>
 
 /**
  * Read persisted attempt metadata without loading plugins or granting activation authority.
@@ -99,9 +114,10 @@ async prepareComposition(id: BundleCatalogId): Promise<PreparedComposition>
  * @param id - identity selected from the current reviewed catalog.
  * @param profile - native-selected Profile observed during confirmation.
  * @param version - observed installed version, or null only when the Bundle was absent.
+ * @param reviewToken - digest from the exact catalog entry shown during confirmation.
  * @returns Candidate identity after native queue acknowledgement, not a running-plugin claim.
  */
-async queueActivation(id: BundleCatalogId, profile: DesktopProfileName, version: string | null): Promise<DesktopProfileCandidate>
+async queueActivation( id: BundleCatalogId, profile: DesktopProfileName, version: string | null, reviewToken: BundleReviewToken, ): Promise<DesktopProfileCandidate>
 
 /**
  * Remove an observed Profile-owned Bundle in a fresh composition and queue the next full launch.

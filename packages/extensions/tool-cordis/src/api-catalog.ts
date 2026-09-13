@@ -605,6 +605,18 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         returns: 'Catalog-order candidates, not installation or runtime status.',
       },
       {
+        signature: 'catalogStatus(): BundleCatalogStatus',
+        description: 'Observe catalog provenance and expiry without fetching or exposing deployment paths.',
+        parameters: [],
+        returns: 'Current authorization to discover candidates, not plugin runtime health.',
+      },
+      {
+        signature: 'async refreshCatalog(): Promise<void>',
+        description: 'Check the deployment-pinned online catalog only on explicit request, without installing anything. Rejects concurrent preparation/refresh; a failed check preserves the previous verified revision.',
+        parameters: [],
+        returns: 'Completion after verified metadata is cached and selected.',
+      },
+      {
         signature: 'async listOperations(): Promise<readonly PreparationOperation[]>',
         description: 'Read persisted attempt metadata without loading plugins or granting activation authority. Unsettled records may belong to another live process; no automatic cleanup or retry occurs.',
         parameters: [],
@@ -635,9 +647,9 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         returns: 'A composition receipt after source-configuration checks and boot-free validation.',
       },
       {
-        signature: 'async queueActivation(id: BundleCatalogId, profile: DesktopProfileName, version: string | null): Promise<DesktopProfileCandidate>',
+        signature: 'async queueActivation( id: BundleCatalogId, profile: DesktopProfileName, version: string | null, reviewToken: BundleReviewToken, ): Promise<DesktopProfileCandidate>',
         description: 'Prepare a fresh Profile in the desktop home and queue it for the next full application launch. Does not restart the runtime. After dispatch, transport failures retain all candidate files; native selection must be inspected before retry or cleanup. History describes preparation only.',
-        parameters: [{ name: 'id', description: 'identity selected from the current reviewed catalog.' }, { name: 'profile', description: 'native-selected Profile observed during confirmation.' }, { name: 'version', description: 'observed installed version, or null only when the Bundle was absent.' }],
+        parameters: [{ name: 'id', description: 'identity selected from the current reviewed catalog.' }, { name: 'profile', description: 'native-selected Profile observed during confirmation.' }, { name: 'version', description: 'observed installed version, or null only when the Bundle was absent.' }, { name: 'reviewToken', description: 'digest from the exact catalog entry shown during confirmation.' }],
         returns: 'Candidate identity after native queue acknowledgement, not a running-plugin claim.',
       },
       {
@@ -3930,11 +3942,15 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'BundleCandidate',
-    declaration: 'export interface BundleCandidate {\n    readonly entry: ReviewedBundle;\n    readonly issues: readonly BundleCompatibilityIssue[];\n}',
+    declaration: 'export interface BundleCandidate {\n    readonly entry: ReviewedBundle;\n    readonly reviewToken: BundleReviewToken;\n    readonly issues: readonly BundleCompatibilityIssue[];\n}',
   },
   {
     name: 'BundleCatalogId',
     declaration: 'export type BundleCatalogId = Branded<\'BundleCatalogId\'>;',
+  },
+  {
+    name: 'BundleCatalogStatus',
+    declaration: 'export interface BundleCatalogStatus {\n    readonly source: \'bundled\' | \'online\' | \'cached\' | \'unavailable\';\n    readonly remoteConfigured: boolean;\n    readonly revision: number | null;\n    readonly expiresAt: string | null;\n}',
   },
   {
     name: 'BundleCompatibilityIssue',
@@ -3951,6 +3967,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'BundleOperationId',
     declaration: 'export type BundleOperationId = Branded<\'BundleOperationId\'>;',
+  },
+  {
+    name: 'BundleReviewToken',
+    declaration: 'export type BundleReviewToken = Branded<\'BundleReviewToken\'>;',
   },
   {
     name: 'ClientArtifactBaseline',

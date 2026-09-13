@@ -5,7 +5,7 @@ import type { ConnectionGenerationState } from '@deepseek-ai/dsh-client-connecti
 import type { InjectFace, PropsLocale, PropsRuntime, PropsRenderSlots } from '@deepseek-ai/dsh-client-ui-slots'
 import type { MarketplaceEntry, MarketplaceSnapshot, MarketplaceCommandResult } from '../types.ts'
 import type { DesktopProfileName } from '@deepseek-ai/dsh-desktop'
-import type { BundleCatalogId, BundleDetails, PreparationOperation } from '@deepseek-ai/dsh-bundle-preparation/types'
+import type { BundleCatalogId, BundleReviewToken, BundleDetails, PreparationOperation } from '@deepseek-ai/dsh-bundle-preparation/types'
 import { OperationHistory } from './OperationHistory.tsx'
 import css from './MarketplaceTab.module.css'
 
@@ -16,7 +16,10 @@ export interface MarketplaceInjected {
   openLocalAgents: () => Promise<MarketplaceCommandResult>
   snapshot: () => Promise<MarketplaceSnapshot>
   history: () => Promise<readonly PreparationOperation[]>
-  install: (id: BundleCatalogId, profile: DesktopProfileName, version: string | null) => Promise<MarketplaceCommandResult>
+  refreshCatalog: () => Promise<MarketplaceCommandResult>
+  install: (
+    id: BundleCatalogId, profile: DesktopProfileName, version: string | null, reviewToken: BundleReviewToken,
+  ) => Promise<MarketplaceCommandResult>
   cancel: (profile: DesktopProfileName) => Promise<MarketplaceCommandResult>
   remove: (profile: DesktopProfileName, packageName: string, version: string) => Promise<MarketplaceCommandResult>
   hooks: { connectionGeneration: ConnectionGenerationState }
@@ -36,6 +39,8 @@ const viewCopy = {
   discover: ['title', 'intro'], installed: ['installedTitle', 'inventoryHint'],
   updates: ['updatesTitle', 'updatesHint'], history: ['history', 'historyHint'],
 } as const
+
+const catalogCopy = { bundled: 'catalogBundled', online: 'catalogOnline', cached: 'catalogCached', unavailable: 'catalogUnavailable' } as const
 
 /** Reconcile reads on reconnect and every command settlement without replaying commands. */
 export function MarketplaceTab(props: MarketplaceProps): ReactNode {
@@ -99,6 +104,10 @@ export function MarketplaceTab(props: MarketplaceProps): ReactNode {
     <header className={css.header}><div><h3>{t(viewCopy[view][0])}</h3><p>{t(viewCopy[view][1])}</p></div>
       <button type="button" disabled={busy || generation === undefined} onClick={() => { setRead({ status: 'loading', generation }); setRevision(n => n + 1) }}>{t('refresh')}</button>
     </header>
+    {value?.catalog.remoteConfigured && <div className={css.notice}>
+      <p role="status">{t(catalogCopy[value.catalog.source])}</p>
+      <button type="button" disabled={busy || generation === undefined} onClick={() => { void run(props.refreshCatalog) }}>{t('checkCatalog')}</button>
+    </div>}
     {(view === 'discover' || view === 'updates') && <p className={css.notice}>{t('trust')}</p>}
     <div role="group" aria-label={t('views')} className={css.views}>
       <button type="button" aria-pressed={view === 'discover'} onClick={() => { setView('discover'); setSelected(null) }}>{t('discover')}</button>
@@ -179,7 +188,7 @@ export function MarketplaceTab(props: MarketplaceProps): ReactNode {
                 {selected.entry.details === null ? <p>{t('detailsUnavailable')}</p>
                   : <BundleGuidance details={selected.entry.details} language={language} t={t} />}
                 {selected.version !== null && <><p>{selected.version} → {selected.entry.version}</p><p>{t('replaceHint')}</p></>}
-                <button type="button" onClick={() => { void run(() => install(selected.entry.id, selected.profile, selected.version)) }}>{t(selected.version === null ? 'confirm' : 'confirmReplace')}</button>
+                <button type="button" onClick={() => { void run(() => install(selected.entry.id, selected.profile, selected.version, selected.entry.reviewToken)) }}>{t(selected.version === null ? 'confirm' : 'confirmReplace')}</button>
                 <button type="button" autoFocus onClick={() => { setSelected(null) }}>{t('dismiss')}</button>
               </div>}
             </>}

@@ -3,7 +3,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import { isDeepStrictEqual } from 'node:util'
 import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
 import type {} from 'zod'
-import type { BundleCatalogId, PreparationOperation } from '@deepseek-ai/dsh-bundle-preparation'
+import type { BundleCatalogId, BundleReviewToken, PreparationOperation } from '@deepseek-ai/dsh-bundle-preparation'
 import type { DesktopProfileName } from '@deepseek-ai/dsh-desktop'
 import type { MarketplaceSnapshot, MarketplaceCommandResult, MarketplaceProfile } from './types.ts'
 
@@ -15,6 +15,19 @@ export class BundleMarketplaceGateway extends TypertRemoteService {
 
   constructor(ctx: Context) {
     super(ctx, 'bundleMarketplace')
+  }
+
+  /**
+   * Check only the deployment-pinned signed channel; no caller URL or installation is accepted.
+   * @returns Acknowledgement after verified cache publication, otherwise an uncertain result requiring a fresh read.
+   */
+  @Remote('refreshCatalog')
+  async refreshCatalog(): Promise<MarketplaceCommandResult> {
+    try { await this.ctx.bundlePreparation.refreshCatalog() } catch {
+      // Network, signature and local cache errors may contain deployment paths; reconcile through snapshot.
+      return 'unconfirmed'
+    }
+    return 'acknowledged'
   }
 
   /**
@@ -61,10 +74,11 @@ export class BundleMarketplaceGateway extends TypertRemoteService {
         }
       }
       if (!isDeepStrictEqual(selection, await this.ctx.desktop.profileSelection())) throw new Error('Selection changed')
-      return { selection, profiles, entries: this.ctx.bundlePreparation.list().map(({ entry, issues }) => ({
-        id: entry.id, title: entry.title, packageName: entry.packageName, version: entry.version,
+      const entries = this.ctx.bundlePreparation.list().map(({ entry, issues, reviewToken }) => ({
+        id: entry.id, reviewToken, title: entry.title, packageName: entry.packageName, version: entry.version,
         publisher: entry.publisher, source: entry.source, details: entry.details, issues,
-      })) }
+      }))
+      return { selection, profiles, catalog: this.ctx.bundlePreparation.catalogStatus(), entries }
     } catch {
       throw new Error('Marketplace state is unavailable')
     }
@@ -75,11 +89,14 @@ export class BundleMarketplaceGateway extends TypertRemoteService {
    * @param id - identity from the current reviewed catalog.
    * @param profile - native-selected Profile observed during confirmation.
    * @param version - exact observed installed version, or null for a previously absent Bundle.
+   * @param reviewToken - digest of the reviewed metadata and catalog revision shown to the user.
    * @returns Acknowledgement or an uncertain outcome requiring a fresh snapshot before retry.
    */
   @Remote('queueActivation')
-  async queueActivation(id: BundleCatalogId, profile: DesktopProfileName, version: string | null): Promise<MarketplaceCommandResult> {
-    try { await this.ctx.bundlePreparation.queueActivation(id, profile, version) } catch {
+  async queueActivation(
+    id: BundleCatalogId, profile: DesktopProfileName, version: string | null, reviewToken: BundleReviewToken,
+  ): Promise<MarketplaceCommandResult> {
+    try { await this.ctx.bundlePreparation.queueActivation(id, profile, version, reviewToken) } catch {
       // Raw preparation errors can include private paths, configuration or subprocess output.
       return 'unconfirmed'
     }

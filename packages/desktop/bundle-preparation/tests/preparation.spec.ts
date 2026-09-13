@@ -157,7 +157,8 @@ describe('Bundle preparation', () => {
     const before = await Promise.all([readFile(profile), readFile(session)])
     const fiber = await f.mount()
     const service = f.ctx.bundlePreparation
-    expect(service.list()).toEqual([{ entry, issues: [] }])
+    expect(service.list().map(({ entry, issues }) => ({ entry, issues }))).toEqual([{ entry, issues: [] }])
+    expect(service.list()[0]!.reviewToken).toMatch(/^[a-f0-9]{64}$/)
     const receipt = await service.prepare(service.list()[0]!.entry.id)
     expect(receipt.state).toBe('prepared-not-enabled')
     expect(await readFile(receipt.artifactPath)).toEqual(bytes)

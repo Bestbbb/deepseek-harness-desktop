@@ -12,6 +12,7 @@ import LocalSubprocess from '@deepseek-ai/dsh-subprocess-local'
 import { DesktopHost, type DesktopProfileCandidate, type DesktopProfileName, type DesktopProfileSelection } from '@deepseek-ai/dsh-desktop'
 import BundlePreparation, { type BundleCatalogId, type CompositionConfig, type InstallerConfig } from '../src/index.ts'
 import { installerEnvironment } from '../src/installer.ts'
+import { now, publication, remoteConfig, remoteEntry, signed } from './remote-fixture.ts'
 
 vi.mock('node:fs/promises', async (importOriginal) => {
   const real = await importOriginal<typeof import('node:fs/promises')>()
@@ -96,6 +97,29 @@ class TestDesktop extends DesktopHost {
 }
 
 describe('native activation queue', () => {
+  it('refuses native dispatch when signed consent expires during candidate preparation', async () => {
+    const f = await compositionFixture()
+    const entry = { ...f.ctx.bundlePreparation.list()[0]!.entry, details: remoteEntry.details }
+    await f.fiber.dispose()
+    const remote = remoteConfig(join(f.root, 'signed-cache.json'))
+    vi.spyOn(Date, 'now').mockReturnValue(now)
+    await writeFile(remote.cacheFile, signed({ ...publication, catalog: { schemaVersion: 1, entries: [entry] } }))
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (url) => {
+      if (url !== 'https://example.com/bundles/example.tgz') throw new Error('Unexpected fixture request')
+      return new Response(new Uint8Array(f.bytes))
+    })
+    await f.ctx.plugin(BundlePreparation, { ...f.config, composition: f.composition, remote })
+    await f.ctx.plugin(TestDesktop)
+    vi.mocked(writeFile).mockImplementation(async (path, data, options) => {
+      await realFs.writeFile(path, data, options)
+      if (typeof path === 'string' && path.endsWith('composition.json')) vi.mocked(Date.now).mockReturnValue(now + 120_000)
+    })
+    const token = f.ctx.bundlePreparation.list()[0]!.reviewToken
+    await expect(f.ctx.bundlePreparation.queueActivation(id, web, null, token)).rejects.toThrow('changed or expired')
+    expect((f.ctx.desktop as TestDesktop).queueProfile).not.toHaveBeenCalled()
+    expect(await readFile(join(f.profile, 'package.json'), 'utf8')).toBe(JSON.stringify(f.manifest))
+  })
+
   async function oldBundle() {
     const f = await compositionFixture()
     await f.ctx.plugin(TestDesktop)
@@ -114,7 +138,7 @@ describe('native activation queue', () => {
   it('replaces only the confirmed old version and preserves original package bytes', async () => {
     const f = await oldBundle()
     const before = await readFile(f.packageFile)
-    const queued = await f.ctx.bundlePreparation.queueActivation(id, web, '0.9.0')
+    const queued = await f.ctx.bundlePreparation.queueActivation(id, web, '0.9.0', f.ctx.bundlePreparation.list()[0]!.reviewToken)
     expect(await f.ctx.bundlePreparation.profileBundles(queued.profile)).toEqual([
       { packageName: '@example/plugin', version: '1.0.0', removable: true },
     ])
@@ -125,7 +149,8 @@ describe('native activation queue', () => {
 
   it.each([null, '0.8.0', '1.0.0'])('refuses a stale or duplicate version confirmation %s', async (version) => {
     const f = await oldBundle()
-    await expect(f.ctx.bundlePreparation.queueActivation(id, web, version)).rejects.toThrow()
+    const token = f.ctx.bundlePreparation.list()[0]!.reviewToken
+    await expect(f.ctx.bundlePreparation.queueActivation(id, web, version, token)).rejects.toThrow()
     expect(f.desktop.queueProfile).not.toHaveBeenCalled()
     expect(await readdir(join(f.home, 'profiles'))).toEqual(['web'])
   })
@@ -133,9 +158,9 @@ describe('native activation queue', () => {
   it('does not treat unreadable listed packages or a switched Profile as a new install', async () => {
     const f = await oldBundle()
     await writeFile(f.packageFile, '{}')
-    await expect(f.ctx.bundlePreparation.queueActivation(id, web, null)).rejects.toThrow('observed Bundle version changed')
+    await expect(f.ctx.bundlePreparation.queueActivation(id, web, null, f.ctx.bundlePreparation.list()[0]!.reviewToken)).rejects.toThrow('observed Bundle version changed')
     f.desktop.selection = { ...f.desktop.selection, activeProfile: 'other' as DesktopProfileName }
-    await expect(f.ctx.bundlePreparation.queueActivation(id, web, '0.9.0')).rejects.toThrow('observed active Profile changed')
+    await expect(f.ctx.bundlePreparation.queueActivation(id, web, '0.9.0', f.ctx.bundlePreparation.list()[0]!.reviewToken)).rejects.toThrow('observed active Profile changed')
     expect(f.desktop.queueProfile).not.toHaveBeenCalled()
   })
 
@@ -148,7 +173,7 @@ describe('native activation queue', () => {
         await writeFile(packageFile, JSON.stringify({ ...f.old, version: '0.8.0' }))
       }
     })
-    await expect(f.ctx.bundlePreparation.queueActivation(id, web, '0.9.0')).rejects.toThrow('observed Bundle version changed')
+    await expect(f.ctx.bundlePreparation.queueActivation(id, web, '0.9.0', f.ctx.bundlePreparation.list()[0]!.reviewToken)).rejects.toThrow('observed Bundle version changed')
     expect(f.desktop.queueProfile).not.toHaveBeenCalled()
     expect(await readdir(join(f.home, 'profiles'))).toEqual(['web'])
     expect(await readdir(f.config.stagingDirectory)).toEqual([])
@@ -162,7 +187,7 @@ describe('native activation queue', () => {
         await realFs.writeFile(f.packageFile, JSON.stringify({ ...f.old, version: '0.8.0' }))
       }
     })
-    await expect(f.ctx.bundlePreparation.queueActivation(id, web, '0.9.0')).rejects.toThrow('observed Bundle version changed')
+    await expect(f.ctx.bundlePreparation.queueActivation(id, web, '0.9.0', f.ctx.bundlePreparation.list()[0]!.reviewToken)).rejects.toThrow('observed Bundle version changed')
     expect(f.desktop.queueProfile).not.toHaveBeenCalled()
     expect(await readdir(join(f.home, 'profiles'))).toHaveLength(2)
     expect(JSON.parse(await readFile(f.packageFile, 'utf8'))).toMatchObject({ version: '0.8.0' })
@@ -182,7 +207,7 @@ describe('native activation queue', () => {
     await f.ctx.plugin(BundlePreparation, { ...f.config, composition: { ...f.composition, dshEntry } })
     await f.ctx.plugin(TestDesktop)
     const before = await readFile(join(f.profile, 'package.json'))
-    await expect(f.ctx.bundlePreparation.queueActivation(id, web, null)).rejects.toThrow('installation-owned Bundle shadows')
+    await expect(f.ctx.bundlePreparation.queueActivation(id, web, null, f.ctx.bundlePreparation.list()[0]!.reviewToken)).rejects.toThrow('installation-owned Bundle shadows')
     expect((f.ctx.desktop as TestDesktop).queueProfile).not.toHaveBeenCalled()
     expect(await readdir(join(f.home, 'profiles'))).toEqual(['web'])
     expect(await readdir(f.config.stagingDirectory)).toEqual([])
@@ -196,7 +221,7 @@ describe('native activation queue', () => {
     const redirected = join(f.root, 'redirected-profiles')
     await realFs.rename(join(f.home, 'profiles'), redirected)
     await symlink(redirected, join(f.home, 'profiles'), 'junction')
-    await expect(f.ctx.bundlePreparation.queueActivation(id, web, null)).rejects.toThrow('Profiles root must be a real directory')
+    await expect(f.ctx.bundlePreparation.queueActivation(id, web, null, f.ctx.bundlePreparation.list()[0]!.reviewToken)).rejects.toThrow('Profiles root must be a real directory')
     expect(await readdir(redirected)).toEqual(['web'])
   })
 
@@ -207,7 +232,7 @@ describe('native activation queue', () => {
       if (typeof path === 'string' && path.endsWith('composition.json')) throw new Error('receipt write denied')
       return realFs.writeFile(path, data, options)
     })
-    await expect(f.ctx.bundlePreparation.queueActivation(id, web, null)).rejects.toThrow('receipt write denied')
+    await expect(f.ctx.bundlePreparation.queueActivation(id, web, null, f.ctx.bundlePreparation.list()[0]!.reviewToken)).rejects.toThrow('receipt write denied')
     expect(await readdir(join(f.home, 'profiles'))).toEqual(['web'])
     expect(await readdir(f.config.stagingDirectory)).toEqual([])
     expect((f.ctx.desktop as TestDesktop).queueProfile).not.toHaveBeenCalled()
@@ -220,7 +245,7 @@ describe('native activation queue', () => {
     const release = Promise.withResolvers<undefined>()
     const desktop = f.ctx.desktop as TestDesktop
     desktop.queueProfile.mockImplementation(() => { entered.resolve(undefined); return release.promise })
-    const pending = f.ctx.bundlePreparation.queueActivation(id, web, null)
+    const pending = f.ctx.bundlePreparation.queueActivation(id, web, null, f.ctx.bundlePreparation.list()[0]!.reviewToken)
     let disposal: Promise<unknown> | undefined
     try {
       await entered.promise
@@ -242,7 +267,7 @@ describe('native activation queue', () => {
     const desktop = f.ctx.desktop as TestDesktop
     await writeFile(join(f.home, 'cordis.patch.yml'), '[]\n')
     const before = await readFile(join(f.profile, 'package.json'))
-    const queued = await f.ctx.bundlePreparation.queueActivation(id, web, null)
+    const queued = await f.ctx.bundlePreparation.queueActivation(id, web, null, f.ctx.bundlePreparation.list()[0]!.reviewToken)
     expect(queued.previousProfile).toBe('web')
     expect(await f.ctx.bundlePreparation.profileBundles(queued.profile)).toEqual([{ packageName: '@example/plugin', version: '1.0.0', removable: true }])
     expect(queued.profile).toMatch(/^desktop-[a-f0-9-]{36}$/u)
@@ -264,7 +289,7 @@ describe('native activation queue', () => {
     await cp(f.profile, activeDirectory, { recursive: true })
     await writeFile(join(activeDirectory, 'package.json'), JSON.stringify({ ...f.manifest, custom: 'active generation' }))
     desktop.selection = { ...desktop.selection, activeProfile: active }
-    const queued = await f.ctx.bundlePreparation.queueActivation(id, active, null)
+    const queued = await f.ctx.bundlePreparation.queueActivation(id, active, null, f.ctx.bundlePreparation.list()[0]!.reviewToken)
     expect(queued.previousProfile).toBe(active)
     expect(JSON.parse(await readFile(join(f.home, 'profiles', queued.profile, 'package.json'), 'utf8'))).toMatchObject({ custom: 'active generation' })
   })
@@ -274,7 +299,7 @@ describe('native activation queue', () => {
     await f.ctx.plugin(TestDesktop)
     const desktop = f.ctx.desktop as TestDesktop
     desktop.queueProfile.mockRejectedValue(new Error('reply lost after queue commit'))
-    await expect(f.ctx.bundlePreparation.queueActivation(id, web, null)).rejects.toThrow('reply lost')
+    await expect(f.ctx.bundlePreparation.queueActivation(id, web, null, f.ctx.bundlePreparation.list()[0]!.reviewToken)).rejects.toThrow('reply lost')
     const queued = desktop.queueProfile.mock.calls[0]![0]
     expect((await stat(join(f.home, 'profiles', queued.profile, 'package.json'))).isFile()).toBe(true)
     const staged = await readdir(f.config.stagingDirectory)
@@ -284,16 +309,16 @@ describe('native activation queue', () => {
 
   it('rejects missing native support and an existing queued or trial selection', async () => {
     const missing = await fixture()
-    await expect(missing.ctx.bundlePreparation.queueActivation(id, web, null)).rejects.toThrow('composition is not configured')
+    await expect(missing.ctx.bundlePreparation.queueActivation(id, web, null, missing.ctx.bundlePreparation.list()[0]!.reviewToken)).rejects.toThrow('composition is not configured')
     const f = await compositionFixture()
-    await expect(f.ctx.bundlePreparation.queueActivation(id, web, null)).rejects.toThrow('native desktop host')
+    await expect(f.ctx.bundlePreparation.queueActivation(id, web, null, f.ctx.bundlePreparation.list()[0]!.reviewToken)).rejects.toThrow('native desktop host')
     await f.ctx.plugin(TestDesktop)
     const desktop = f.ctx.desktop as TestDesktop
     const pending: DesktopProfileCandidate = { profile: 'desktop-00000000-0000-4000-8000-000000000001' as DesktopProfileName,
       previousProfile: 'web' as DesktopProfileName, manifestSha256: 'a'.repeat(64) }
     for (const phase of ['pending', 'trial'] as const) {
       desktop.selection = { ...desktop.selection, pending: null, trial: null, [phase]: pending }
-      await expect(f.ctx.bundlePreparation.queueActivation(id, web, null)).rejects.toThrow('pending or starting')
+      await expect(f.ctx.bundlePreparation.queueActivation(id, web, null, f.ctx.bundlePreparation.list()[0]!.reviewToken)).rejects.toThrow('pending or starting')
     }
     expect(desktop.queueProfile).not.toHaveBeenCalled()
     expect(await readdir(join(f.home, 'profiles'))).toEqual(['web'])
@@ -303,7 +328,7 @@ describe('native activation queue', () => {
     const f = await compositionFixture()
     await f.ctx.plugin(TestDesktop)
     await writeFile(join(f.profile, 'package.json'), JSON.stringify({ ...f.manifest, failDump: true }))
-    await expect(f.ctx.bundlePreparation.queueActivation(id, web, null)).rejects.toThrow('Profile composition failed')
+    await expect(f.ctx.bundlePreparation.queueActivation(id, web, null, f.ctx.bundlePreparation.list()[0]!.reviewToken)).rejects.toThrow('Profile composition failed')
     expect(await readdir(join(f.home, 'profiles'))).toEqual(['web'])
     expect((f.ctx.desktop as TestDesktop).queueProfile).not.toHaveBeenCalled()
   })
@@ -313,7 +338,7 @@ describe('native removal queue', () => {
   async function installed(journal = true, installer: Partial<InstallerConfig> = {}) {
     const f = await compositionFixture()
     await f.ctx.plugin(TestDesktop)
-    const first = await f.ctx.bundlePreparation.queueActivation(id, web, null)
+    const first = await f.ctx.bundlePreparation.queueActivation(id, web, null, f.ctx.bundlePreparation.list()[0]!.reviewToken)
     const desktop = f.ctx.desktop as TestDesktop
     desktop.selection = { ...desktop.selection, activeProfile: first.profile }
     const active = join(f.home, 'profiles', first.profile)

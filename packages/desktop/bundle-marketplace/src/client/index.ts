@@ -46,8 +46,12 @@ export async function apply(ctx: Context): Promise<void> {
         if (!result.ok) throw new Error('Marketplace history is unavailable')
         return result.value
       },
-      install: async (id, profile, version) => {
-        const result = await marketCtx.remote.bundleMarketplace.queueActivation(id, profile, version)
+      refreshCatalog: async () => {
+        const result = await marketCtx.remote.bundleMarketplace.refreshCatalog()
+        return result.ok ? result.value : 'unconfirmed'
+      },
+      install: async (id, profile, version, reviewToken) => {
+        const result = await marketCtx.remote.bundleMarketplace.queueActivation(id, profile, version, reviewToken)
         return result.ok ? result.value : 'unconfirmed'
       },
       cancel: async (profile) => {

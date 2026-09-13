@@ -1,5 +1,5 @@
 /** Real reviewed artifact, Cordis Remote and browser flow; only the native process boundary is simulated. */
-import { createHash } from 'node:crypto'
+import { createHash, generateKeyPairSync } from 'node:crypto'
 import { createServer } from 'node:http'
 import { once } from 'node:events'
 import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
@@ -109,6 +109,10 @@ it.each(copies.flatMap(copy => [false, true].map(replacement => ({ ...copy, repl
       { id: 'market-native', name: entry('desktop-native'), config: { endpoint: `http://127.0.0.1:${String(address.port)}`, token: 'marketplace-test-token' } },
       { id: 'market-preparation', name: entry('bundle-preparation'), config: {
         catalogFile, artifactDirectory: root, stagingDirectory: join(root, 'staged'), hostVersion,
+        remote: { url: 'https://marketplace.example.invalid/catalog.signed.json', channel: 'fixture',
+          publicKeys: [generateKeyPairSync('ed25519').publicKey.export({ type: 'spki', format: 'pem' }).toString()],
+          cacheFile: join(root, 'remote-cache.json'), allowedOrigins: ['https://marketplace.example.invalid'],
+          timeoutMs: 1000, lockWaitMs: 1000, maxEnvelopeBytes: 1_048_576, maxValidityMs: 86_400_000, clockSkewMs: 1000 },
         journal: { directory: join(root, 'operations'), maxEntries: 100, maxRecordBytes: 1_048_576 },
         installer: { nodeExecutable: process.execPath, packageManagerEntry: join(managerRoot, 'bin/pnpm.mjs'),
           packageManagerVersion: manifest.version, timeoutMs: 60_000, graceMs: 1000, maxOutputBytes: 65_536,

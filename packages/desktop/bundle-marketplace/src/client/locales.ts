@@ -1,5 +1,8 @@
 /** Locale-owned marketplace labels; review metadata remains publisher-authored data. */
 export const en = {
+  checkCatalog: 'Check online catalog', catalogBundled: 'Using the bundled catalog. Online checks never install plugins automatically.',
+  catalogOnline: 'Signed online catalog verified.', catalogCached: 'Using a verified cached catalog. Check online for changes.',
+  catalogUnavailable: 'The online catalog is expired or could not be verified. Installation is unavailable; check online again.',
   tab: 'Marketplace', title: 'Add capabilities', intro: 'Reviewed Bundles can add interfaces, tools and agent behavior.',
   localAgents: 'Built-in local agent connections', configureAgents: 'Configure local agents', openingAgents: 'Opening agent settings…',
   localAgentsHint: 'Codex, Claude Code, Kimi and Qoder use the desktop agent settings, not a marketplace installation. Open settings to check runtimes and save your selection. After tasks finish, restart the runtime and create a session with the Local agents preset. Opening settings does not sign in or run a model task.',
@@ -48,6 +51,9 @@ export type MarketplaceLocaleKey = keyof typeof en
 
 /** Simplified Chinese marketplace copy. */
 export const zh: Record<MarketplaceLocaleKey, string> = {
+  checkCatalog: '检查在线目录', catalogBundled: '正在使用内置目录。检查更新不会自动安装插件。',
+  catalogOnline: '在线目录签名已验证。', catalogCached: '正在使用已验证的缓存目录，可联网检查更新。',
+  catalogUnavailable: '在线目录已过期或无法验证，暂不能安装；请重新检查在线目录。',
   tab: '插件市场', title: '添加能力', intro: '审核组合包可以扩展界面、工具和智能体行为。',
   localAgents: '内置本地智能体接入', configureAgents: '配置本地智能体', openingAgents: '正在打开智能体设置…',
   localAgentsHint: 'Codex、Claude Code、Kimi 和 Qoder 使用桌面端智能体设置，无需从市场安装。打开设置以检测运行时并保存选择；任务结束后重启运行时，再使用“本地代理”预设创建会话。打开设置不会登录或调用模型。',

@@ -1,6 +1,8 @@
 - heading "Add capabilities" [level=3]
 - paragraph: Reviewed Bundles can add interfaces, tools and agent behavior.
 - button "Refresh status"
+- status: Using the bundled catalog. Online checks never install plugins automatically.
+- button "Check online catalog"
 - paragraph: Host plugins run with the same access as Harness. Review the publisher and source before installing.
 - group "Marketplace views":
   - button "Discover" [pressed]

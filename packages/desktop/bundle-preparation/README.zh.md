@@ -1,5 +1,5 @@
 ---
-description: "安装前校验经过审核的本地 Bundle 文件，不改变当前 Harness Profile。"
+description: "安装前校验经过审核的 Bundle 文件，不改变当前 Harness Profile。"
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-准备经过审核的本地压缩包，不启用它。文件准备检查声明的 Host/平台兼容性、大小及 SHA-256；可选的依赖准备将自包含 Bundle 安装到独立候选项目。两种操作都不修改 Profile 或 Session。部署维护者提供受信任目录与包管理器；这不等于发布者核实或安全沙箱。
+准备经过审核的内置或签名在线压缩包，不启用它。文件准备检查声明的 Host/平台兼容性、大小及 SHA-256；可选的依赖准备将自包含 Bundle 安装到独立候选项目。两种操作都不修改 Profile 或 Session。部署维护者提供受信任目录与包管理器；这不等于发布者核实或安全沙箱。
 
 ## 目录
 
@@ -23,7 +23,7 @@ kind: "package-reference"
 
 ## 组合
 
-在显式 `dsh` Profile 覆盖层中以 Cordis 配置行挂载已安装的 `@deepseek-ai/dsh-bundle-preparation` 入口。此服务不是可安装的 Profile Bundle，也未在出厂 Profile 中启用。[打包冒烟测试](../../../apps/desktop/scripts/smoke-plugins.mjs) 通过文件 URL 解析打包入口，并通过真实 Web Profile 提供配置和测试消费者，再用现有 Bundle CLI 单独安装准备好的测试包。
+在显式 `dsh` Profile 覆盖层中以 Cordis 配置行挂载已安装的 `@deepseek-ai/dsh-bundle-preparation` 入口。此服务不是可安装的 Profile Bundle；桌面覆盖层将其与市场网关一起挂载。[打包冒烟测试](../../../apps/desktop/scripts/smoke-plugins.mjs) 通过文件 URL 解析打包入口，并通过真实 Web Profile 提供配置和测试消费者，再用现有 Bundle CLI 单独安装准备好的测试包。
 
 | 字段 | 默认值 | 含义 |
 |---|---|---|
@@ -33,13 +33,14 @@ kind: "package-reference"
 | `hostVersion` | 必填 | 部署方指定的精确 Harness 版本，不支持版本范围 |
 | `maxCatalogBytes` | 1048576 | 完整目录大小限制，最多 16777216 字节 |
 | `maxArtifactBytes` | 52428800 | 压缩文件大小限制，最多 268435456 字节 |
+| `remote` | false | 可选的固定 HTTPS 频道、Ed25519 公钥、缓存路径及明确的资源和有效期限制 |
 | `installer` | false | 可选的精确 Node/pnpm 路径、版本及操作限制；需要本地 `subprocess` 提供方 |
 | `composition` | false | 可选的源 Harness 主目录、Profile 名、dsh 入口及复制限制；需要 `installer` |
 | `journal` | false | 可选的历史目录及读取限制，与暂存目录和源 Profile 分开 |
 
 [配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-bundle-preparation) 列出全部安装器字段。启用时所有安装器字段均必填。[打包冒烟测试](../../../apps/desktop/scripts/smoke-plugins.mjs) 提供使用内置可执行文件的完整示例。提供方必须与此服务在同一本地文件系统执行。
 
-[目录解析器](src/catalog.ts) 定义接受的 JSON 字段。审核记录固定文件名、大小和哈希值。路径与记录是受信任的部署输入，不是用户输入的安装参数。更改目录后需重启服务加载。
+[目录解析器](src/catalog.ts) 定义接受的 JSON 字段。审核记录固定文件名、大小和哈希值。路径与记录是受信任的部署输入，不是用户输入的安装参数。更改内置目录后需重启服务加载。
 
 消费者注入 `bundlePreparation`，从 `list()` 选择标识。`prepare(id)` 仅验证文件后返回 `prepared-not-enabled`。`prepareDependencies(id)` 暂存并重新验证文件、检查压缩包内容及包身份，然后返回 `dependencies-prepared-not-enabled`，附带候选项目、包、锁文件和回执路径。两种回执都不证明已启用、运行时兼容或发布者身份。调用方负责保留期限，并须在复用持久文件前重新验证。
 
@@ -51,11 +52,19 @@ kind: "package-reference"
 
 `profileBundles(profile)` 通过上游包解析器读取指定 Profile 的有序层，不导入代码或写文件。它需要组合与安装器配置。空版本保留包元数据缺失、无效或不可读的已列出层；Profile 缺失、格式错误、重复、超限或在读取期间变化时，整次读取失败。`maxManifestBytes` 限制单个文件，`maxProfileEntries` 限制层数，`maxProfileBytes` 限制清单内容总量。版本描述解析到的文件，不代表产物哈希、运行插件健康状态或全部包的原子快照。安装清单不从准备回执推断。
 
+### 签名在线目录
+
+可选的 `remote` 配置固定 HTTPS URL、频道、Ed25519 公钥、允许的源及绝对缓存文件路径。超时、字节数、锁等待、有效期和时钟偏差限制均由部署方明确配置。`refreshCatalog()` 只在请求时获取目录；启动仅读取缓存，不联网。签名验证认证部署方指定的目录授权者，不独立核实包作者或代码安全。[签名目录决策](../../../.agents/notes/implemented/architecture/2026-09-13-signed-marketplace-catalog.zh.md)负责信任与发布规则。
+
+缓存不存在时允许使用内置目录。有效且未过期的缓存支持离线浏览；安装产物仍需从允许的 HTTPS 目录下载签名指定的准确文件名。下载拒绝重定向、不携带凭据、限制完整响应并遵循取消。缓存元数据过期或损坏时，发现与安装不可用，不回退到可能已撤回的内置条目。网络失败保留最近验证的版本，但仍受有效期限制。缓存损坏需要维护者恢复；重试不会覆盖无法验证的版本下限。
+
+刷新拒绝版本回退及同一版本的内容冲突，也适用于共享缓存的协作进程。缓存原子替换但不执行 fsync；主动删除缓存、文件系统回退或不可信系统时钟会破坏回退保护。写入进程崩溃可能遗留锁，恢复前操作人员必须确认没有写入方仍持有它。不自动删除锁。刷新与准备互斥，dispose（资源释放）会取消并等待所属操作完全结束。这些检查不撤销已安装代码，也不迁移插件数据。
+
 ### 原生启用
 
 `queueRemoval(profile, packageName, version)` 准备不包含指定 Bundle 的独立下次启动 Profile。它拒绝陈旧的原生选择、其他待启用或试启动 Profile、已变化的包版本，以及并非源 Profile 直接依赖或解析位置不在其目录内的包。此操作不支持卸载安装目录自带包、间接依赖或外部链接包。`profileBundles()` 通过 `removable` 暴露此资格；执行器重新核对源文件及复制文件，而非信任浏览器。卸载保留原 Profile、软件包、主目录补丁和 Session 数据。它仅移除副本中的包入口及直接依赖，离线刷新锁文件，并通过正常启动器验证剩余组合。不清理未引用的存储文件或插件数据。
 
-`queueActivation(id, profile, version)` 需要原生桌面服务及组合、安装器配置。调用方提供观测到的活动 Profile 和准确已安装版本，仅在组合包不存在时传入 null。原生选择发生变化、已列出版本不可读、版本陈旧或同版本请求都会拒绝启用。组合前后检查源清单和副本清单，向原生队列发出请求前再次检查源版本。这些观测不会锁定 Profile，也不校验全部已安装文件内容。
+`queueActivation(id, profile, version, reviewToken)` 需要原生桌面服务及组合、安装器配置。调用方提供 `list()` 返回的准确审核令牌及观测到的活动 Profile 和准确已安装版本，仅在组合包不存在时传入 null。目录变化或过期、原生选择发生变化、已列出版本不可读、版本陈旧或同版本请求都会拒绝启用。组合前后检查源清单和副本清单，向原生队列发出请求前再次检查源版本。这些观测不会锁定 Profile，也不校验全部已安装文件内容。
 
 启用流程直接在原 Harness 主目录下独占创建 `desktop-<UUIDv4>` 代际目录，执行相同的复制及不启动插件的校验。替换保留组合包顺序、原软件包和共享主目录补丁。依赖链接指向该代际，校验后不搬迁目录。配置必须指向实际桌面主目录。准备及可选历史提交完成后，服务才通过 `ctx.desktop` 携带准确清单哈希排队；返回的标识意味着等待重启，而非已启用。市场不迁移插件数据，也不保证降级兼容性。
 
@@ -104,7 +113,7 @@ kind: "package-reference"
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- 不提供市场 UI、远程目录、在线依赖解析或配置表单。可信消费者可以使用原生下次启动启用，但发布的 Profile 尚未挂载此功能。
+- 在线检查需要部署配置；打包桌面在配置可信频道前使用内置目录。公开目录托管、签名密钥管理、在线依赖解析及配置表单属于独立部署或产品工作。
 - 仅支持审核过的自包含 Bundle。不支持需要安装脚本的原生依赖及任意第三方包；目录与环境隔离不是操作系统沙箱。
 - 暂存不是可在崩溃后恢复的事务。进程中断可能留下不完整目录；没有重启消费者会将其当作已安装状态。
 

@@ -10,6 +10,8 @@
 
 可选的[市场插件](../../packages/desktop/bundle-marketplace/README.zh.md)通过现有已认证 Remote 传输暴露浏览器命令。`MarketplaceEntry` 投影目录标识、标题、包名与版本、发布者、源码和兼容性问题，不包含产物路径。`MarketplaceSnapshot` 将这些条目与原生 `DesktopProfileSelection` 及 `MarketplaceProfile` 观测组合。每个 Profile 要么为 `unavailable`，要么为 `read` 并包含有序的 `ProfileBundle` 值；每项包含 `packageName` 及可为空的解析版本 `version`。这些是文件观测，不代表运行插件健康状态。`MarketplaceCommandResult` 区分 `acknowledged` 与 `unconfirmed`，后者要求重试前重新读取。浏览器贡献挂载自身 Remote 命名空间与设置标签页，不改变基础 Web 装配。
 
+`BundleCatalogStatus` 报告内置、在线、缓存或不可用元数据、是否配置远程检查，以及可为空的签名版本和有效期。`BundleReviewToken` 将候选完整元数据和目录版本绑定到安装确认；`BundleCandidate` 与 `MarketplaceEntry` 都携带它。准备服务在准备及向原生队列发送前拒绝变化或过期的审核。`MarketplaceSnapshot.catalog` 暴露状态，不包含信任公钥、缓存路径或产物 URL。
+
 `ProfileBundle.removable` 标识解析到 Profile 目录内且已确认的直接依赖，排除安装目录自带包、间接依赖和外部包。卸载命令携带观测到的活动 Profile、包名和版本；Host 在准备新组合前重新核对这些观测。
 
 独立的 [Bundle 准备服务](../../packages/desktop/bundle-preparation/README.zh.md)在 Cordis 中运行，不在原生宿主中运行。它的回执描述审核过的文件、离线依赖或已验证的 Profile 组合。显式启用操作准备新代际并通过原生桌面能力排队；原生宿主负责启动确认和恢复。
@@ -48,6 +50,19 @@ Verify catalog compatibility and stage reviewed bytes without importing package 
  * @returns Catalog-order candidates, not installation or runtime status.
  */
 list(): readonly BundleCandidate[]
+
+/**
+ * Observe catalog provenance and expiry without fetching or exposing deployment paths.
+ * @returns Current authorization to discover candidates, not plugin runtime health.
+ */
+catalogStatus(): BundleCatalogStatus
+
+/**
+ * Check the deployment-pinned online catalog only on explicit request, without installing anything.
+ * Rejects concurrent preparation/refresh; a failed check preserves the previous verified revision.
+ * @returns Completion after verified metadata is cached and selected.
+ */
+async refreshCatalog(): Promise<void>
 
 /**
  * Read persisted attempt metadata without loading plugins or granting activation authority.
@@ -99,9 +114,10 @@ async prepareComposition(id: BundleCatalogId): Promise<PreparedComposition>
  * @param id - identity selected from the current reviewed catalog.
  * @param profile - native-selected Profile observed during confirmation.
  * @param version - observed installed version, or null only when the Bundle was absent.
+ * @param reviewToken - digest from the exact catalog entry shown during confirmation.
  * @returns Candidate identity after native queue acknowledgement, not a running-plugin claim.
  */
-async queueActivation(id: BundleCatalogId, profile: DesktopProfileName, version: string | null): Promise<DesktopProfileCandidate>
+async queueActivation( id: BundleCatalogId, profile: DesktopProfileName, version: string | null, reviewToken: BundleReviewToken, ): Promise<DesktopProfileCandidate>
 
 /**
  * Remove an observed Profile-owned Bundle in a fresh composition and queue the next full launch.

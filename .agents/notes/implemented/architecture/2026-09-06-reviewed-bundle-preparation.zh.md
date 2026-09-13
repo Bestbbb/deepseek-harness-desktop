@@ -14,7 +14,7 @@ Status: implemented
 
 部署方提供目录和暂存路径。审核声明是受信任元数据，不是发布者认证。每个操作独占创建自己的目录；失败只清理该目录，卸载时拒绝新操作并等待清理。成功回执在卸载后保留。后续安装器必须在受控启用前重新校验文件并解析依赖；回执不授予权限，也不保证插件受到沙箱约束。
 
-[打包冒烟测试](../../../../apps/desktop/scripts/smoke-plugins.mjs) 是当前准备消费者。它通过真实 `dsh web` 覆盖层启动服务，准备离线压缩包，验证 Profile 未加入此包，再单独执行上游 Bundle 安装及 Host/浏览器启用。服务不在默认组合中，也没有浏览器安装按钮。
+[打包冒烟测试](../../../../apps/desktop/scripts/smoke-plugins.mjs) 是当前准备消费者。它通过真实 `dsh web` 覆盖层启动服务，准备离线压缩包，验证 Profile 未加入此包，再单独执行上游 Bundle 安装及 Host/浏览器启用。[市场浏览器](2026-09-07-desktop-marketplace-browser.zh.md)提供桌面审核及下次启动命令；基础 Web Profile 保持独立。
 
 [市场提案](../../proposed/architecture/2026-09-06-desktop-plugin-marketplace.zh.md) 仍有部分未实现。[桌面打包决策](2026-09-06-desktop-bundle-packaging.zh.md) 仍负责内置 pnpm 与启用验收；准备操作不取代这两份记录。
 
@@ -30,4 +30,4 @@ Status: implemented
 
 本地准备不增加网络请求或推理费用。测试覆盖目录错误、精确限制、声明不兼容、文件变更、并发请求、写入失败及 I/O 期间卸载。真实组合证据使用桌面打包冒烟测试；原生 Windows 与 WebView 验收仍由对应平台负责。
 
-可选的[操作历史](2026-09-07-preparation-operation-history.zh.md)记录准备观测，不授予启用权限。文件准备不提供崩溃恢复、目录下载、发布者签名、配置表单或受控启用。异常终止可能留下不完整暂存目录。消费者不得仅凭目录或回执存在推断已安装。
+可选的[操作历史](2026-09-07-preparation-operation-history.zh.md)记录准备观测，不授予启用权限。独立的[签名目录决策](2026-09-13-signed-marketplace-catalog.zh.md)负责可选在线信任。仅文件准备不提供崩溃恢复、配置表单或启用。异常终止可能留下不完整暂存目录。消费者不得仅凭目录或回执存在推断已安装。

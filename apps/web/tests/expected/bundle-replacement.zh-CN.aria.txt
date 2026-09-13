@@ -1,6 +1,8 @@
 - heading "查看可用版本" [level=3]
 - paragraph: 显示已安装版本与当前目录不同的组合包。目标版本可能更旧或不兼容。变更需要确认并重启应用，不会自动更新。
 - button "刷新状态"
+- status: 正在使用内置目录。检查更新不会自动安装插件。
+- button "检查在线目录"
 - paragraph: Host 插件拥有与 Harness 相同的访问能力。安装前请核对发布者和源码。
 - group "市场视图":
   - button "发现"

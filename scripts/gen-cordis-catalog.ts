@@ -281,6 +281,8 @@ export const LINK_MAP: Readonly<Record<string, string>> = {
   MarketplaceCommandResult: 'desktop.md',
   BundleCandidate: 'desktop.md',
   BundleCatalogId: 'desktop.md',
+  BundleCatalogStatus: 'desktop.md',
+  BundleReviewToken: 'desktop.md',
   PreparationOperation: 'desktop.md',
   PreparedBundle: 'desktop.md',
   PreparedDependencies: 'desktop.md',

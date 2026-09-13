@@ -1,6 +1,8 @@
 - heading "Review available versions" [level=3]
 - paragraph: Shows installed Bundles whose version differs from this catalog. Targets may be older or incompatible. Changes require review and an app restart; nothing updates automatically.
 - button "Refresh status"
+- status: Using the bundled catalog. Online checks never install plugins automatically.
+- button "Check online catalog"
 - paragraph: Host plugins run with the same access as Harness. Review the publisher and source before installing.
 - group "Marketplace views":
   - button "Discover"

@@ -4,6 +4,41 @@ import type { Branded } from '@deepseek-ai/dsh-brand'
 /** Catalog-owned identifier, resolved before accessing any file. */
 export type BundleCatalogId = Branded<'BundleCatalogId'>
 
+/** Digest binding installation consent to the displayed metadata and catalog revision. */
+export type BundleReviewToken = Branded<'BundleReviewToken'>
+
+/** Deployment-pinned trust and resource limits for one signed HTTPS catalog channel. */
+export interface RemoteCatalogConfig {
+  /** Pinned HTTPS envelope URL without credentials, query or fragment. */
+  url: string
+  /** Exact signed channel identity selected by the deployment. */
+  channel: string
+  /** Trusted Ed25519 public keys in PEM format; never private keys. */
+  publicKeys: string[]
+  /** Absolute deployment-owned cache file retaining the latest verified revision. */
+  cacheFile: string
+  /** Exact HTTPS origins permitted for the catalog and artifact directory. */
+  allowedOrigins: string[]
+  /** Complete network response deadline in milliseconds, including streamed body reads. */
+  timeoutMs: number
+  /** Maximum milliseconds waiting for another cache writer; orphaned locks need operator recovery. */
+  lockWaitMs: number
+  /** Maximum complete signed-envelope bytes. */
+  maxEnvelopeBytes: number
+  /** Maximum signed validity interval in milliseconds. */
+  maxValidityMs: number
+  /** Allowed future issuance skew in milliseconds; expiry receives no grace. */
+  clockSkewMs: number
+}
+
+/** Catalog observations do not imply installation or runtime readiness. */
+export interface BundleCatalogStatus {
+  readonly source: 'bundled' | 'online' | 'cached' | 'unavailable'
+  readonly remoteConfigured: boolean
+  readonly revision: number | null
+  readonly expiresAt: string | null
+}
+
 /** Identity of one preparation attempt, never a path or activation grant. */
 export type BundleOperationId = Branded<'BundleOperationId'>
 
@@ -79,6 +114,7 @@ export type BundleCompatibilityIssue = 'harness-version' | 'platform' | 'artifac
 /** Reviewed entry with the preparation provider's current compatibility decision. */
 export interface BundleCandidate {
   readonly entry: ReviewedBundle
+  readonly reviewToken: BundleReviewToken
   readonly issues: readonly BundleCompatibilityIssue[]
 }
 
@@ -164,7 +200,7 @@ export interface InstallerConfig {
 
 /** Trusted deployment paths and bounded read budgets. */
 export interface Config {
-  /** JSON catalog supplied by the deployment; no remote catalog is fetched. */
+  /** Bundled JSON catalog used until a signed remote revision is cached. */
   catalogFile: string
   /** Directory containing catalog-named npm tarballs. */
   artifactDirectory: string
@@ -176,6 +212,8 @@ export interface Config {
   maxCatalogBytes: number
   /** Maximum complete compressed tarball bytes per preparation. */
   maxArtifactBytes: number
+  /** Omit to disable user-requested signed catalog updates and HTTPS artifact downloads. */
+  remote?: RemoteCatalogConfig | false
   /** Omit to disable offline dependency preparation. Requires a local subprocess provider. */
   installer?: InstallerConfig | false
   /** Omit to disable boot-free candidate Profile validation. Requires installer configuration. */

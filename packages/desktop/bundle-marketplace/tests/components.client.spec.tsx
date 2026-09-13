@@ -7,7 +7,7 @@ import type { MarketplaceSnapshot } from '../src/types.ts'
 import type {} from '../src/client/index.ts'
 
 afterEach(cleanup)
-const base = { entries: [{ id: 'example', title: 'Example Bundle', packageName: '@test/example', version: '1.0.0',
+const base = { catalog: { source: 'bundled', remoteConfigured: false, revision: null, expiresAt: null }, entries: [{ id: 'example', reviewToken: 'review', title: 'Example Bundle', packageName: '@test/example', version: '1.0.0',
   publisher: 'Test publisher', source: 'https://example.com/source', details: null, issues: [] }],
 selection: { schemaVersion: 1, activeProfile: 'web', previousProfile: null, pending: null, trial: null, lastFailure: null },
 profiles: [{ profile: 'web', state: 'read', bundles: [] }] } as unknown as MarketplaceSnapshot
@@ -20,13 +20,14 @@ function bench(snapshot: MarketplaceSnapshot = base, chinese = false) {
   const renderSlot = vi.fn().mockReturnValue(null)
   const close = vi.fn()
   const openLocalAgents = vi.fn().mockResolvedValue('acknowledged')
+  const refreshCatalog = vi.fn().mockResolvedValue('acknowledged')
   const history = vi.fn().mockResolvedValue([])
-  const props = { snapshot: read, history, install, cancel, remove, renderSlot, close, openLocalAgents,
+  const props = { snapshot: read, refreshCatalog, history, install, cancel, remove, renderSlot, close, openLocalAgents,
     catalogLanguage: () => chinese ? 'zh' : 'en',
     t: ((key: MarketplaceLocaleKey) => chinese ? zh[key] : en[key]) as MarketplaceProps['t'],
     useConnectionGeneration: select => select({ id: 1, host: { home: '/test' } }),
   } as MarketplaceProps
-  return { props, read, history, install, cancel, remove, renderSlot, close, openLocalAgents }
+  return { props, read, refreshCatalog, history, install, cancel, remove, renderSlot, close, openLocalAgents }
 }
 async function ready(props: MarketplaceProps) {
   const view = render(<MarketplaceTab {...props} />)
@@ -36,6 +37,15 @@ async function ready(props: MarketplaceProps) {
 async function review() { fireEvent.click(await screen.findByRole('button', { name: en.install })) }
 
 describe('marketplace presentation', () => {
+  it.each(['bundled', 'cached', 'online', 'unavailable'] as const)('checks %s catalogs explicitly without installing', async (source) => {
+    const b = bench({ ...base, catalog: { ...base.catalog, source, remoteConfigured: true } })
+    await ready(b.props)
+    expect(b.refreshCatalog).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: en.checkCatalog }))
+    await waitFor(() =>{  expect(b.refreshCatalog).toHaveBeenCalledOnce() })
+    await waitFor(() =>{  expect(b.read).toHaveBeenCalledTimes(2) })
+    expect(b.install).not.toHaveBeenCalled()
+  })
   it.each([false, true])('filters metadata locally and clears review when the search changes (Chinese=%s)', async (chinese) => {
     const copy = chinese ? zh : en
     const details = { license: 'MIT', en: { summary: 'Pomodoro timer', accounts: '', access: '', setup: '' }, zh: { summary: '番茄钟计时', accounts: '', access: '', setup: '' } }
@@ -286,7 +296,7 @@ describe('marketplace presentation', () => {
     b.read.mockResolvedValue({ ...base, selection: { ...base.selection, pending: candidate } })
     fireEvent.click(screen.getByRole('button', { name: copy.confirmReplace }))
     await screen.findAllByText(copy.pending)
-    expect(b.install).toHaveBeenCalledExactlyOnceWith('example', 'web', '2.0.0')
+    expect(b.install).toHaveBeenCalledExactlyOnceWith('example', 'web', '2.0.0', 'review')
   })
   it('requires review and refreshes native state after acknowledged installation', async () => {
     const b = bench()
@@ -299,7 +309,7 @@ describe('marketplace presentation', () => {
     b.read.mockResolvedValue({ ...base, selection: { ...base.selection, pending: candidate } })
     fireEvent.click(screen.getByRole('button', { name: en.confirm }))
     await screen.findByText(en.pending)
-    expect(b.install).toHaveBeenCalledExactlyOnceWith('example', 'web', null)
+    expect(b.install).toHaveBeenCalledExactlyOnceWith('example', 'web', null, 'review')
     expect(screen.queryByRole('button', { name: en.confirm })).toBeNull()
     b.read.mockResolvedValue(base)
     fireEvent.click(screen.getByRole('button', { name: en.cancel }))

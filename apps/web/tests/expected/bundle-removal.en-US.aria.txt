@@ -1,6 +1,8 @@
 - heading "Installed Bundles" [level=3]
 - paragraph: These are Bundle layers in the selected Profiles. Versions come from resolved package files, not a live health check. Pending combinations are not yet enabled.
 - button "Refresh status"
+- status: Using the bundled catalog. Online checks never install plugins automatically.
+- button "Check online catalog"
 - group "Marketplace views":
   - button "Discover"
   - button "Installed" [pressed]

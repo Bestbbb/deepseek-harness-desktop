@@ -11,9 +11,10 @@ import { installCandidate } from './installer.ts'
 import { prepareComposition, prepareRemoval } from './composition.ts'
 import { assertBundleVersion, readProfileBundles } from './inventory.ts'
 import { PreparationJournal } from './journal.ts'
+import { RemoteCatalog, type VerifiedCatalog } from './remote-catalog.ts'
 import type { SubprocessRuntime } from '@deepseek-ai/dsh-subprocess'
 import type { DesktopProfileCandidate, DesktopProfileName } from '@deepseek-ai/dsh-desktop'
-import type { BundleCandidate, BundleCatalogId, BundleOperationId, Config, InstallerConfig, PreparationKind, PreparationOperation, PreparedBundle, PreparedDependencies, PreparedComposition, PreparedRemoval, ProfileBundle, ReviewedBundle } from './types.ts'
+import type { BundleCandidate, BundleCatalogId, BundleCatalogStatus, BundleReviewToken, BundleOperationId, Config, InstallerConfig, PreparationKind, PreparationOperation, PreparedBundle, PreparedDependencies, PreparedComposition, PreparedRemoval, ProfileBundle, ReviewedBundle } from './types.ts'
 
 export type * from './types.ts'
 
@@ -33,6 +34,18 @@ export class BundlePreparation extends Service {
     hostVersion: Schema.string().required(),
     maxCatalogBytes: Schema.number().min(1).max(16 * 1024 * 1024).step(1).default(1024 * 1024),
     maxArtifactBytes: Schema.number().min(1).max(256 * 1024 * 1024).step(1).default(50 * 1024 * 1024),
+    remote: Schema.union([Schema.const(false), Schema.object({
+      url: Schema.string().required(),
+      channel: Schema.string().min(1).required(),
+      publicKeys: Schema.array(String).min(1).required(),
+      cacheFile: Schema.string().required(),
+      allowedOrigins: Schema.array(String).min(1).required(),
+      timeoutMs: Schema.number().min(1).max(2_147_483_647).step(1).required(),
+      lockWaitMs: Schema.number().min(1).max(2_147_483_647).step(1).required(),
+      maxEnvelopeBytes: Schema.number().min(1).max(32 * 1024 * 1024).step(1).required(),
+      maxValidityMs: Schema.number().min(1).max(Number.MAX_SAFE_INTEGER).step(1).required(),
+      clockSkewMs: Schema.number().min(0).max(2_147_483_647).step(1).required(),
+    })]).default(false),
     installer: Schema.union([Schema.const(false), Schema.object({
       nodeExecutable: Schema.string().required(),
       packageManagerEntry: Schema.string().required(),
@@ -59,6 +72,11 @@ export class BundlePreparation extends Service {
   })
 
   private catalog: readonly ReviewedBundle[] = []
+  private readonly remote: RemoteCatalog | undefined
+  private online: VerifiedCatalog | null = null
+  private cacheUnavailable = false
+  private refreshed = false
+  private refreshing: { done: Promise<void>; abort: AbortController } | undefined
   private pending: {
     id: BundleOperationId
     done: Promise<PreparedBundle | PreparedDependencies | PreparedComposition | PreparedRemoval>
@@ -72,6 +90,7 @@ export class BundlePreparation extends Service {
   constructor(ctx: Context, config: Config) {
     super(ctx, 'bundlePreparation')
     this.config = config
+    this.remote = config.remote ? new RemoteCatalog(config.remote, config.maxCatalogBytes) : undefined
     this.journal = config.journal ? new PreparationJournal(config.journal, config.stagingDirectory) : undefined
     for (const path of [config.catalogFile, config.artifactDirectory, config.stagingDirectory]) {
       if (!isAbsolute(path)) throw new Error('bundle preparation: deployment paths must be absolute')
@@ -96,13 +115,22 @@ export class BundlePreparation extends Service {
     ctx.effect(() => async () => {
       this.closed = true
       this.pending?.abort.abort(new Error('bundle preparation: service is disposed'))
+      this.refreshing?.abort.abort(new Error('bundle preparation: service is disposed'))
       // Operation errors belong to the caller; disposal still waits for file cleanup.
       await this.pending?.done.catch(() => {})
+      // Refresh failures belong to its caller; disposal waits for transport and cache writes to settle.
+      await this.refreshing?.done.catch(() => {})
     }, 'bundlePreparation.drain')
   }
 
   protected async [Service.init](): Promise<void> {
     this.catalog = parseCatalog(await boundedFile(this.config.catalogFile, this.config.maxCatalogBytes))
+    if (this.remote !== undefined) {
+      try { this.online = await this.remote.read(Date.now()) } catch {
+        // An unreadable or invalid existing cache cannot authorize a bundled-catalog fallback.
+        this.cacheUnavailable = true
+      }
+    }
   }
 
   /**
@@ -110,11 +138,44 @@ export class BundlePreparation extends Service {
    * @returns Catalog-order candidates, not installation or runtime status.
    */
   list(): readonly BundleCandidate[] {
-    return this.catalog.map(entry => ({ entry, issues: [
-      ...entry.harnessVersions.includes(this.config.hostVersion) ? [] : ['harness-version' as const],
-      ...entry.platforms.includes(this.platform) ? [] : ['platform' as const],
-      ...entry.artifact.size <= this.config.maxArtifactBytes ? [] : ['artifact-size' as const],
-    ] }))
+    if (this.catalogStatus().source === 'unavailable') return []
+    return (this.online?.entries ?? this.catalog).map(entry => ({ entry,
+      reviewToken: createHash('sha256').update(JSON.stringify([this.online?.digest ?? 'bundled', entry])).digest('hex') as BundleReviewToken,
+      issues: [
+        ...entry.harnessVersions.includes(this.config.hostVersion) ? [] : ['harness-version' as const],
+        ...entry.platforms.includes(this.platform) ? [] : ['platform' as const],
+        ...entry.artifact.size <= this.config.maxArtifactBytes ? [] : ['artifact-size' as const],
+      ] }))
+  }
+
+  /**
+   * Observe catalog provenance and expiry without fetching or exposing deployment paths.
+   * @returns Current authorization to discover candidates, not plugin runtime health.
+   */
+  catalogStatus(): BundleCatalogStatus {
+    const unavailable = this.cacheUnavailable || (this.online !== null && Date.parse(this.online.expiresAt) <= Date.now())
+    return { source: unavailable ? 'unavailable' : this.online === null ? 'bundled' : this.refreshed ? 'online' : 'cached',
+      remoteConfigured: this.remote !== undefined, revision: this.online?.revision ?? null, expiresAt: this.online?.expiresAt ?? null }
+  }
+
+  /**
+   * Check the deployment-pinned online catalog only on explicit request, without installing anything.
+   * Rejects concurrent preparation/refresh; a failed check preserves the previous verified revision.
+   * @returns Completion after verified metadata is cached and selected.
+   */
+  async refreshCatalog(): Promise<void> {
+    this.ensureOpen()
+    if (this.pending !== undefined || this.refreshing !== undefined) throw new Error('bundle catalog: another operation is in progress')
+    if (this.remote === undefined) throw new Error('bundle catalog: online updates are not configured')
+    const abort = new AbortController()
+    const done = this.remote.refresh(this.online, abort.signal).then((catalog) => {
+      this.ensureOpen()
+      this.online = catalog
+      this.cacheUnavailable = false
+      this.refreshed = true
+    })
+    this.refreshing = { done, abort }
+    try { await done } finally { this.refreshing = undefined }
   }
 
   /**
@@ -148,7 +209,7 @@ export class BundlePreparation extends Service {
    * @returns Receipt after preparation and optional history publication complete.
    */
   async prepare(id: BundleCatalogId): Promise<PreparedBundle> {
-    return this.execute(id, 'artifact', entry => this.stage(entry))
+    return this.execute(id, 'artifact', (entry, signal) => this.stage(entry, signal))
   }
 
   /**
@@ -184,9 +245,13 @@ export class BundlePreparation extends Service {
    * @param id - identity selected from the current reviewed catalog.
    * @param profile - native-selected Profile observed during confirmation.
    * @param version - observed installed version, or null only when the Bundle was absent.
+   * @param reviewToken - digest from the exact catalog entry shown during confirmation.
    * @returns Candidate identity after native queue acknowledgement, not a running-plugin claim.
    */
-  async queueActivation(id: BundleCatalogId, profile: DesktopProfileName, version: string | null): Promise<DesktopProfileCandidate> {
+  async queueActivation(
+    id: BundleCatalogId, profile: DesktopProfileName, version: string | null, reviewToken: BundleReviewToken,
+  ): Promise<DesktopProfileCandidate> {
+    this.assertReview(id, reviewToken)
     const composition = this.config.composition
     if (!composition) throw new Error('bundle preparation: Profile composition is not configured')
     const desktop = this.ctx.get('desktop')
@@ -209,6 +274,7 @@ export class BundlePreparation extends Service {
       await assertBundleVersion(composition, installer.maxManifestBytes, profile, result.candidate.prepared.entry.packageName, version)
       queued = await this.profileCandidate(result.profileDirectory, installer.maxManifestBytes, destination, profile)
       signal.throwIfAborted()
+      this.assertReview(id, reviewToken)
       // Queue transport can commit before its reply is lost; prepared files must outlive rejection.
       await desktop.queueProfile(queued)
     })
@@ -297,7 +363,7 @@ export class BundlePreparation extends Service {
       let completedProfile: string | undefined
       try {
         cancellation.throwIfAborted()
-        prepared = await this.stage(entry)
+        prepared = await this.stage(entry, cancellation)
         await inspectArchive(await boundedFile(prepared.artifactPath, entry.artifact.size), entry, installer)
         const candidate = await installCandidate(subprocess, installer, prepared, cancellation)
         await writeFile(candidate.receiptPath, `${JSON.stringify(candidate, null, 2)}\n`, { flag: 'wx', mode: 0o600 })
@@ -335,6 +401,7 @@ export class BundlePreparation extends Service {
   ): Promise<T> {
     this.ensureOpen()
     if (this.pending !== undefined) throw new Error('bundle preparation: another preparation is in progress')
+    if (this.refreshing !== undefined) throw new Error('bundle catalog: refresh is in progress')
     const abort = new AbortController()
     const operationId = randomUUID() as BundleOperationId
     const preparation = run(operationId, abort.signal)
@@ -350,8 +417,11 @@ export class BundlePreparation extends Service {
     }
   }
 
-  private async stage(entry: ReviewedBundle): Promise<PreparedBundle> {
-    const bytes = await boundedFile(join(this.config.artifactDirectory, entry.artifact.file), entry.artifact.size)
+  private async stage(entry: ReviewedBundle, signal: AbortSignal): Promise<PreparedBundle> {
+    const bytes = this.online !== null && this.remote !== undefined
+      ? await this.remote.artifact(this.online, entry, signal)
+      : await boundedFile(join(this.config.artifactDirectory, entry.artifact.file), entry.artifact.size)
+    signal.throwIfAborted()
     if (bytes.length !== entry.artifact.size || createHash('sha256').update(bytes).digest('hex') !== entry.artifact.sha256) {
       throw new Error('bundle preparation: artifact size or SHA-256 does not match the reviewed catalog')
     }
@@ -377,6 +447,12 @@ export class BundlePreparation extends Service {
 
   private ensureOpen(): void {
     if (this.closed) throw new Error('bundle preparation: service is disposed')
+  }
+
+  private assertReview(id: BundleCatalogId, token: BundleReviewToken): void {
+    if (this.list().find(candidate => candidate.entry.id === id)?.reviewToken !== token) {
+      throw new Error('bundle preparation: reviewed catalog entry changed or expired')
+    }
   }
 }
 

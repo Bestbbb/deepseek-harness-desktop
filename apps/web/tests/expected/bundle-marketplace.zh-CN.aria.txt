@@ -1,6 +1,8 @@
 - heading "添加能力" [level=3]
 - paragraph: 审核组合包可以扩展界面、工具和智能体行为。
 - button "刷新状态"
+- status: 正在使用内置目录。检查更新不会自动安装插件。
+- button "检查在线目录"
 - paragraph: Host 插件拥有与 Harness 相同的访问能力。安装前请核对发布者和源码。
 - group "市场视图":
   - button "发现" [pressed]

@@ -7,6 +7,8 @@ import type { DesktopProfileName, DesktopProfileSelection } from '@deepseek-ai/d
 const contexts: Context[] = []
 afterEach(async () => { await Promise.all(contexts.splice(0).map(ctx => ctx.fiber.dispose())) })
 const id = 'fixture' as BundleCatalogId
+const reviewToken = 'review' as import('@deepseek-ai/dsh-bundle-preparation').BundleReviewToken
+const catalog = { source: 'bundled', remoteConfigured: false, revision: null, expiresAt: null }
 const profile = 'desktop-00000000-0000-4000-8000-000000000000' as DesktopProfileName
 const selection: DesktopProfileSelection = { schemaVersion: 1, activeProfile: 'web' as DesktopProfileName,
   previousProfile: null, pending: null, trial: null, lastFailure: null }
@@ -20,16 +22,26 @@ async function bench() {
   const profileBundles = vi.fn().mockResolvedValue([])
   const cancelProfile = vi.fn().mockResolvedValue(undefined)
   const openLocalAgents = vi.fn().mockResolvedValue(undefined)
+  const refreshCatalog = vi.fn().mockResolvedValue(undefined)
   const listOperations = vi.fn().mockResolvedValue([])
-  ctx.provide('bundlePreparation', { list: () => [{ entry: { id, title: 'Fixture', packageName: 'fixture', version: '1',
+  ctx.provide('bundlePreparation', { catalogStatus: () => catalog, refreshCatalog, list: () => [{ reviewToken, entry: { id, title: 'Fixture', packageName: 'fixture', version: '1',
     publisher: 'Tests', source: 'https://example.com/fixture', details: null, artifact: { file: '/private/file.tgz' }, harnessVersions: ['private'] }, issues: [] }], queueActivation, queueRemoval, profileBundles, listOperations } as never)
   ctx.provide('desktop', { profileSelection, cancelProfile, openLocalAgents } as never)
   const fiber = ctx.plugin(BundleMarketplaceGateway)
   await fiber.await()
-  return { gateway: ctx.get('bundleMarketplace') as BundleMarketplaceGateway, queueActivation, queueRemoval, profileSelection, cancelProfile, profileBundles, openLocalAgents, listOperations }
+  return { refreshCatalog, gateway: ctx.get('bundleMarketplace') as BundleMarketplaceGateway, queueActivation, queueRemoval, profileSelection, cancelProfile, profileBundles, openLocalAgents, listOperations }
 }
 
 describe('marketplace gateway', () => {
+  it('checks the pinned catalog only on request and withholds raw failures', async () => {
+    const b = await bench()
+    await b.gateway.snapshot()
+    expect(b.refreshCatalog).not.toHaveBeenCalled()
+    await expect(b.gateway.refreshCatalog()).resolves.toBe('acknowledged')
+    b.refreshCatalog.mockRejectedValueOnce(new Error('/private/cache'))
+    await expect(b.gateway.refreshCatalog()).resolves.toBe('unconfirmed')
+    expect(b.queueActivation).not.toHaveBeenCalled()
+  })
   it('reads bounded journal observations without tying discovery to history availability', async () => {
     const b = await bench()
     await b.gateway.snapshot()
@@ -67,7 +79,7 @@ describe('marketplace gateway', () => {
   })
   it('projects only discovery metadata and current native observations', async () => {
     const b = await bench()
-    expect(await b.gateway.snapshot()).toEqual({ selection, profiles: [{ profile: 'web', state: 'read', bundles: [] }], entries: [{ id, title: 'Fixture', packageName: 'fixture',
+    expect(await b.gateway.snapshot()).toEqual({ selection, catalog, profiles: [{ profile: 'web', state: 'read', bundles: [] }], entries: [{ id, reviewToken, title: 'Fixture', packageName: 'fixture',
       version: '1', publisher: 'Tests', source: 'https://example.com/fixture', details: null, issues: [] }] })
     b.profileSelection.mockResolvedValue({ ...selection, pending: { profile } })
     expect((await b.gateway.snapshot()).selection.pending).toEqual({ profile })
@@ -75,8 +87,8 @@ describe('marketplace gateway', () => {
   })
   it('forwards explicit identities once and does not hide uncertain commits as safe retries', async () => {
     const b = await bench()
-    await expect(b.gateway.queueActivation(id, profile, null)).resolves.toBe('acknowledged')
-    expect(b.queueActivation).toHaveBeenCalledExactlyOnceWith(id, profile, null)
+    await expect(b.gateway.queueActivation(id, profile, null, reviewToken)).resolves.toBe('acknowledged')
+    expect(b.queueActivation).toHaveBeenCalledExactlyOnceWith(id, profile, null, reviewToken)
     await expect(b.gateway.queueRemoval(profile, 'fixture', '1')).resolves.toBe('acknowledged')
     expect(b.queueRemoval).toHaveBeenCalledExactlyOnceWith(profile, 'fixture', '1')
     b.queueRemoval.mockRejectedValueOnce(new Error('private path'))
@@ -84,8 +96,8 @@ describe('marketplace gateway', () => {
     await expect(b.gateway.cancel(profile)).resolves.toBe('acknowledged')
     expect(b.cancelProfile).toHaveBeenCalledExactlyOnceWith(profile)
     b.queueActivation.mockRejectedValueOnce(new Error('private config and credentials'))
-    await expect(b.gateway.queueActivation(id, profile, '0.9')).resolves.toBe('unconfirmed')
-    expect(b.queueActivation).toHaveBeenLastCalledWith(id, profile, '0.9')
+    await expect(b.gateway.queueActivation(id, profile, '0.9', reviewToken)).resolves.toBe('unconfirmed')
+    expect(b.queueActivation).toHaveBeenLastCalledWith(id, profile, '0.9', reviewToken)
     b.cancelProfile.mockRejectedValueOnce(new Error('private path'))
     await expect(b.gateway.cancel(profile)).resolves.toBe('unconfirmed')
     b.profileSelection.mockRejectedValueOnce(new Error('/private/secrets'))
