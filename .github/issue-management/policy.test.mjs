@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync, readdirSync } from 'node:fs'
 import test from 'node:test'
+import { load } from 'js-yaml'
 
 import {
   auditIssue,
@@ -150,9 +151,9 @@ const reviewedPull = (labels) => ({
   issues: new Map([[2, { priority: null }]]),
 })
 
-test('keeps only Bug, Feature, and Task Issue templates with used frontmatter', () => {
+test('keeps the three general Issue templates and the reviewed Bundle proposal form', () => {
   const directory = new URL('../ISSUE_TEMPLATE/', import.meta.url)
-  assert.deepEqual(readdirSync(directory).sort(), ['bug.md', 'config.yml', 'feature.md', 'task.md'])
+  assert.deepEqual(readdirSync(directory).sort(), ['bug.md', 'config.yml', 'feature.md', 'marketplace-bundle.yml', 'task.md'])
 
   for (const file of ['bug.md', 'feature.md', 'task.md']) {
     const source = readFileSync(new URL(file, directory), 'utf8')
@@ -171,6 +172,21 @@ test('keeps only Bug, Feature, and Task Issue templates with used frontmatter', 
     readFileSync(new URL('config.yml', directory), 'utf8'),
     'blank_issues_enabled: false\n',
   )
+})
+
+test('requires source, identity, access, artifact evidence and maintenance information in Bundle proposals', () => {
+  const form = load(readFileSync(new URL('../ISSUE_TEMPLATE/marketplace-bundle.yml', import.meta.url), 'utf8'))
+  assert.deepEqual(Object.keys(form).sort(), ['body', 'description', 'name', 'title'])
+  assert.match(form.description, /not automatic installation/)
+  assert.match(form.body[0].attributes.value, /submission is not approval/)
+  assert.match(form.body[0].attributes.value, /Do not include credentials/)
+  const fields = form.body.slice(1)
+  assert.deepEqual(fields.map(field => field.id), ['source', 'identity', 'capability', 'access', 'artifacts', 'maintenance'])
+  for (const field of fields) {
+    assert.ok(['input', 'textarea'].includes(field.type))
+    assert.equal(field.validations.required, true, field.id)
+    assert.ok(field.attributes.label.length > 0, field.id)
+  }
 })
 
 test('keeps Feature Issues limited to motivation and behavior', () => {
