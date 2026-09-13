@@ -41,6 +41,11 @@ export async function apply(ctx: Context): Promise<void> {
         if (!result.ok) throw new Error('Marketplace snapshot is unavailable')
         return result.value
       },
+      history: async () => {
+        const result = await marketCtx.remote.bundleMarketplace.history()
+        if (!result.ok) throw new Error('Marketplace history is unavailable')
+        return result.value
+      },
       install: async (id, profile, version) => {
         const result = await marketCtx.remote.bundleMarketplace.queueActivation(id, profile, version)
         return result.ok ? result.value : 'unconfirmed'

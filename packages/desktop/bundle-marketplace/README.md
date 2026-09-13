@@ -32,6 +32,10 @@ Preparation queues a candidate without interrupting running tasks. Users finish 
 
 Discover lists reviewed entries; Installed lists the selected, pending and trial Profiles separately, with versions read through the upstream Bundle resolver. Missing package metadata remains explicitly unconfirmed. A changed native selection rejects the snapshot instead of mixing generations. These are on-disk observations, not running-plugin health checks or proof that the files match a reviewed tarball. The view prevents duplicate same-version installation and blocks installation when the current inventory or the selected package's version cannot be read.
 
+Discover and Version changes search title, package name, publisher and the current language's description locally without another Host read. Version changes includes only known installed versions that differ from this catalog, retaining compatibility warnings and the existing confirmation. Search and view changes dismiss an open review. An unreadable inventory cannot produce a misleading no-differences result.
+
+Operation history reads the bounded preparation journal on demand, separately from discovery. Prepared means its receipt was verified, not that native queueing, startup or plugin health succeeded. Unsettled outcomes, failed preparation, unreadable metadata and missing or changed receipts remain distinct. Unconfigured or unreadable history shows an unavailable state; it never becomes an empty list. Connection replacement and refresh discard stale responses. No background polling or history mutation is provided.
+
 The tab drops unconfirmed observations on disconnect, reloads on reconnect or manual refresh, and rereads after every command settles. It never retries a mutation automatically. The gateway returns discovery metadata, native selection and ordered package/version observations; artifact paths, receipts, configuration, native tokens and raw command errors are not returned.
 
 An installed Bundle at a different catalog version offers Review version change. The confirmation shows the observed version and target version; Replace for next launch preserves the active composition. Every install request carries the reviewed Profile and old version, with null reserved for absence. The preparation service rechecks them instead of interpreting stale confirmation as a new installation. The marketplace does not sort versions, promise an upgrade, migrate plugin data or guarantee downgrade compatibility. Review focuses Back so keyboard users can inspect or dismiss it without selecting the mutation by default.
@@ -70,9 +74,9 @@ This plugin does not change an active model request prefix. Activated Bundles ow
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- The catalog is deployment-owned and local; publisher submission, remote downloads and automatic updates are not provided.
-- Installed versions are read from disk, not from a live health check. Use and configuration actions require each plugin's explicit contribution; Focus Timer and Notification Controls provide them. Login forms, a dedicated update feed and active-task restart coordination remain separate work. Removal retains previous generations and plugin data; storage cleanup is not provided.
-- The desktop catalog offers the optional [Focus Timer](../focus-timer/README.md) and [Notification Controls](../notification-controls/README.md). This is a curated first-party catalog, not an open publisher marketplace.
+- The catalog is deployment-owned and local; [source proposals](../../../docs/cookbook/desktop-marketplace-bundle.md) require maintainer review and a desktop release. Remote downloads, self-service publication and automatic updates are not provided.
+- Installed versions are read from disk, not from a live health check. Use and configuration actions require each plugin's explicit contribution. Login forms, a remote update feed and active-task restart coordination remain separate work. Removal retains previous generations and plugin data; storage cleanup is not provided.
+- The desktop catalog offers optional [Focus Timer](../focus-timer/README.md), [Notification Controls](../notification-controls/README.md) and [Delegate Tasks](../delegation-launcher/README.md), each with an Installed action. This is a curated first-party catalog, not an open publisher marketplace.
 
 <a id="dev-note"></a>
 ### Dev Note

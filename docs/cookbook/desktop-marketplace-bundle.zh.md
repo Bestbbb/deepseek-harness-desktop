@@ -52,7 +52,15 @@ pnpm run build
 node apps/desktop/scripts/prepare-marketplace.mjs
 ```
 
-生成目录位于 `apps/desktop/resources/marketplace`。目录记录产物大小与 SHA-256、精确 Host 版本及目标平台、发布者和来源。审阅前检查生成的条目。哈希证明字节一致性，不证明发布者可信；[严格解析器](../../packages/desktop/bundle-preparation/src/catalog.ts)拒绝未声明字段。在目录支持相应字段前，用途、许可证、截图及访问权限说明放在包 README 和审阅证据中。
+生成目录位于 `apps/desktop/resources/marketplace`。目录记录产物大小与 SHA-256、精确 Host 版本及目标平台、发布者、来源、许可证及双语用途、账号、访问与使用指南。审阅前检查生成的条目。哈希证明字节一致性，不证明发布者可信；[严格解析器](../../packages/desktop/bundle-preparation/src/catalog.ts)拒绝未声明字段。截图放在包 README 和审阅证据中。
+
+准备桌面运行时后，在仓库根目录校验随附目录：
+
+```sh
+pnpm marketplace:verify apps/desktop/resources/runtime/marketplace
+```
+
+将提议目录路径传给同一命令，可检查相邻的 `catalog.json` 和声明的 tarball。检查器只读取，不解包、导入或执行包代码。它拒绝空目录、缺失双语指南、变化的字节、不匹配的包标识、不安全归档路径及超限大小。成功仅证明打包检查通过，不证明发布者身份、代码无害、离线依赖完整或运行时兼容。桌面 CI 在运行时测试前执行此检查。
 
 <a id="verify-the-user-journey"></a>
 ## 验证用户流程
@@ -71,9 +79,9 @@ node apps/desktop/scripts/smoke-plugins.mjs
 <a id="prepare-the-review"></a>
 ## 准备审阅
 
-一起提交源码、依赖及许可证变更、组合包补丁、中英文包文档、决策记录和确切验证结果。说明用户获得什么、插件可访问哪些数据与进程、是否消耗账户额度，以及配置、失败和移除的行为。提供构建后界面的截图，而不是设计稿。
+创建[组合包提案](https://github.com/Bestbbb/deepseek-harness-desktop/issues/new?template=marketplace-bundle.yml)，提供公开源码、不可变提交、产物校验和与验证证据。与维护者确认范围后，以 PR（Pull Request）一起提交源码、依赖及许可证变更、组合包补丁、中英文包文档、决策记录和确切验证结果。说明用户获得什么、插件可访问哪些数据与进程、是否消耗账户额度，以及配置、失败和移除的行为。提供构建后界面的截图，而不是设计稿。请勿提交凭据、私有会话或个人工作区预设。
 
-Host 插件以 Harness 的访问权限执行受信任代码；审核标签不是隔离机制。运行时失败恢复会保留前一个选择，但无法撤销插件副作用，也不保证数据降级。本作者流程不提供远程目录分发、发布者投稿、发布者身份验证或更强隔离。
+Host 插件以 Harness 的访问权限执行受信任代码；审核标签不是隔离机制。运行时失败恢复会保留前一个选择，但无法撤销插件副作用，也不保证数据降级。提案或 CI 通过不代表代码获批或发布。维护者审核确切源码与产物字节，再通过测试后的桌面发行版分发已接受条目；不得使用仓库写令牌或签名密钥运行未经信任的提案代码。本作者流程不提供远程目录分发、自助发布、发布者身份验证或更强隔离。
 
 <a id="further-exploration"></a>
 ## 进一步探索

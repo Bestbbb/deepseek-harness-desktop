@@ -5,6 +5,10 @@
 - group "Marketplace views":
   - button "Discover" [pressed]
   - button "Installed"
+  - button "Version changes"
+  - button "Operation history"
+- text: Search Bundles
+- searchbox "Search Bundles"
 - region "Built-in local agent connections":
   - group: Built-in local agent connections
   - button "Configure local agents"

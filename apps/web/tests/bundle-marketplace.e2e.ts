@@ -16,12 +16,14 @@ import type { DesktopProfileSelection, DesktopProfileCandidate } from '@deepseek
 
 const copies = [
   { locale: 'en-US', settings: 'Settings', plugins: 'Plugins', tab: 'Marketplace', review: 'Review installation',
+    search: 'Search Bundles', noMatches: 'No Bundles match this search.', updates: 'Version changes', history: 'Operation history', prepared: 'Preparation receipt verified; activation is not confirmed',
     configureAgents: 'Configure local agents', agentsUnconfirmed: 'Could not confirm that agent settings opened. Check for the Extensions window, or open Extensions from the application menu.',
     confirm: 'Install for next launch', pending: 'Waiting for app restart', cancel: 'Cancel pending activation',
     refresh: 'Refresh status', remove: 'Review removal', removeConfirm: 'Remove for next launch',
     replace: 'Review version change', replaceConfirm: 'Replace for next launch',
     offline: 'Waiting for a connection. Installation state is not confirmed.', installed: 'Installed', discover: 'Discover', version: 'Package version: 1.0.0' },
   { locale: 'zh-CN', settings: '设置', plugins: '插件', tab: '插件市场', review: '查看安装详情',
+    search: '搜索组合包', noMatches: '没有符合搜索条件的组合包。', updates: '版本变更', history: '操作记录', prepared: '准备凭据已校验，尚未确认启用',
     configureAgents: '配置本地智能体', agentsUnconfirmed: '无法确认智能体设置是否已打开。请检查扩展窗口，或从应用菜单打开扩展。',
     confirm: '安装并等待下次启动', pending: '等待应用重启', cancel: '取消待启用组合',
     refresh: '刷新状态', remove: '查看卸载详情', removeConfirm: '卸载并等待下次启动',
@@ -107,6 +109,7 @@ it.each(copies.flatMap(copy => [false, true].map(replacement => ({ ...copy, repl
       { id: 'market-native', name: entry('desktop-native'), config: { endpoint: `http://127.0.0.1:${String(address.port)}`, token: 'marketplace-test-token' } },
       { id: 'market-preparation', name: entry('bundle-preparation'), config: {
         catalogFile, artifactDirectory: root, stagingDirectory: join(root, 'staged'), hostVersion,
+        journal: { directory: join(root, 'operations'), maxEntries: 100, maxRecordBytes: 1_048_576 },
         installer: { nodeExecutable: process.execPath, packageManagerEntry: join(managerRoot, 'bin/pnpm.mjs'),
           packageManagerVersion: manifest.version, timeoutMs: 60_000, graceMs: 1000, maxOutputBytes: 65_536,
           maxExpandedBytes: 16_777_216, maxArchiveEntries: 1000, maxManifestBytes: 1_048_576 },
@@ -152,6 +155,13 @@ it.each(copies.flatMap(copy => [false, true].map(replacement => ({ ...copy, repl
     expect(agentWindows).toBe(2)
     expect(queued).toHaveLength(0)
     expect(await readFile(join(profileDir, 'package.json'), 'utf8')).toBe(original)
+    await dialog.getByRole('searchbox', { name: copy.search }).fill('no-such-bundle')
+    await dialog.getByText(copy.noMatches, { exact: true }).waitFor()
+    expect(await dialog.getByText('Reviewed example', { exact: true }).count()).toBe(0)
+    await dialog.getByRole('searchbox', { name: copy.search }).fill('HARNESS DESKTOP')
+    await dialog.getByText('Reviewed example', { exact: true }).waitFor()
+    await dialog.getByRole('searchbox', { name: copy.search }).fill('')
+    if (copy.replacement) await dialog.getByRole('button', { name: copy.updates, exact: true }).click()
     await compareOrRefreshGolden(join(REPO_ROOT, `apps/web/tests/expected/${copy.replacement ? 'bundle-replacement' : 'bundle-marketplace'}.${copy.locale}.aria.txt`),
       await captureStableAria(page, '[data-bundle-marketplace]', scaffold.workspaceCwd), webSnapshotMode())
     const screenshotDirectory = process.env.DSH_MARKETPLACE_SCREENSHOT_DIR
@@ -180,6 +190,11 @@ it.each(copies.flatMap(copy => [false, true].map(replacement => ({ ...copy, repl
     if (copy.replacement) {
       expect(JSON.parse(await readFile(join(oldPackage, 'package.json'), 'utf8'))).toMatchObject({ version: '0.9.0' })
     }
+    await dialog.getByRole('button', { name: copy.history, exact: true }).click()
+    await dialog.getByText(copy.prepared, { exact: true }).waitFor()
+    expect(queued).toHaveLength(1)
+    await compareOrRefreshGolden(join(REPO_ROOT, `apps/web/tests/expected/${copy.replacement ? 'bundle-replacement-history' : 'bundle-marketplace-history'}.${copy.locale}.aria.txt`),
+      await captureStableAria(page, '[data-bundle-marketplace]', scaffold.workspaceCwd), webSnapshotMode())
     await dialog.getByRole('button', { name: copy.installed, exact: true }).click()
     await dialog.getByText(copy.version, { exact: true }).waitFor()
     // Multiple Profile inventories can exceed one screen; the selected version must remain reachable.

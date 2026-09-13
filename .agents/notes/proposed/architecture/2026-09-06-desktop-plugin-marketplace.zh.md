@@ -18,9 +18,20 @@ Cordis 插件管理服务应拥有预期安装状态和操作，由提供方负�
 
 1. 验证无开发环境 PATH 下的打包外部 Host 与客户端激活。[打包实现](../../implemented/architecture/2026-09-06-desktop-bundle-packaging.zh.md)提供固定工具和离线冒烟测试；它不是市场服务。
 2. 增加审核目录解析、兼容性判断、操作记录、候选依赖准备，以及活动任务结束后的受控激活。[本地文件准备](../../implemented/architecture/2026-09-06-reviewed-bundle-preparation.zh.md)、[离线依赖](../../implemented/architecture/2026-09-06-offline-bundle-candidates.zh.md)、[候选 Profile 组合](../../implemented/architecture/2026-09-07-candidate-profile-composition.zh.md)和[原生下次启动启用与启动失败恢复](../../implemented/architecture/2026-09-07-desktop-profile-startup-selection.zh.md)已实现。活动任务的重启协调仍待完成。保留上一份可用组合。恢复不得覆盖已提交的会话日志代际，也不得暗示支持数据降级。
-3. 增加统一浏览器入口，包含发现、已安装和更新。[发现与下次启动命令标签页](../../implemented/architecture/2026-09-07-desktop-marketplace-browser.zh.md)、磁盘已安装版本、明确版本替换确认及桌面目录接线已实现。键控操作 slot 已有 Focus Timer 和 Notification Controls 消费方，并提供插件自有的偏好设置。更新发现、登录流程及其他插件的使用入口仍待完成。区分已下载、等待配置、等待登录、等待重启、就绪、失败和不兼容。每个已安装条目都需要明确的使用操作。
-4. 交付三个审核示例，覆盖 UI、任务行为和 agent（智能体）协作。至少一个示例不需要账号。提供第三方构建模板和发布检查，而不是复制私有工作区预设。[无需账号的 Focus Timer](../../implemented/feature/2026-09-07-focus-timer-bundle.zh.md)提供 UI 示例；[Notification Controls](../../implemented/feature/2026-09-07-notification-controls-bundle.zh.md)提供任务行为示例。协作示例和第三方发布工具仍待完成。
+3. 增加统一浏览器入口，包含发现、已安装清单、版本变更与操作记录。[浏览器实现](../../implemented/architecture/2026-09-07-desktop-marketplace-browser.zh.md)提供本地元数据搜索、明确替换确认及只读准备记录。Focus Timer、Notification Controls 和 Delegate Tasks 均有键控使用入口。远程更新列表与插件自有的配置、登录就绪状态仍待完成；已安装版本和准备收据均不能证明就绪。
+4. 交付三个审核示例，覆盖 UI、任务行为和 agent（智能体）协作。免账号的 [Focus Timer](../../implemented/feature/2026-09-07-focus-timer-bundle.zh.md)、[Notification Controls](../../implemented/feature/2026-09-07-notification-controls-bundle.zh.md) 和 [Delegate Tasks](../../../../packages/desktop/delegation-launcher/README.zh.md)提供了这些示例。[作者指南](../../../../docs/cookbook/desktop-marketplace-bundle.zh.md)、GitHub 提案表单和只读发布检查器支持审核；独立发布者脚手架和自助分发仍待完成。
 5. 在公开发行前，与非开发者参与者验证原生安装器、签名应用更新、首次任务引导和长会话性能。任意发布者投稿与更强隔离留待后续决策。
+
+## 开放市场的剩余工作
+
+审核目录市场不等于已完成的开放市场。按依赖顺序完成以下事项，每项均需独立实现与验收证据。
+
+1. 确定发布模式与维护责任。建议默认采用 GitHub PR 审核及静态托管，不引入付费服务器或发布者登录系统。明确谁可审核代码、发布目录和处置不安全版本；启用外部信任源前取得所有者选择。
+2. 增加可信远程目录提供方。每次审核确认绑定目录修订、目标版本和产物摘要，而非仅绑定条目 ID。验证有界 HTTPS 下载、重定向策略、有效期、重放防护、缓存与离线行为以及产物标识。发布密钥前定义签名密钥保管与轮换；不可信下载旁的校验和不是身份认证。
+3. 发布共享网页目录与作者工具。投影审核元数据，不建立第二份真源；增加源码固定的投稿、打包模板、兼容性证据及维护者发布流程。公开网站可浏览元数据，但不能绕过本地运行时认证与用户明确同意来控制它。
+4. 完善安装到使用的就绪流程。让各组合包声明配置与登录需要，并贡献自己的设置和使用 UI；通过凭据服务存储密钥。增加任务感知的重启协调，不自动调用推理，也不将已准备包视为健康。
+5. 安全运营发行。定义条目下架及受损产物处理，不静默删除用户代码或数据。生成新版桌面产物并部署网站，保持签名与公证声明准确，在受支持平台验证打包安装与恢复及原生窗口。
+6. 测量并验证产品。在设定预算前记录冷启动、空闲进程树内存、市场搜索延迟及长会话行为。与非开发者运行首次安装、版本变更、离线、损坏、中断安装和恢复场景。更强的逐插件隔离仍是单独确定范围的安全能力，不是权限标签功能。
 
 ## 考虑过的替代方案
 

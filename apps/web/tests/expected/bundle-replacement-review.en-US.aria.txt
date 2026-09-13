@@ -1,10 +1,14 @@
-- heading "Add capabilities" [level=3]
-- paragraph: Reviewed Bundles can add interfaces, tools and agent behavior.
+- heading "Review available versions" [level=3]
+- paragraph: Shows installed Bundles whose version differs from this catalog. Targets may be older or incompatible. Changes require review and an app restart; nothing updates automatically.
 - button "Refresh status"
 - paragraph: Host plugins run with the same access as Harness. Review the publisher and source before installing.
 - group "Marketplace views":
-  - button "Discover" [pressed]
+  - button "Discover"
   - button "Installed"
+  - button "Version changes" [pressed]
+  - button "Operation history"
+- text: Search Bundles
+- searchbox "Search Bundles"
 - region "Built-in local agent connections":
   - group: Built-in local agent connections
   - button "Configure local agents"

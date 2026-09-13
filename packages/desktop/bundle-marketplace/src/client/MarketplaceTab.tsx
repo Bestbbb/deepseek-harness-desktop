@@ -5,7 +5,8 @@ import type { ConnectionGenerationState } from '@deepseek-ai/dsh-client-connecti
 import type { InjectFace, PropsLocale, PropsRuntime, PropsRenderSlots } from '@deepseek-ai/dsh-client-ui-slots'
 import type { MarketplaceEntry, MarketplaceSnapshot, MarketplaceCommandResult } from '../types.ts'
 import type { DesktopProfileName } from '@deepseek-ai/dsh-desktop'
-import type { BundleCatalogId, BundleDetails } from '@deepseek-ai/dsh-bundle-preparation/types'
+import type { BundleCatalogId, BundleDetails, PreparationOperation } from '@deepseek-ai/dsh-bundle-preparation/types'
+import { OperationHistory } from './OperationHistory.tsx'
 import css from './MarketplaceTab.module.css'
 
 /** Registration-owned callbacks and the renderer-bound connection observation. */
@@ -14,6 +15,7 @@ export interface MarketplaceInjected {
   catalogLanguage: () => 'en' | 'zh'
   openLocalAgents: () => Promise<MarketplaceCommandResult>
   snapshot: () => Promise<MarketplaceSnapshot>
+  history: () => Promise<readonly PreparationOperation[]>
   install: (id: BundleCatalogId, profile: DesktopProfileName, version: string | null) => Promise<MarketplaceCommandResult>
   cancel: (profile: DesktopProfileName) => Promise<MarketplaceCommandResult>
   remove: (profile: DesktopProfileName, packageName: string, version: string) => Promise<MarketplaceCommandResult>
@@ -30,6 +32,11 @@ type ReadState = { generation: number | undefined } & (
   | { status: 'ready'; value: MarketplaceSnapshot }
 )
 
+const viewCopy = {
+  discover: ['title', 'intro'], installed: ['installedTitle', 'inventoryHint'],
+  updates: ['updatesTitle', 'updatesHint'], history: ['history', 'historyHint'],
+} as const
+
 /** Reconcile reads on reconnect and every command settlement without replaying commands. */
 export function MarketplaceTab(props: MarketplaceProps): ReactNode {
   const { t, snapshot, install, cancel, remove, useConnectionGeneration, renderSlot, close } = props
@@ -41,7 +48,8 @@ export function MarketplaceTab(props: MarketplaceProps): ReactNode {
     { kind: 'install'; entry: MarketplaceEntry; profile: DesktopProfileName; version: string | null }
     | { kind: 'remove'; profile: DesktopProfileName; packageName: string; version: string } | null
   >(null)
-  const [view, setView] = useState<'discover' | 'installed'>('discover')
+  const [view, setView] = useState<'discover' | 'installed' | 'updates' | 'history'>('discover')
+  const [query, setQuery] = useState('')
   const [busy, setBusy] = useState(false)
   const [unconfirmed, setUnconfirmed] = useState(false)
   const inFlight = useRef(false)
@@ -79,89 +87,104 @@ export function MarketplaceTab(props: MarketplaceProps): ReactNode {
   const pending = selection?.pending
   const current = value?.profiles.find(profile => profile.profile === selection?.activeProfile)
   const canInstall = !busy && current?.state === 'read' && selection !== undefined && selection.pending === null && selection.trial === null
+  const installedBundles = new Map(current?.state === 'read' ? current.bundles.map(bundle => [bundle.packageName, bundle]) : [])
+  const search = query.trim().toLocaleLowerCase(language)
+  const entries = value?.entries.filter((entry) => {
+    const installed = installedBundles.get(entry.packageName)
+    if (view === 'updates' && (installed === undefined || installed.version === null || installed.version === entry.version)) return false
+    return [entry.title, entry.packageName, entry.publisher, entry.details?.[language].summary ?? '']
+      .some(text => text.toLocaleLowerCase(language).includes(search))
+  }) ?? []
   return <section className={css.root} data-bundle-marketplace="">
-    <header className={css.header}><div><h3>{t(view === 'discover' ? 'title' : 'installedTitle')}</h3><p>{t(view === 'discover' ? 'intro' : 'inventoryHint')}</p></div>
+    <header className={css.header}><div><h3>{t(viewCopy[view][0])}</h3><p>{t(viewCopy[view][1])}</p></div>
       <button type="button" disabled={busy || generation === undefined} onClick={() => { setRead({ status: 'loading', generation }); setRevision(n => n + 1) }}>{t('refresh')}</button>
     </header>
-    {view === 'discover' && <p className={css.notice}>{t('trust')}</p>}
+    {(view === 'discover' || view === 'updates') && <p className={css.notice}>{t('trust')}</p>}
     <div role="group" aria-label={t('views')} className={css.views}>
       <button type="button" aria-pressed={view === 'discover'} onClick={() => { setView('discover'); setSelected(null) }}>{t('discover')}</button>
       <button type="button" aria-pressed={view === 'installed'} onClick={() => { setView('installed'); setSelected(null) }}>{t('installed')}</button>
+      <button type="button" aria-pressed={view === 'updates'} onClick={() => { setView('updates'); setSelected(null) }}>{t('updates')}</button>
+      <button type="button" aria-pressed={view === 'history'} onClick={() => { setView('history'); setSelected(null) }}>{t('history')}</button>
     </div>
+    {(view === 'discover' || view === 'updates') && <label className={css.search}>{t('search')}
+      <input type="search" value={query} placeholder={t('searchHint')} onChange={(event) => { setQuery(event.target.value); setSelected(null) }} />
+    </label>}
     <LocalAgentsEntry key={generation} t={t} open={props.openLocalAgents} connected={generation !== undefined} />
     {unconfirmed && <p role="alert">{t('unconfirmed')}</p>}
-    {generation === undefined ? <p role="status">{t('offline')}</p>
-      : value === undefined ? <p role={read.status === 'error' ? 'alert' : 'status'}>{t(read.status === 'error' ? 'readFailed' : 'loading')}</p>
-        : <>
-          {view === 'discover' && <p className={css.current}>{t('current')}: <code>{value.selection.activeProfile}</code></p>}
-          {value.selection.lastFailure !== null && <div className={css.notice} role="status">
-            <p>{t('recovered')}</p><p>{t(value.selection.lastFailure.reason)}</p>
-          </div>}
-          {pending && <div className={css.notice} role="status">
-            <strong>{t('pending')}</strong><p>{t('pendingHint')}</p>
-            <button type="button" disabled={busy} onClick={() => { void run(() => cancel(pending.profile)) }}>{t('cancel')}</button>
-          </div>}
-          {value.selection.trial !== null && <p role="status">{t('trial')}</p>}
-          {view === 'discover' && current?.state !== 'read' && <p role="alert">{t('inventoryFailed')}</p>}
-          {view === 'installed' ? <>
-            {value.profiles.map(profile => <section className={css.profile} key={profile.profile} aria-label={profile.profile}>
-              <h4>{t(profile.profile === value.selection.activeProfile ? 'current' : profile.profile === pending?.profile ? 'pending' : 'trial')}</h4>
-              <details className={css.current}><summary>{t('combinationId')}</summary><code>{profile.profile}</code></details>
-              {profile.state === 'unavailable' ? <p role="alert">{t('inventoryFailed')}</p> : <>
-                {profile.bundles.length === 0 && <p>{t('noInstalled')}</p>}
-                <ul className={css.list}>{profile.bundles.map((bundle) => {
-                  const version = bundle.version
-                  return <li className={css.card} key={bundle.packageName}>
-                    <div><h4>{value.entries.find(entry => entry.packageName === bundle.packageName)?.title ?? bundle.packageName}</h4>
-                      <p><code>{bundle.packageName}</code></p>
-                      <p>{bundle.version === null ? t('versionUnknown') : `${t('version')}: ${bundle.version}`}</p>
-                    </div>
-                    {bundle.removable && version !== null ? <button type="button"
-                      disabled={!canInstall || profile.profile !== value.selection.activeProfile}
-                      onClick={() => { setSelected({ kind: 'remove', profile: profile.profile, packageName: bundle.packageName, version }) }}>{t('remove')}</button>
-                      : <p>{t('protected')}</p>}
-                    {version !== null && profile.profile === value.selection.activeProfile && value.selection.trial === null
+    {view === 'history' ? <OperationHistory key={`${String(generation)}-${String(revision)}`} connected={generation !== undefined} history={props.history} t={t} /> : <>
+      {generation === undefined ? <p role="status">{t('offline')}</p>
+        : value === undefined ? <p role={read.status === 'error' ? 'alert' : 'status'}>{t(read.status === 'error' ? 'readFailed' : 'loading')}</p>
+          : <>
+            {view !== 'installed' && <p className={css.current}>{t('current')}: <code>{value.selection.activeProfile}</code></p>}
+            {value.selection.lastFailure !== null && <div className={css.notice} role="status">
+              <p>{t('recovered')}</p><p>{t(value.selection.lastFailure.reason)}</p>
+            </div>}
+            {pending && <div className={css.notice} role="status">
+              <strong>{t('pending')}</strong><p>{t('pendingHint')}</p>
+              <button type="button" disabled={busy} onClick={() => { void run(() => cancel(pending.profile)) }}>{t('cancel')}</button>
+            </div>}
+            {value.selection.trial !== null && <p role="status">{t('trial')}</p>}
+            {view !== 'installed' && current?.state !== 'read' && <p role="alert">{t('inventoryFailed')}</p>}
+            {view === 'installed' ? <>
+              {value.profiles.map(profile => <section className={css.profile} key={profile.profile} aria-label={profile.profile}>
+                <h4>{t(profile.profile === value.selection.activeProfile ? 'current' : profile.profile === pending?.profile ? 'pending' : 'trial')}</h4>
+                <details className={css.current}><summary>{t('combinationId')}</summary><code>{profile.profile}</code></details>
+                {profile.state === 'unavailable' ? <p role="alert">{t('inventoryFailed')}</p> : <>
+                  {profile.bundles.length === 0 && <p>{t('noInstalled')}</p>}
+                  <ul className={css.list}>{profile.bundles.map((bundle) => {
+                    const version = bundle.version
+                    return <li className={css.card} key={bundle.packageName}>
+                      <div><h4>{value.entries.find(entry => entry.packageName === bundle.packageName)?.title ?? bundle.packageName}</h4>
+                        <p><code>{bundle.packageName}</code></p>
+                        <p>{bundle.version === null ? t('versionUnknown') : `${t('version')}: ${bundle.version}`}</p>
+                      </div>
+                      {bundle.removable && version !== null ? <button type="button"
+                        disabled={!canInstall || profile.profile !== value.selection.activeProfile}
+                        onClick={() => { setSelected({ kind: 'remove', profile: profile.profile, packageName: bundle.packageName, version }) }}>{t('remove')}</button>
+                        : <p>{t('protected')}</p>}
+                      {version !== null && profile.profile === value.selection.activeProfile && value.selection.trial === null
                     && <div className={css.contribution}>
                       {renderSlot('settings.bundleMarketplace.action', { close }, { entryKey: bundle.packageName })}
                     </div>}
-                  </li>})}</ul>
-              </>}
-            </section>)}
-            {selected?.kind === 'remove' && canInstall && <div className={css.review} role="group" aria-label={t('removeReview')}>
-              <strong>{selected.packageName} · {selected.version}</strong><p>{t('removeHint')}</p>
-              <button type="button" onClick={() => { void run(() => remove(selected.profile, selected.packageName, selected.version)) }}>{t('confirmRemove')}</button>
-              <button type="button" autoFocus onClick={() => { setSelected(null) }}>{t('dismiss')}</button>
-            </div>}
-          </> : <>
-            {value.entries.length === 0 && <p>{t('empty')}</p>}
-            <ul className={css.list}>{value.entries.map((entry) => {
-              const installed = current?.state === 'read' ? current.bundles.find(bundle => bundle.packageName === entry.packageName) : undefined
-              const included = installed?.version === entry.version
-              return <li className={css.card} key={entry.id}>
-                <div><h4>{entry.title}</h4><p><code>{entry.packageName}</code> · {entry.version}</p>
-                  <p>{entry.details === null ? t('detailsUnavailable') : entry.details[language].summary}</p>
-                  <p>{t('publisher')}: {entry.publisher}</p>
-                  {installed?.version === null && <p>{t('versionUnknown')}</p>}
-                  <a href={entry.source} target="_blank" rel="noreferrer noopener"><LinkIcon kind="url" /> {t('source')}</a>
-                  {entry.issues.map(issue => <p key={issue}>{t(issue)}</p>)}
-                  {entry.details !== null && <details className={css.details}>
-                    <summary>{t('details')}</summary>
-                    <BundleGuidance details={entry.details} language={language} t={t} />
-                  </details>}
-                </div>
-                <button type="button" disabled={!canInstall || entry.issues.length !== 0 || included || installed?.version === null}
-                  onClick={() => { setSelected({ kind: 'install', entry, profile: value.selection.activeProfile, version: installed?.version ?? null }) }}>{t(included ? 'included' : installed === undefined ? 'install' : 'replace')}</button>
-              </li>})}</ul>
-            {selected?.kind === 'install' && canInstall && <div className={css.review} role="group" aria-label={t(selected.version === null ? 'review' : 'replaceReview')}>
-              <strong>{selected.entry.title}</strong><p>{t('reviewHint')}</p>
-              {selected.entry.details === null ? <p>{t('detailsUnavailable')}</p>
-                : <BundleGuidance details={selected.entry.details} language={language} t={t} />}
-              {selected.version !== null && <><p>{selected.version} → {selected.entry.version}</p><p>{t('replaceHint')}</p></>}
-              <button type="button" onClick={() => { void run(() => install(selected.entry.id, selected.profile, selected.version)) }}>{t(selected.version === null ? 'confirm' : 'confirmReplace')}</button>
-              <button type="button" autoFocus onClick={() => { setSelected(null) }}>{t('dismiss')}</button>
-            </div>}
+                    </li>})}</ul>
+                </>}
+              </section>)}
+              {selected?.kind === 'remove' && canInstall && <div className={css.review} role="group" aria-label={t('removeReview')}>
+                <strong>{selected.packageName} · {selected.version}</strong><p>{t('removeHint')}</p>
+                <button type="button" onClick={() => { void run(() => remove(selected.profile, selected.packageName, selected.version)) }}>{t('confirmRemove')}</button>
+                <button type="button" autoFocus onClick={() => { setSelected(null) }}>{t('dismiss')}</button>
+              </div>}
+            </> : <>
+              {entries.length === 0 && (view !== 'updates' || current?.state === 'read') && <p role="status">{t(value.entries.length === 0 ? 'empty' : search ? 'noMatches' : 'noUpdates')}</p>}
+              <ul className={css.list}>{entries.map((entry) => {
+                const installed = installedBundles.get(entry.packageName)
+                const included = installed?.version === entry.version
+                return <li className={css.card} key={entry.id}>
+                  <div><h4>{entry.title}</h4><p><code>{entry.packageName}</code> · {entry.version}</p>
+                    <p>{entry.details === null ? t('detailsUnavailable') : entry.details[language].summary}</p>
+                    <p>{t('publisher')}: {entry.publisher}</p>
+                    {installed?.version === null && <p>{t('versionUnknown')}</p>}
+                    <a href={entry.source} target="_blank" rel="noreferrer noopener"><LinkIcon kind="url" /> {t('source')}</a>
+                    {entry.issues.map(issue => <p key={issue}>{t(issue)}</p>)}
+                    {entry.details !== null && <details className={css.details}>
+                      <summary>{t('details')}</summary>
+                      <BundleGuidance details={entry.details} language={language} t={t} />
+                    </details>}
+                  </div>
+                  <button type="button" disabled={!canInstall || entry.issues.length !== 0 || included || installed?.version === null}
+                    onClick={() => { setSelected({ kind: 'install', entry, profile: value.selection.activeProfile, version: installed?.version ?? null }) }}>{t(included ? 'included' : installed === undefined ? 'install' : 'replace')}</button>
+                </li>})}</ul>
+              {selected?.kind === 'install' && canInstall && <div className={css.review} role="group" aria-label={t(selected.version === null ? 'review' : 'replaceReview')}>
+                <strong>{selected.entry.title}</strong><p>{t('reviewHint')}</p>
+                {selected.entry.details === null ? <p>{t('detailsUnavailable')}</p>
+                  : <BundleGuidance details={selected.entry.details} language={language} t={t} />}
+                {selected.version !== null && <><p>{selected.version} → {selected.entry.version}</p><p>{t('replaceHint')}</p></>}
+                <button type="button" onClick={() => { void run(() => install(selected.entry.id, selected.profile, selected.version)) }}>{t(selected.version === null ? 'confirm' : 'confirmReplace')}</button>
+                <button type="button" autoFocus onClick={() => { setSelected(null) }}>{t('dismiss')}</button>
+              </div>}
+            </>}
           </>}
-        </>}
+    </>}
     {busy && <p role="status">{t('preparing')}</p>}
   </section>
 }

@@ -52,7 +52,15 @@ pnpm run build
 node apps/desktop/scripts/prepare-marketplace.mjs
 ```
 
-The generated directory is `apps/desktop/resources/marketplace`. Its catalog records artifact size and SHA-256, exact Host versions and target platform, publisher and source. Inspect the generated entry before review. A hash proves byte identity, not publisher trust; the [strict parser](../../packages/desktop/bundle-preparation/src/catalog.ts) rejects undeclared fields. Purpose, license, screenshots and access explanations belong in the package README and review evidence until the catalog supports them.
+The generated directory is `apps/desktop/resources/marketplace`. Its catalog records artifact size and SHA-256, exact Host versions and target platform, publisher, source, license and bilingual purpose/account/access/setup guidance. Inspect the generated entry before review. A hash proves byte identity, not publisher trust; the [strict parser](../../packages/desktop/bundle-preparation/src/catalog.ts) rejects undeclared fields. Screenshots belong in the package README and review evidence.
+
+After preparing the desktop runtime, verify its packaged catalog from the repository root:
+
+```sh
+pnpm marketplace:verify apps/desktop/resources/runtime/marketplace
+```
+
+Pass a proposed catalog directory to the same command to inspect its adjacent `catalog.json` and declared tarballs. The checker reads without extracting, importing or executing package code. It rejects empty catalogs, missing bilingual guidance, changed bytes, mismatched package identities, unsafe archive paths and exceeded size limits. Success proves packaging checks only, not publisher identity, harmless code, offline dependency completeness or runtime compatibility. The desktop CI runs this check before its runtime tests.
 
 <a id="verify-the-user-journey"></a>
 ## Verify the user journey
@@ -71,9 +79,9 @@ The browser smoke simulates native queue acknowledgements. Run the separate [nat
 <a id="prepare-the-review"></a>
 ## Prepare the review
 
-Submit source, dependency and license changes, the Bundle patch, bilingual package documentation, its decision record and exact verification results together. Explain what the user gains, which data and processes the plugin can access, whether account quota can be spent, and how configuration, failure and removal behave. Include screenshots from the built interface rather than mockups.
+Open a [Bundle proposal](https://github.com/Bestbbb/deepseek-harness-desktop/issues/new?template=marketplace-bundle.yml) with public source, an immutable commit, artifact checksums and verification evidence. After agreeing on scope with a maintainer, submit source, dependency and license changes, the Bundle patch, bilingual package documentation, its decision record and exact verification results together in a PR. Explain what the user gains, which data and processes the plugin can access, whether account quota can be spent, and how configuration, failure and removal behave. Include screenshots from the built interface rather than mockups. Never submit credentials, private sessions or personal workspace presets.
 
-Host plugins execute trusted code with Harness access; a review label is not an isolation mechanism. Runtime failure recovery preserves a previous selection but cannot undo plugin side effects or guarantee data downgrades. Remote catalog distribution, publisher submissions, publisher identity verification and stronger isolation are not provided by this authoring path.
+Host plugins execute trusted code with Harness access; a review label is not an isolation mechanism. Runtime failure recovery preserves a previous selection but cannot undo plugin side effects or guarantee data downgrades. A proposal or green CI does not approve or publish code. Maintainers review exact source and artifact bytes, then distribute accepted entries in a tested desktop release; they must not run untrusted proposal code with repository write tokens or signing keys. Remote catalog distribution, self-service publication, publisher identity verification and stronger isolation are not provided by this authoring path.
 
 <a id="further-exploration"></a>
 ## Further Exploration

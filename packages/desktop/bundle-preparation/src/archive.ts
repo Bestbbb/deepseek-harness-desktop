@@ -30,7 +30,7 @@ export function portablePath(path: string): boolean {
  * @param limits - deployment-owned archive budgets.
  * @returns After parsing every entry; no file is extracted or imported.
  */
-export async function inspectArchive(bytes: Buffer, review: ReviewedBundle, limits: InstallerConfig): Promise<void> {
+export async function inspectArchive(bytes: Buffer, review: ReviewedBundle, limits: Pick<InstallerConfig, 'maxExpandedBytes' | 'maxArchiveEntries' | 'maxManifestBytes'>): Promise<void> {
   const uncompressed = await decompress(bytes, { maxOutputLength: limits.maxExpandedBytes })
   let count = 0
   const paths = new Set<string>()

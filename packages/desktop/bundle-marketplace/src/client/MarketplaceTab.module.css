@@ -25,7 +25,10 @@
 .contribution:empty { display: none; }
 .review button + button { margin-inline-start: 8px; }
 .review button { scroll-margin-block: 24px; }
-.views { display: flex; gap: 8px; }
+.views { display: flex; flex-wrap: wrap; gap: 8px; }
+.search { display: grid; gap: 8px; }
+.search input { min-width: 0; border: 0.5px solid var(--dsw-alias-border-l3); border-radius: 8px; padding: 8px 12px; background: transparent; color: inherit; font: inherit; }
+.search input:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
 .details { margin-block-start: 12px; }
 .details summary { cursor: pointer; padding-block: 4px; }
 .guidance { display: grid; gap: 12px; margin-block: 12px; }

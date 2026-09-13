@@ -20,6 +20,10 @@ Installed observations come from the native-selected Profiles and the upstream p
 
 Installation confirmation carries the observed native Profile and installed version; null means an absent Bundle, not unreadable metadata. The preparation service checks source and copied inventories and checks the source again before queueing. Version replacement shows both versions and a downgrade warning; the marketplace makes no semantic-version ordering or plugin-data compatibility promise. A prepared receipt records preparation, not consent to replace a subsequently changed version. Native selection still owns the final Profile comparison, and none of these reads is an atomic lock over all package bytes.
 
+Discovery and version-difference search use the already-read catalog. Version differences include older and incompatible targets without upgrading them automatically; unknown installed metadata cannot establish a difference. The read-only history command accesses the existing bounded preparation journal only when its view opens or refreshes. It does not add history to every inventory read or create a second operational database. Journal failures remain unavailable; verified preparation is separate from activation. Connection-keyed consumers discard late history responses.
+
+The [publication check](../../../../scripts/verify-marketplace-catalog.ts) reuses the installer's strict catalog and archive validators, adds required bilingual guidance and checks every tarball's byte identity before desktop CI executes runtime tests. It reads without extraction or plugin execution; success is not source approval. Source proposals use a GitHub form and maintainer review, with accepted entries distributed through the packaged catalog. The [user guide](../../../../docs/user/guide/marketplace.md) is projected to both website languages without adding a remote installation endpoint.
+
 ## Alternatives considered
 
 **Use the native loading page as the permanent marketplace.** Rejected because normal discovery and commands belong in the plugin-composed product; the native shell retains recovery when that product cannot boot.

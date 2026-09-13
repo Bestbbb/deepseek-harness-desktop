@@ -3,7 +3,7 @@ import type { Context } from '@deepseek-ai/cordis'
 import { isDeepStrictEqual } from 'node:util'
 import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
 import type {} from 'zod'
-import type { BundleCatalogId } from '@deepseek-ai/dsh-bundle-preparation'
+import type { BundleCatalogId, PreparationOperation } from '@deepseek-ai/dsh-bundle-preparation'
 import type { DesktopProfileName } from '@deepseek-ai/dsh-desktop'
 import type { MarketplaceSnapshot, MarketplaceCommandResult, MarketplaceProfile } from './types.ts'
 
@@ -15,6 +15,18 @@ export class BundleMarketplaceGateway extends TypertRemoteService {
 
   constructor(ctx: Context) {
     super(ctx, 'bundleMarketplace')
+  }
+
+  /**
+   * Read preparation history only when requested; receipts are not evidence of activation.
+   * @returns Newest-first journal observations, without paths, raw errors or configuration.
+   */
+  @Remote('history')
+  async history(): Promise<readonly PreparationOperation[]> {
+    try { return await this.ctx.bundlePreparation.listOperations() } catch {
+      // Unconfigured, oversized and unreadable journals remain unavailable, not empty histories.
+      throw new Error('Marketplace history is unavailable')
+    }
   }
 
   /**

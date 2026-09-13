@@ -20,12 +20,13 @@ function bench(snapshot: MarketplaceSnapshot = base, chinese = false) {
   const renderSlot = vi.fn().mockReturnValue(null)
   const close = vi.fn()
   const openLocalAgents = vi.fn().mockResolvedValue('acknowledged')
-  const props = { snapshot: read, install, cancel, remove, renderSlot, close, openLocalAgents,
+  const history = vi.fn().mockResolvedValue([])
+  const props = { snapshot: read, history, install, cancel, remove, renderSlot, close, openLocalAgents,
     catalogLanguage: () => chinese ? 'zh' : 'en',
     t: ((key: MarketplaceLocaleKey) => chinese ? zh[key] : en[key]) as MarketplaceProps['t'],
     useConnectionGeneration: select => select({ id: 1, host: { home: '/test' } }),
   } as MarketplaceProps
-  return { props, read, install, cancel, remove, renderSlot, close, openLocalAgents }
+  return { props, read, history, install, cancel, remove, renderSlot, close, openLocalAgents }
 }
 async function ready(props: MarketplaceProps) {
   const view = render(<MarketplaceTab {...props} />)
@@ -35,6 +36,94 @@ async function ready(props: MarketplaceProps) {
 async function review() { fireEvent.click(await screen.findByRole('button', { name: en.install })) }
 
 describe('marketplace presentation', () => {
+  it.each([false, true])('filters metadata locally and clears review when the search changes (Chinese=%s)', async (chinese) => {
+    const copy = chinese ? zh : en
+    const details = { license: 'MIT', en: { summary: 'Pomodoro timer', accounts: '', access: '', setup: '' }, zh: { summary: '番茄钟计时', accounts: '', access: '', setup: '' } }
+    const b = bench({ ...base, entries: [{ ...base.entries[0]!, details }] }, chinese)
+    await ready(b.props)
+    const search = screen.getByRole('searchbox', { name: copy.search })
+    for (const query of [' EXAMPLE ', '@TEST/EXAMPLE', 'publisher', chinese ? '番茄钟' : 'POMODORO']) {
+      fireEvent.change(search, { target: { value: query } })
+      expect(screen.getByRole('button', { name: copy.install })).toBeTruthy()
+    }
+    fireEvent.click(screen.getByRole('button', { name: copy.install }))
+    fireEvent.change(search, { target: { value: 'absent' } })
+    expect(screen.getByText(copy.noMatches)).toBeTruthy()
+    expect(screen.queryByRole('group', { name: copy.review })).toBeNull()
+    expect(screen.queryByText('Example Bundle')).toBeNull()
+    fireEvent.change(search, { target: { value: '' } })
+    expect(screen.getByText('Example Bundle')).toBeTruthy()
+    expect(b.read).toHaveBeenCalledOnce()
+    expect(b.install).not.toHaveBeenCalled()
+  })
+  it.each([false, true])('shows only known version differences, including incompatible and older targets (Chinese=%s)', async (chinese) => {
+    const copy = chinese ? zh : en
+    const b = bench({ ...base, entries: [base.entries[0]!, { ...base.entries[0]!, id: 'blocked' as never, packageName: 'blocked', title: 'Blocked', issues: ['platform'] }],
+      profiles: [{ profile: base.selection.activeProfile, state: 'read', bundles: [{ packageName: '@test/example', version: '2.0.0', removable: true }, { packageName: 'blocked', version: '0.5', removable: true }] }] }, chinese)
+    await ready(b.props)
+    fireEvent.click(screen.getByRole('button', { name: copy.updates }))
+    expect(screen.getByText(copy.updatesHint)).toBeTruthy()
+    const buttons = screen.getAllByRole<HTMLButtonElement>('button', { name: copy.replace })
+    expect(buttons.map(button => button.disabled)).toEqual([false, true])
+    fireEvent.click(buttons[0]!)
+    expect(screen.getByText('2.0.0 → 1.0.0')).toBeTruthy()
+    expect(b.install).not.toHaveBeenCalled()
+    b.read.mockResolvedValue({ ...base, profiles: [{ profile: base.selection.activeProfile, state: 'read', bundles: [{ packageName: '@test/example', version: '1.0.0', removable: true }] }] })
+    fireEvent.click(screen.getByRole('button', { name: copy.refresh }))
+    await screen.findByText(copy.noUpdates)
+    b.read.mockResolvedValue({ ...base, profiles: [{ profile: base.selection.activeProfile, state: 'read', bundles: [{ packageName: '@test/example', version: null, removable: false }] }] })
+    fireEvent.click(screen.getByRole('button', { name: copy.refresh }))
+    await screen.findByText(copy.noUpdates)
+    b.read.mockResolvedValue({ ...base, profiles: [{ profile: base.selection.activeProfile, state: 'unavailable' }] })
+    fireEvent.click(screen.getByRole('button', { name: copy.refresh }))
+    await screen.findByText(copy.inventoryFailed)
+    expect(screen.queryByText(copy.noUpdates)).toBeNull()
+  })
+  it.each([false, true])('reads history on demand and distinguishes prepared, missing and failed records (Chinese=%s)', async (chinese) => {
+    const copy = chinese ? zh : en
+    const b = bench(base, chinese)
+    b.history.mockResolvedValue([
+      { id: 'a', kind: 'composition', state: 'prepared', startedAt: '2026-09-13T00:00:00Z', entry: { title: 'Example', packageName: '@test/example', version: '1' } },
+      { id: 'b', kind: 'removal', state: 'failed', removed: { packageName: 'removed', version: '1' } },
+      ...['unreadable', 'unavailable', 'preparing', 'unsettled'].map(state => ({ id: state, state })),
+    ])
+    await ready(b.props)
+    expect(b.history).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: copy.history }))
+    await screen.findByText(copy['operation-prepared'])
+    expect(screen.getByText(copy['operation-failed'])).toBeTruthy()
+    expect(screen.getByText(copy['operation-removal'])).toBeTruthy()
+    expect(screen.getByText(copy['operation-unsettled'])).toBeTruthy()
+    expect(screen.queryByRole('button', { name: copy.confirm })).toBeNull()
+    expect(b.history).toHaveBeenCalledOnce()
+    b.history.mockRejectedValueOnce(new Error('/private/path'))
+    fireEvent.click(screen.getByRole('button', { name: copy.refresh }))
+    await screen.findByText(copy.historyFailed)
+    expect(screen.queryByText('/private/path')).toBeNull()
+    b.history.mockResolvedValueOnce([])
+    fireEvent.click(screen.getByRole('button', { name: copy.refresh }))
+    await screen.findByText(copy.historyEmpty)
+    expect(b.install).not.toHaveBeenCalled()
+  })
+  it('discards old history settlements across disconnect and tab changes', async () => {
+    const b = bench()
+    const old = Promise.withResolvers<[]>()
+    b.history.mockReturnValueOnce(old.promise)
+    const view = await ready(b.props)
+    fireEvent.click(screen.getByRole('button', { name: en.history }))
+    expect(screen.getByText(en.historyLoading)).toBeTruthy()
+    view.rerender(<MarketplaceTab {...b.props} useConnectionGeneration={select => select(undefined)} />)
+    expect(screen.getByText(en.offline)).toBeTruthy()
+    await act(async () => { old.reject(new Error('old')); await old.promise.catch(() => {}) })
+    expect(screen.queryByText(en.historyFailed)).toBeNull()
+    expect(b.history).toHaveBeenCalledOnce()
+    const leaving = Promise.withResolvers<[]>()
+    b.history.mockReturnValueOnce(leaving.promise)
+    view.rerender(<MarketplaceTab {...b.props} />)
+    fireEvent.click(screen.getByRole('button', { name: en.discover }))
+    await act(async () => { leaving.resolve([]); await leaving.promise })
+    expect(screen.queryByText(en.historyEmpty)).toBeNull()
+  })
   it.each([false, true])('shows inert review guidance before installation (Chinese=%s)', async (chinese) => {
     const copy = chinese ? zh : en
     const details = { license: 'MIT',

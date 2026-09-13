@@ -1,0 +1,48 @@
+name: Propose a marketplace Bundle
+description: Submit public Cordis Bundle source for maintainer review, not automatic installation.
+title: "[Bundle proposal] "
+body:
+  - type: markdown
+    attributes:
+      value: "A submission is not approval. Host plugins have Harness access. Do not include credentials, private sessions or personal workspace presets. Review the Bundle submission guide under docs/cookbook/desktop-marketplace-bundle.md."
+  - type: input
+    id: source
+    attributes:
+      label: Public source and immutable commit
+      description: Include the repository URL and full commit SHA to review.
+    validations:
+      required: true
+  - type: input
+    id: identity
+    attributes:
+      label: Package name, version, license and maintainer contact
+    validations:
+      required: true
+  - type: textarea
+    id: capability
+    attributes:
+      label: Capability and use action
+      description: What does the Cordis Bundle add, and where can a non-developer use it after restart?
+    validations:
+      required: true
+  - type: textarea
+    id: access
+    attributes:
+      label: Access, accounts and costs
+      description: Describe filesystem, command, network, credential and model access, required login, and potential charges. Declarations do not enforce isolation.
+    validations:
+      required: true
+  - type: textarea
+    id: artifacts
+    attributes:
+      label: Artifacts and compatibility evidence
+      description: Include catalog.json, artifact URLs and SHA-256, exact Harness/platform combinations, and installation/use/removal/recovery test results. Do not upload secrets.
+    validations:
+      required: true
+  - type: textarea
+    id: maintenance
+    attributes:
+      label: Upgrade and data compatibility
+      description: Explain configuration, migrations, downgrade limits, maintenance ownership and known limitations.
+    validations:
+      required: true

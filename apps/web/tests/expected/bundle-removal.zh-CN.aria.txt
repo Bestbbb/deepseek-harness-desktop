@@ -4,6 +4,8 @@
 - group "市场视图":
   - button "发现"
   - button "已安装" [pressed]
+  - button "版本变更"
+  - button "操作记录"
 - region "内置本地智能体接入":
   - group: 内置本地智能体接入
   - button "配置本地智能体"

@@ -36,5 +36,6 @@ Agent 可以读取和编辑工作区文件、运行命令、委派工作并维�
 
 - [配置模型](./providers.zh.md)
 - [配置网络代理](./network-proxy.zh.md)
+- [使用插件市场](./marketplace.zh.md)
 - [使用 Python SDK](./python-sdk.zh.md)
 - [开发插件](../develop/basic/index.zh.md)

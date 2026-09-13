@@ -1,10 +1,14 @@
-- heading "添加能力" [level=3]
-- paragraph: 审核组合包可以扩展界面、工具和智能体行为。
+- heading "查看可用版本" [level=3]
+- paragraph: 显示已安装版本与当前目录不同的组合包。目标版本可能更旧或不兼容。变更需要确认并重启应用，不会自动更新。
 - button "刷新状态"
 - paragraph: Host 插件拥有与 Harness 相同的访问能力。安装前请核对发布者和源码。
 - group "市场视图":
-  - button "发现" [pressed]
+  - button "发现"
   - button "已安装"
+  - button "版本变更" [pressed]
+  - button "操作记录"
+- text: 搜索组合包
+- searchbox "搜索组合包"
 - region "内置本地智能体接入":
   - group: 内置本地智能体接入
   - button "配置本地智能体"

@@ -5,6 +5,10 @@
 - group "市场视图":
   - button "发现" [pressed]
   - button "已安装"
+  - button "版本变更"
+  - button "操作记录"
+- text: 搜索组合包
+- searchbox "搜索组合包"
 - region "内置本地智能体接入":
   - group: 内置本地智能体接入
   - button "配置本地智能体"

@@ -20,15 +20,27 @@ async function bench() {
   const profileBundles = vi.fn().mockResolvedValue([])
   const cancelProfile = vi.fn().mockResolvedValue(undefined)
   const openLocalAgents = vi.fn().mockResolvedValue(undefined)
+  const listOperations = vi.fn().mockResolvedValue([])
   ctx.provide('bundlePreparation', { list: () => [{ entry: { id, title: 'Fixture', packageName: 'fixture', version: '1',
-    publisher: 'Tests', source: 'https://example.com/fixture', details: null, artifact: { file: '/private/file.tgz' }, harnessVersions: ['private'] }, issues: [] }], queueActivation, queueRemoval, profileBundles } as never)
+    publisher: 'Tests', source: 'https://example.com/fixture', details: null, artifact: { file: '/private/file.tgz' }, harnessVersions: ['private'] }, issues: [] }], queueActivation, queueRemoval, profileBundles, listOperations } as never)
   ctx.provide('desktop', { profileSelection, cancelProfile, openLocalAgents } as never)
   const fiber = ctx.plugin(BundleMarketplaceGateway)
   await fiber.await()
-  return { gateway: ctx.get('bundleMarketplace') as BundleMarketplaceGateway, queueActivation, queueRemoval, profileSelection, cancelProfile, profileBundles, openLocalAgents }
+  return { gateway: ctx.get('bundleMarketplace') as BundleMarketplaceGateway, queueActivation, queueRemoval, profileSelection, cancelProfile, profileBundles, openLocalAgents, listOperations }
 }
 
 describe('marketplace gateway', () => {
+  it('reads bounded journal observations without tying discovery to history availability', async () => {
+    const b = await bench()
+    await b.gateway.snapshot()
+    expect(b.listOperations).not.toHaveBeenCalled()
+    await expect(b.gateway.history()).resolves.toEqual([])
+    b.listOperations.mockResolvedValueOnce([{ id: 'fixture', state: 'unsettled' }])
+    await expect(b.gateway.history()).resolves.toEqual([{ id: 'fixture', state: 'unsettled' }])
+    b.listOperations.mockRejectedValueOnce(new Error('/private/operations'))
+    await expect(b.gateway.history()).rejects.toThrow('Marketplace history is unavailable')
+    expect(b.queueActivation).not.toHaveBeenCalled()
+  })
   it('opens only the native settings window and withholds native errors', async () => {
     const b = await bench()
     await expect(b.gateway.openLocalAgents()).resolves.toBe('acknowledged')

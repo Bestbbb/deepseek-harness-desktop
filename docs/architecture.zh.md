@@ -48,9 +48,9 @@ Python SDK 遵循相同的应用架构。其运行时 wheel 把普通 `dsh` CLI 
 
 ## 桌面应用
 
-[Electron 桌面应用](../apps/desktop/README.zh.md)持有保留的 `$DSH_HOME/profiles/desktop` npm 项目。每个签名 Electron 发行版绑定一个确切 dsh 版本并携带第一方离线 seed；启动时通过内置 pnpm 把该版本安装进可写 profile，同时保留旧 profile 中桌面插件的确切版本。CLI profile 与 Desktop 共享 `$DSH_HOME` 下受支持的产品数据，但绝不共享可执行包、插件激活、lockfile 或 `node_modules`。
+社区 [Tauri 桌面应用](../apps/desktop/README.zh.md)打包固定版本的 dsh 运行时，并在系统 WebView 中打开其 Web 界面。Rust 监管器负责子进程树、启动确认、原生操作与恢复。桌面数据及可写 Profile 代际使用独立 Harness 主目录；安装不会替换开发者的 CLI 环境。
 
-Electron 通过内置的上游 Node.js 进程启动私有 Desktop Host 包；该包从保留 profile 加载已安装的 dsh 后端与匹配的客户端图。一元 RPC、Remote stream 与版本匹配的客户端资源经带版本的分帧字节管道传输，Node IPC 只保留生命周期控制，再通过安全的 `dsh-app://` 协议到达渲染进程；因此桌面组合不会开放 Web server 或 loopback 端口。只有壳自有 UI 能通过内置 pnpm 及其私有 `$DSH_HOME/desktop/pnpm/store` 执行插件事务。
+监管器使用内置 Node.js 启动受支持的 Web Profile。WebView 通过上游启动令牌交换向 loopback Web 监听器认证；独立认证的 loopback 桥向 Cordis 暴露原生能力。[市场插件](../packages/desktop/bundle-marketplace/README.zh.md)消费审核组合包准备服务及原生下次启动选择。它准备新 Profile 而不改变活动组合；Tauri 检查启动，并独立于插件 UI 保留恢复能力。上游私有 Desktop Host 包不替换本发行版的外壳或传输。
 
 ## 核心包
 

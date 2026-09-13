@@ -70,6 +70,9 @@ jobs:
       - name: Build application and bundled runtime
         run: pnpm run desktop:prepare
 
+      - name: Verify reviewed marketplace artifacts without executing package code
+        run: pnpm marketplace:verify apps/desktop/resources/runtime/marketplace
+
       - name: Verify bundled runtime and desktop authentication
         run: pnpm run desktop:smoke
 

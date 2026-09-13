@@ -1,0 +1,21 @@
+- heading "Operation history" [level=3]
+- paragraph: Preparation records are not activation or health checks. Use Installed for selected combinations. Refresh to read the latest records; no operation is retried here.
+- button "Refresh status"
+- group "Marketplace views":
+  - button "Discover"
+  - button "Installed"
+  - button "Version changes"
+  - button "Operation history" [pressed]
+- region "Built-in local agent connections":
+  - group: Built-in local agent connections
+  - button "Configure local agents"
+- list:
+  - listitem:
+    - heading "Reviewed example" [level=4]
+    - paragraph:
+      - code: marketplace-web-fixture
+      - text: · 1.0.0
+    - paragraph: Prepare combination
+    - paragraph: Preparation receipt verified; activation is not confirmed
+    - time: {{timestamp}}
+    - group: Operation ID
