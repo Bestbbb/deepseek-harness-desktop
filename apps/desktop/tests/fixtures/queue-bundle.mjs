@@ -15,7 +15,9 @@ export function apply(ctx, config) {
         let result
         try {
           const { activeProfile } = await ctx.desktop.profileSelection()
-          result = await ctx.bundlePreparation.queueActivation(config.id, activeProfile, null)
+          const reviewed = ctx.bundlePreparation.list().find(candidate => candidate.entry.id === config.id)
+          if (!reviewed) throw new Error('Fixture Bundle is not in the catalog')
+          result = await ctx.bundlePreparation.queueActivation(config.id, activeProfile, null, reviewed.reviewToken)
         } catch {
           result = { error: 'Fixture Bundle queue failed' }
         }

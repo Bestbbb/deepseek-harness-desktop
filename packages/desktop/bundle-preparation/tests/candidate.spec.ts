@@ -744,10 +744,11 @@ describe('offline dependency candidates', () => {
     const spawn = vi.spyOn(f.ctx.subprocess, 'spawn')
     const running = f.ctx.bundlePreparation.prepareDependencies(id)
     const rejected = expect(running).rejects.toThrow('disposed')
+    // Readiness includes the version probe and installer spawn, both bounded by the installer budget.
     await expect.poll(async () => {
       try { return JSON.parse(await readFile(f.started, 'utf8')) as number[] }
       catch { return [] }
-    }).toHaveLength(2)
+    }, { timeout: f.config.installer.timeoutMs }).toHaveLength(2)
     await expect(f.ctx.bundlePreparation.prepare(id)).rejects.toThrow('in progress')
     await f.fiber.dispose()
     await rejected
